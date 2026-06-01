@@ -302,6 +302,136 @@
 .color-dot.sel { border-color: #fff; transform: scale(1.15); }
 .manage-group-row { display: flex; align-items: center; gap: 8px; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
 
+/* ═══ CUSTOM TABS ═══ */
+#tabs-bar {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#tabs-bar::-webkit-scrollbar { display: none; }
+
+.tab-btn-custom {
+  display: flex; align-items: center; gap: 6px; padding: 0 14px 0 16px;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text3); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: color var(--t), border-color var(--t), background var(--t);
+  white-space: nowrap; flex-shrink: 0; position: relative;
+}
+.tab-btn-custom:hover { color: var(--text2); background: var(--s2); }
+.tab-btn-custom.active { color: var(--text); border-bottom-color: var(--accent); }
+
+.tab-close-btn {
+  width: 16px; height: 16px; border-radius: 50%; border: none;
+  background: transparent; color: var(--text3); font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--t); flex-shrink: 0; line-height: 1;
+  margin-left: 2px;
+}
+.tab-close-btn:hover { background: var(--s4); color: var(--red); }
+
+.tab-add-btn {
+  width: 36px; height: 100%; border: none; background: transparent;
+  color: var(--text3); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--t); flex-shrink: 0;
+}
+.tab-add-btn:hover { color: var(--accent); background: var(--s2); }
+
+/* ═══ TAB CONTENT AREAS ═══ */
+.custom-tab-panel {
+  flex: 1; overflow-y: auto; padding: 28px 32px;
+  scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+}
+
+/* ═══ WEBPAGE TAB ═══ */
+.webpage-frame { width: 100%; height: 100%; border: none; display: block; }
+.webpage-blocked {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 40px;
+}
+.webpage-blocked h2 { font-size: 18px; font-weight: 800; color: var(--text); }
+.webpage-blocked p { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; text-align: center; max-width: 400px; line-height: 1.6; }
+
+/* ═══ BOOKMARKS TAB ═══ */
+.bookmarks-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+  padding: 28px 32px;
+}
+.bookmark-card {
+  background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 14px 12px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; gap: 8px; text-decoration: none;
+  transition: background var(--t), border-color var(--t), transform var(--t);
+  position: relative;
+}
+.bookmark-card:hover { background: var(--s3); border-color: var(--border2); transform: translateY(-2px); }
+.bookmark-card img { width: 24px; height: 24px; border-radius: 5px; }
+.bookmark-card-name { font-size: 12px; font-weight: 700; color: var(--text); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.bookmark-card-url { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.bookmark-remove {
+  position: absolute; top: 4px; right: 4px; width: 16px; height: 16px;
+  border-radius: 50%; background: rgba(255,91,110,.13); color: var(--red);
+  font-size: 10px; display: none; align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+}
+.bookmark-card:hover .bookmark-remove { display: flex; }
+.bookmark-add-card {
+  background: transparent; border: 1.5px dashed var(--border2); border-radius: var(--r);
+  padding: 14px 12px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px; min-height: 90px;
+  color: var(--text3); font-size: 11px; font-family: 'DM Mono', monospace;
+  transition: all var(--t);
+}
+.bookmark-add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(91,127,255,.08); }
+
+/* ═══ NOTES TAB ═══ */
+.notes-textarea {
+  width: 100%; height: 100%; padding: 28px 32px; background: var(--bg);
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 14px;
+  line-height: 1.7; border: none; outline: none; resize: none;
+  scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+}
+.notes-status {
+  position: absolute; bottom: 12px; right: 16px;
+  font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3);
+  pointer-events: none;
+}
+
+/* ═══ WORLD CLOCK TAB ═══ */
+.worldclock-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px; padding: 28px 32px;
+}
+.clock-card {
+  background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 20px; display: flex; flex-direction: column; gap: 6px; position: relative;
+}
+.clock-tz { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.clock-city { font-size: 14px; font-weight: 700; color: var(--text); }
+.clock-time { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--accent2); font-family: 'DM Mono', monospace; }
+.clock-date { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); }
+.clock-remove {
+  position: absolute; top: 8px; right: 8px; width: 18px; height: 18px;
+  border-radius: 50%; background: transparent; color: var(--text3); font-size: 12px;
+  display: none; align-items: center; justify-content: center; cursor: pointer; border: none;
+}
+.clock-card:hover .clock-remove { display: flex; }
+.clock-remove:hover { color: var(--red); background: rgba(255,91,110,.13); }
+
+/* ═══ WEATHER TAB ═══ */
+.weather-panel { padding: 28px 32px; max-width: 600px; }
+.weather-city-name { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+.weather-current { display: flex; align-items: center; gap: 20px; margin: 16px 0; }
+.weather-temp { font-size: 56px; font-weight: 800; letter-spacing: -3px; color: var(--accent2); font-family: 'DM Mono', monospace; }
+.weather-desc { font-size: 14px; color: var(--text2); font-family: 'DM Mono', monospace; }
+.weather-detail { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 4px; }
+.weather-daily { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 24px; }
+.weather-day { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+.weather-day-name { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
+.weather-day-icon { font-size: 20px; margin-bottom: 4px; }
+.weather-day-temp { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); }
+.weather-search { display: flex; gap: 8px; margin-bottom: 20px; }
+.weather-search input { flex: 1; }
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1100px) { .news-cards-grid { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width:900px) { .news-cards-grid { grid-template-columns: repeat(2, 1fr); } }
