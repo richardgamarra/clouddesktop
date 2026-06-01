@@ -10,7 +10,7 @@ module.exports = {
       max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production',
-        PORT: 3001,
+        PORT: 4010,
       },
       error_file: '/var/log/pm2/clouddesktop-error.log',
       out_file:   '/var/log/pm2/clouddesktop-out.log',
