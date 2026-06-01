@@ -29,12 +29,12 @@ export const CATEGORY_COLORS = {
 }
 
 export const DEFAULT_NEWS_SOURCES = [
-  { id:'cnn',       name:'CNN',         url:'https://rss.cnn.com/rss/edition.rss',                        category:'general', color:'#ff5b6e', enabled:true },
-  { id:'bbc',       name:'BBC News',    url:'https://feeds.bbci.co.uk/news/rss.xml',                      category:'general', color:'#5b7fff', enabled:true },
-  { id:'espn',      name:'ESPN Sports', url:'https://www.espn.com/espn/rss/news',                         category:'sports',  color:'#3ddcaa', enabled:true },
-  { id:'marca',     name:'Marca (ES)',  url:'https://e00-marca.uecdn.es/rss/portada.xml',                 category:'sports',  color:'#f5a623', enabled:true },
-  { id:'techcrunch',name:'TechCrunch', url:'https://techcrunch.com/feed/',                                category:'tech',    color:'#a78bfa', enabled:true },
-  { id:'reuters',   name:'Reuters',    url:'https://feeds.reuters.com/reuters/topNews',                   category:'general', color:'#38bdf8', enabled:true },
+  { id:'bbc',       name:'BBC News',    url:'https://feeds.bbci.co.uk/news/rss.xml',                             category:'general', color:'#5b7fff', enabled:true },
+  { id:'guardian',  name:'The Guardian',url:'https://www.theguardian.com/world/rss',                             category:'general', color:'#ff5b6e', enabled:true },
+  { id:'aljazeera', name:'Al Jazeera',  url:'https://www.aljazeera.com/xml/rss/all.xml',                        category:'general', color:'#f5a623', enabled:true },
+  { id:'techcrunch',name:'TechCrunch',  url:'https://techcrunch.com/feed/',                                      category:'tech',    color:'#a78bfa', enabled:true },
+  { id:'hn',        name:'Hacker News', url:'https://news.ycombinator.com/rss',                                  category:'tech',    color:'#38bdf8', enabled:true },
+  { id:'nyt',       name:'NY Times',    url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',         category:'general', color:'#3ddcaa', enabled:true },
 ]
 
 export const RSS_PRESETS = [
