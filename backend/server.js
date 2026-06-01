@@ -24,6 +24,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 
+const newsRouter = require('./routes/news')
+app.use('/api/news', newsRouter)
+
 // ── Protected API routes ──────────────────────────────────────────────────────
 app.get('/api/user/me', requireAuth, (req, res) => {
   res.json({ user: req.user })

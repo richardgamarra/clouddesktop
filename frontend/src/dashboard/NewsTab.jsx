@@ -36,6 +36,16 @@ function parseRSSXML(xml) {
 }
 
 async function fetchRSS(src) {
+  // Strategy 1: Our own backend proxy (no CORS, most reliable)
+  try {
+    const r = await fetch(`/api/news/fetch?url=${encodeURIComponent(src.url)}`, { signal: AbortSignal.timeout(10000) })
+    if (r.ok) {
+      const d = await r.json()
+      if (Array.isArray(d.items) && d.items.length) return d.items
+    }
+  } catch {}
+
+  // Strategy 2: rss2json fallback
   const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=5`
   try {
     const r = await fetch(rss2json, { signal: AbortSignal.timeout(8000) })
