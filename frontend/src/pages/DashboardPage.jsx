@@ -38,7 +38,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 }
 
 export default function DashboardPage() {
-  const { logout, sync, syncReady } = useAuth()
+  const { accessToken, logout, sync, syncReady, initSync } = useAuth()
   const navigate = useNavigate()
   const hub = useHubState()
   const { openApp, isOpen } = useOpenWindows()
@@ -56,6 +56,14 @@ export default function DashboardPage() {
   const dragTabId = useRef(null)
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
+
+  // ── Cloud sync init: runs once on mount ──────────────────────────────────────
+  useEffect(() => {
+    if (!accessToken) return
+    initSync(accessToken).then(hadCloudData => {
+      if (hadCloudData) window.location.reload() // reload so React re-reads hydrated localStorage
+    }).catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     function handler(e) {
