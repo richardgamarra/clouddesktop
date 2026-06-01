@@ -1,10 +1,26 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 
+// Known sites that block embedding — show fallback immediately
+const KNOWN_BLOCKED = [
+  'mail.google.com', 'docs.google.com', 'drive.google.com',
+  'calendar.google.com', 'keep.google.com',
+  'outlook.live.com', 'microsoft365.com', 'onedrive.live.com',
+  'notion.so', 'trello.com', 'app.slack.com', 'chat.openai.com',
+]
+
+function isKnownBlocked(url) {
+  try {
+    const host = new URL(url).hostname
+    return KNOWN_BLOCKED.some(b => host === b || host.endsWith('.' + b))
+  } catch { return false }
+}
+
 export default function WebPageTab({ tab }) {
   const { url } = tab.config
-  const [blocked, setBlocked] = useState(false)
+  const [blocked, setBlocked] = useState(() => url ? isKnownBlocked(url) : false)
+  const loaded = useRef(false)
 
   if (!url) return (
     <div className="webpage-blocked tab-panel" style={{ display:'flex' }}>
@@ -31,14 +47,8 @@ export default function WebPageTab({ tab }) {
         src={url}
         title={tab.name}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-        onLoad={e => {
-          try {
-            const doc = e.target.contentDocument
-            if (!doc) setBlocked(true)
-          } catch {
-            setBlocked(true)
-          }
-        }}
+        onError={() => setBlocked(true)}
+        onLoad={() => { loaded.current = true }}
       />
     </div>
   )
