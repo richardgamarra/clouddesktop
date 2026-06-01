@@ -12,6 +12,7 @@ import AppModal from '../dashboard/AppModal'
 import GroupModal from '../dashboard/GroupModal'
 import ManageGroupsModal from '../dashboard/ManageGroupsModal'
 import SourceModal from '../dashboard/SourceModal'
+import AnnouncementBanner from '../components/AnnouncementBanner'
 import '../dashboard/dashboard.css'
 
 function loadNewsSources() {
@@ -121,6 +122,7 @@ export default function DashboardPage() {
       />
 
       <div id="db-main">
+        <AnnouncementBanner />
         <div id="tabs-bar">
           <button className={`tab-btn${activeTab === 'news' ? ' active' : ''}`} onClick={() => setActiveTab('news')}>
             <span>📰</span>News
