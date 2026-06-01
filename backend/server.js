@@ -1,36 +1,38 @@
 require('dotenv').config()
-const express = require('express')
-const path    = require('path')
-const helmet  = require('helmet')
-const cors    = require('cors')
+const express      = require('express')
+const helmet       = require('helmet')
+const cors         = require('cors')
 const cookieParser = require('cookie-parser')
 
-const app  = express()
-const PORT = process.env.PORT || 3001
+const authRouter   = require('./routes/auth')
+const requireAuth  = require('./middleware/auth')
 
-// ── Security middleware ──────────────────────────────
-app.use(helmet({
-  contentSecurityPolicy: false,
-}))
-app.use(cors({
-  origin: process.env.APP_URL,
-  credentials: true,
-}))
+const app  = express()
+const PORT = process.env.PORT || 4010
+
+app.use(helmet({ contentSecurityPolicy: false }))
+app.use(cors({ origin: process.env.APP_URL, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
 
-// ── Health check ─────────────────────────────────────
+// ── Public API routes ─────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// ── Serve React build (production) ───────────────────
-if (process.env.NODE_ENV === 'production') {
-  const publicDir = path.join(__dirname, 'public')
+app.use('/api/auth', authRouter)
+
+// ── Protected API routes ──────────────────────────────────────────────────────
+app.get('/api/user/me', requireAuth, (req, res) => {
+  res.json({ user: req.user })
+})
+
+// ── Serve React build ─────────────────────────────────────────────────────────
+const publicDir = '/var/www/clouddesktop/backend/public'
+const fs = require('fs')
+if (fs.existsSync(publicDir + '/index.html')) {
   app.use(express.static(publicDir))
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(publicDir, 'index.html'))
-  })
+  app.get('*', (req, res) => res.sendFile(publicDir + '/index.html'))
 }
 
 app.listen(PORT, () => {
