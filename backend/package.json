@@ -27,7 +27,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "globalSetup": "./tests/setup.js",
     "testTimeout": 15000
   }
 }
