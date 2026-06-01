@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DEFAULT_NEWS_SOURCES, CATEGORY_COLORS } from './constants'
+import SourceModal from './SourceModal'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function stripTags(s) { return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() }
@@ -74,19 +75,22 @@ async function fetchRSS(src) {
   throw new Error('All fetch strategies failed')
 }
 
-function NewsCard({ item, src, isHero }) {
+function NewsCard({ item, src }) {
+  const showImg = src.showImages !== false
   return (
-    <a className={`news-card${isHero ? ' hero' : ''}`} href={item.link} target="_blank" rel="noopener noreferrer">
-      <div className="news-card-img">
-        {item.image
-          ? <img src={item.image} alt="" loading="lazy" onError={e => { e.target.parentNode.innerHTML = '<div class="img-placeholder"><span>No image</span></div>' }} />
-          : <div className="img-placeholder"><span>No image</span></div>
-        }
-      </div>
+    <a className="news-card" href={item.link} target="_blank" rel="noopener noreferrer">
+      {showImg && (
+        <div className="news-card-img">
+          {item.image
+            ? <img src={item.image} alt="" loading="lazy" onError={e => { e.target.parentNode.innerHTML = '<div class="img-placeholder"><span>No image</span></div>' }} />
+            : <div className="img-placeholder"><span>No image</span></div>
+          }
+        </div>
+      )}
       <div className="news-card-body">
         {item.category && <div className="news-card-category">{item.category}</div>}
         <div className="news-card-title">{item.title}</div>
-        {isHero && item.desc && <div className="news-card-desc">{item.desc}</div>}
+        {item.desc && <div className="news-card-desc">{item.desc}</div>}
         <div className="news-card-meta">
           {item.pubDate && <span>{formatAge(item.pubDate)}</span>}
           <span className="news-card-source-tag" style={{ color: src.color }}>{src.name}</span>
@@ -110,10 +114,11 @@ function SkeletonCard({ isHero }) {
 }
 
 export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
-  const [cache, setCache] = useState({})
-  const [filter, setFilter] = useState('all')
+  const [cache, setCache]       = useState({})
+  const [filter, setFilter]     = useState('all')
   const [spinning, setSpinning] = useState(false)
   const [lastUpdated, setLastUpdated] = useState('Fetching latest headlines…')
+  const [editSource, setEditSource] = useState(null)
 
   const fetchAll = useCallback(async (force = false) => {
     setSpinning(true)
@@ -140,6 +145,11 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
     onSourcesChange(sources.filter(s => s.id !== id))
     setCache(c => { const n = { ...c }; delete n[id]; return n })
     if (filter === id) setFilter('all')
+  }
+
+  function handleEditSave(updated) {
+    onSourcesChange(sources.map(s => s.id === updated.id ? updated : s))
+    setEditSource(null)
   }
 
   return (
@@ -185,6 +195,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
                 <div className="news-source-url">{tryHost(src.url)}</div>
               </div>
               <div className="news-source-spacer" />
+              <button className="news-open-source-btn" onClick={() => setEditSource(src)} style={{ marginRight: 6 }}>✎ Edit</button>
               <button className="news-open-source-btn" onClick={() => window.open(src.url.split('/rss')[0] || src.url, '_blank')}>Visit site ↗</button>
             </div>
             <div className="news-cards-grid">
@@ -202,6 +213,14 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           </div>
         )
       })}
+
+      {editSource && (
+        <SourceModal
+          source={editSource}
+          onSave={handleEditSave}
+          onClose={() => setEditSource(null)}
+        />
+      )}
     </div>
   )
 }
