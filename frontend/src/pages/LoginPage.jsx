@@ -26,7 +26,7 @@ export default function LoginPage() {
         setError(data.error || 'Login failed')
         return
       }
-      login(data.accessToken, data.user)
+      await login(data.accessToken, data.user, password)
       navigate('/dashboard')
     } catch {
       setError('Network error. Please try again.')
