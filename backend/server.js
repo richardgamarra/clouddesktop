@@ -5,6 +5,7 @@ const cors         = require('cors')
 const cookieParser = require('cookie-parser')
 
 const authRouter   = require('./routes/auth')
+const adminRouter  = require('./routes/admin')
 const requireAuth  = require('./middleware/auth')
 
 const app  = express()
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => {
 })
 
 app.use('/api/auth', authRouter)
+app.use('/api/admin', adminRouter)
 
 // ── Protected API routes ──────────────────────────────────────────────────────
 app.get('/api/user/me', requireAuth, (req, res) => {
