@@ -188,7 +188,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
               <button className="news-open-source-btn" onClick={() => window.open(src.url.split('/rss')[0] || src.url, '_blank')}>Visit site ↗</button>
             </div>
             <div className="news-cards-grid">
-              {!items && [0,1,2,3,4].map(n => <SkeletonCard key={n} isHero={n===0} />)}
+              {!items && [0,1,2,3,4].map(n => <SkeletonCard key={n} isHero={false} />)}
               {items?.error && (
                 <div className="news-error" style={{ gridColumn:'1/-1' }}>
                   ⚠ Could not fetch "{src.name}": {items.message}.{' '}
@@ -196,7 +196,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
                 </div>
               )}
               {Array.isArray(items) && items.map((item, i) => (
-                <NewsCard key={item.link + i} item={item} src={src} isHero={i === 0} />
+                <NewsCard key={item.link + i} item={item} src={src} isHero={false} />
               ))}
             </div>
           </div>

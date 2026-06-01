@@ -38,10 +38,16 @@ export const DEFAULT_NEWS_SOURCES = [
 ]
 
 export const RSS_PRESETS = [
+  { name:'The Guardian',  url:'https://www.theguardian.com/world/rss',                                category:'general' },
+  { name:'BBC News',      url:'https://feeds.bbci.co.uk/news/rss.xml',                                category:'general' },
   { name:'Al Jazeera',    url:'https://www.aljazeera.com/xml/rss/all.xml',                            category:'general' },
-  { name:'NASA',          url:'https://www.nasa.gov/rss/dyn/breaking_news.rss',                        category:'science' },
-  { name:'The Verge',     url:'https://www.theverge.com/rss/index.xml',                               category:'tech'    },
-  { name:'NYT Top',       url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',            category:'general' },
+  { name:'NY Times',      url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',            category:'general' },
+  { name:'TechCrunch',    url:'https://techcrunch.com/feed/',                                         category:'tech'    },
   { name:'Hacker News',   url:'https://news.ycombinator.com/rss',                                     category:'tech'    },
+  { name:'The Verge',     url:'https://www.theverge.com/rss/index.xml',                               category:'tech'    },
+  { name:'Ars Technica',  url:'https://feeds.arstechnica.com/arstechnica/index',                      category:'tech'    },
+  { name:'NASA',          url:'https://www.nasa.gov/rss/dyn/breaking_news.rss',                       category:'science' },
+  { name:'Science Daily', url:'https://www.sciencedaily.com/rss/all.xml',                             category:'science' },
   { name:"L'Équipe",      url:'https://www.lequipe.fr/rss/actu_rss.xml',                              category:'sports'  },
+  { name:'Sky Sports',    url:'https://www.skysports.com/rss/12040',                                  category:'sports'  },
 ]
