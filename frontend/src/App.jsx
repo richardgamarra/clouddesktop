@@ -8,6 +8,11 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import DashboardPage from './pages/DashboardPage'
+import AdminRoute from './components/AdminRoute'
+import AdminLayout from './pages/admin/AdminLayout'
+import UsersPage from './pages/admin/UsersPage'
+import StatsPage from './pages/admin/StatsPage'
+import BroadcastPage from './pages/admin/BroadcastPage'
 import './index.css'
 
 export default function App() {
@@ -24,6 +29,10 @@ export default function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute><DashboardPage /></ProtectedRoute>
           } />
+          <Route path="/admin" element={<AdminRoute><AdminLayout><StatsPage /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/stats" element={<AdminRoute><AdminLayout><StatsPage /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><AdminLayout><UsersPage /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/broadcast" element={<AdminRoute><AdminLayout><BroadcastPage /></AdminLayout></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
