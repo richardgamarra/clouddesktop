@@ -65,5 +65,5 @@ CREATE TABLE IF NOT EXISTS announcements (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   message     TEXT        NOT NULL,
   active      BOOLEAN     NOT NULL DEFAULT true,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
