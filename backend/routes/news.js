@@ -14,6 +14,7 @@ function fetchUrl(url) {
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
       timeout: 8000,
+      rejectUnauthorized: false,
     }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return fetchUrl(res.headers.location).then(resolve).catch(reject)
