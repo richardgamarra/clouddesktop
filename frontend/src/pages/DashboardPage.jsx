@@ -21,6 +21,7 @@ import WorldClockTab from '../dashboard/tabs/WorldClockTab'
 import WeatherTab from '../dashboard/tabs/WeatherTab'
 import AnnouncementBanner from '../components/AnnouncementBanner'
 import '../dashboard/dashboard.css'
+import { getSettingsJson, loadSettingsJson } from '../lib/crypto'
 
 function loadNewsSources() {
   try { return JSON.parse(localStorage.getItem('wsh_news_sources')) || JSON.parse(JSON.stringify(DEFAULT_NEWS_SOURCES)) }
@@ -37,7 +38,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 }
 
 export default function DashboardPage() {
-  const { logout } = useAuth()
+  const { logout, sync, syncReady } = useAuth()
   const navigate = useNavigate()
   const hub = useHubState()
   const { openApp, isOpen } = useOpenWindows()
@@ -124,6 +125,42 @@ export default function DashboardPage() {
     customTabs.reorderTabs(newOrder)
   }
 
+  // ── Cloud sync — debounced 2s after any settings change ──────────────────────
+  useEffect(() => {
+    if (!syncReady) return
+    const timer = setTimeout(() => sync(accessToken), 2000)
+    return () => clearTimeout(timer)
+  }, [hub.groups, hub.apps, sources, customTabs.tabs, syncReady, sync, accessToken])
+
+  // ── Export settings as JSON file ──────────────────────────────────────────────
+  function handleExport() {
+    const data = getSettingsJson()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href = url; a.download = 'clouddesktop-settings.json'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // ── Import settings from JSON file ────────────────────────────────────────────
+  function handleImport(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = async (ev) => {
+      try {
+        const json = JSON.parse(ev.target.result)
+        loadSettingsJson(json)
+        if (syncReady) await sync(accessToken)
+        window.location.reload()
+      } catch {
+        alert('Invalid settings file.')
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
   async function handleLogout() { await logout(); navigate('/') }
 
   const activeCustomTab = customTabs.tabs.find(t => t.id === activeTab)
@@ -179,6 +216,14 @@ export default function DashboardPage() {
                 <button className="open-all-btn" onClick={() => hub.apps.forEach((app, i) => setTimeout(() => openApp(app), i * 100))}>⚡ Open All</button>
               </>
             )}
+            {syncReady && (
+              <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--green)', marginRight:4 }} title="Settings synced to cloud">☁ synced</span>
+            )}
+            <button className="tb-btn" onClick={handleExport} title="Export settings as JSON">↓ Export</button>
+            <label className="tb-btn" style={{ cursor:'pointer', marginLeft:0 }} title="Import settings from JSON">
+              ↑ Import
+              <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
+            </label>
             <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 8 }}>Log out</button>
           </div>
         </div>
