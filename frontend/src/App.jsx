@@ -1,29 +1,32 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import LandingPage from './pages/LandingPage'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
+import DashboardPage from './pages/DashboardPage'
+import './index.css'
+
 export default function App() {
   return (
-    <div style={{
-      background: '#0b0d12',
-      color: '#e8eaf2',
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      gap: '12px'
-    }}>
-      <div style={{
-        width: 52, height: 52,
-        background: 'linear-gradient(135deg, #5b7fff, #a78bfa)',
-        borderRadius: 14,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18, fontWeight: 800, color: '#fff'
-      }}>CW</div>
-      <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px' }}>
-        CloudDesktop Workspace
-      </h1>
-      <p style={{ color: '#8b90a8', fontFamily: "'DM Mono', monospace", fontSize: 13 }}>
-        Stage 1 scaffold — deploy pipeline working ✓
-      </p>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/reset-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute><DashboardPage /></ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
