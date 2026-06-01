@@ -49,7 +49,7 @@ router.post('/signup', async (req, res) => {
       [email.toLowerCase(), passwordHash, emailVerifyToken, emailVerifyExpires]
     )
 
-    await sendVerificationEmail(email, emailVerifyToken)
+    try { await sendVerificationEmail(email, emailVerifyToken) } catch(emailErr) { console.error('email send failed:', emailErr.message) }
 
     return res.status(201).json({ message: 'Account created. Check your email to verify your account.' })
   } catch (err) {
@@ -200,7 +200,7 @@ router.post('/forgot-password', async (req, res) => {
         'UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3',
         [resetToken, resetExpires, result.rows[0].id]
       )
-      await sendPasswordResetEmail(email, resetToken)
+      try { await sendPasswordResetEmail(email, resetToken) } catch(emailErr) { console.error('email send failed:', emailErr.message) }
     }
   } catch (err) {
     console.error('forgot-password error:', err.message)
