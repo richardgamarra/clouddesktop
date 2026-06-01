@@ -152,6 +152,16 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
     setEditSource(null)
   }
 
+  function moveSource(id, dir) {
+    const idx = sources.findIndex(s => s.id === id)
+    if (idx < 0) return
+    const next = idx + dir
+    if (next < 0 || next >= sources.length) return
+    const arr = [...sources]
+    ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+    onSourcesChange(arr)
+  }
+
   return (
     <div id="news-panel">
       <div className="news-header">
@@ -195,6 +205,14 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
                 <div className="news-source-url">{tryHost(src.url)}</div>
               </div>
               <div className="news-source-spacer" />
+              <div style={{ display:'flex', flexDirection:'column', gap:2, marginRight:6 }}>
+                <button className="news-open-source-btn" style={{ padding:'1px 7px', fontSize:10, opacity: displayed.indexOf(src)===0 ? .3 : 1 }}
+                  disabled={displayed.indexOf(src)===0}
+                  onClick={() => moveSource(src.id, -1)}>▲</button>
+                <button className="news-open-source-btn" style={{ padding:'1px 7px', fontSize:10, opacity: displayed.indexOf(src)===displayed.length-1 ? .3 : 1 }}
+                  disabled={displayed.indexOf(src)===displayed.length-1}
+                  onClick={() => moveSource(src.id, 1)}>▼</button>
+              </div>
               <button className="news-open-source-btn" onClick={() => setEditSource(src)} style={{ marginRight: 6 }}>✎ Edit</button>
               <button className="news-open-source-btn" onClick={() => window.open(src.url.split('/rss')[0] || src.url, '_blank')}>Visit site ↗</button>
             </div>
