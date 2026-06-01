@@ -1,20 +1,23 @@
-const express = require('express')
-const https   = require('https')
-const http    = require('http')
+const express   = require('express')
+const https     = require('https')
+const http      = require('http')
 const { DOMParser } = require('@xmldom/xmldom')
 
 const router = express.Router()
 
+const httpsAgent = new https.Agent({ rejectUnauthorized: false })
+
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith('https') ? https : http
+    const isHttps = url.startsWith('https')
+    const mod     = isHttps ? https : http
     const req = mod.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; CloudDesktop/1.0; RSS Reader)',
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
       timeout: 8000,
-      rejectUnauthorized: false,
+      ...(isHttps ? { agent: httpsAgent } : {}),
     }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return fetchUrl(res.headers.location).then(resolve).catch(reject)
