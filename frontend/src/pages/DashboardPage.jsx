@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PasswordModal from '../components/PasswordModal'
+import { deriveKey, encryptSettings } from '../lib/crypto'
 import { useHubState } from '../dashboard/hooks/useHubState'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
 import { useCustomTabs } from '../dashboard/hooks/useCustomTabs'
@@ -59,6 +61,26 @@ export default function DashboardPage() {
 
   const [restorePrompt, setRestorePrompt] = useState(false)
   const pendingRestore = useRef(null)
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [saveStatus, setSaveStatus] = useState('')
+
+  async function handleQuickSave(pwd) {
+    setShowSaveModal(false)
+    if (!user?.id) return
+    try {
+      const key = await deriveKey(pwd, user.id)
+      const blob = await encryptSettings(key)
+      await fetch('/api/settings/sync', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(blob),
+      })
+      setSaveStatus('☁ Saved!')
+    } catch {
+      setSaveStatus('✗ Failed')
+    }
+    setTimeout(() => setSaveStatus(''), 3000)
+  }
 
   // ── Cloud sync init: runs once per browser session ───────────────────────────
   useEffect(() => {
@@ -283,7 +305,11 @@ export default function DashboardPage() {
               ↑ Import
               <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
             </label>
-            <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 8 }}>Log out</button>
+            {saveStatus
+              ? <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color: saveStatus.startsWith('☁') ? 'var(--green)' : 'var(--red)', marginRight:4 }}>{saveStatus}</span>
+              : <button className="tb-btn" onClick={() => setShowSaveModal(true)} title="Save settings to cloud" style={{ marginRight:0 }}>💾 Save</button>
+            }
+            <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 4 }}>Log out</button>
           </div>
         </div>
 
@@ -337,6 +363,15 @@ export default function DashboardPage() {
       )}
       {showAddTab && (
         <AddTabModal onAdd={handleAddCustomTab} onClose={() => setShowAddTab(false)} />
+      )}
+
+      {showSaveModal && (
+        <PasswordModal
+          title="💾 Save to Cloud"
+          sub="Enter your password to encrypt and save your current workspace to the server."
+          onConfirm={handleQuickSave}
+          onCancel={() => setShowSaveModal(false)}
+        />
       )}
 
       {/* Restore from cloud prompt */}
