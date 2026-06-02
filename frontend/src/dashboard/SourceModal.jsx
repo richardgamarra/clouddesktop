@@ -7,12 +7,15 @@ const selectStyle = {
   padding:'9px 12px', cursor:'pointer', appearance:'none', width:'100%',
 }
 
+const GROUPS = [...new Set(RSS_PRESETS.map(p => p.group))]
+
 export default function SourceModal({ source, onSave, onClose }) {
   const isEdit = !!source
-  const [name, setName]           = useState(source?.name || '')
-  const [url, setUrl]             = useState(source?.url || '')
-  const [category, setCategory]   = useState(source?.category || 'general')
-  const [showImages, setShowImages] = useState(source?.showImages !== false) // default true
+  const [name, setName]             = useState(source?.name || '')
+  const [url, setUrl]               = useState(source?.url || '')
+  const [category, setCategory]     = useState(source?.category || 'general')
+  const [showImages, setShowImages] = useState(source?.showImages !== false)
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0])
 
   function handleSave() {
     if (!name.trim() || !url.trim()) return
@@ -24,15 +27,50 @@ export default function SourceModal({ source, onSave, onClose }) {
     }
   }
 
+  const groupPresets = RSS_PRESETS.filter(p => p.group === activeGroup)
+
   return (
     <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ width: 420 }}>
+      <div className="modal-box" style={{ width: 520 }}>
         <div className="modal-title">{isEdit ? 'Edit Source' : 'Add News Source'}</div>
-        <div className="modal-sub">{isEdit ? 'Update source settings.' : 'Paste an RSS feed URL.'}</div>
+        <div className="modal-sub">{isEdit ? 'Update source settings.' : 'Pick a preset or paste any RSS URL.'}</div>
+
+        {/* Quick presets — only on Add */}
+        {!isEdit && (
+          <div style={{ marginBottom:20 }}>
+            {/* Group tabs */}
+            <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:10 }}>
+              {GROUPS.map(g => (
+                <button key={g} onClick={() => setActiveGroup(g)}
+                  style={{ padding:'4px 10px', borderRadius:20, border:'none', cursor:'pointer', fontSize:11, fontFamily:"'DM Mono',monospace", fontWeight:600,
+                    background: activeGroup === g ? 'var(--accent)' : 'var(--s3)',
+                    color: activeGroup === g ? '#fff' : 'var(--text3)',
+                    transition:'all .15s' }}>
+                  {g}
+                </button>
+              ))}
+            </div>
+            {/* Presets for active group */}
+            <div style={{ display:'flex', flexDirection:'column', gap:3, maxHeight:160, overflowY:'auto', borderRadius:8, border:'1px solid var(--border)', padding:8, background:'var(--s2)' }}>
+              {groupPresets.map(p => (
+                <div key={p.name} onClick={() => { setName(p.name); setUrl(p.url); setCategory(p.category) }}
+                  style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:6,
+                    background: url === p.url ? 'rgba(91,127,255,.12)' : 'transparent',
+                    border: url === p.url ? '1px solid var(--accent)' : '1px solid transparent',
+                    cursor:'pointer', transition:'all .12s' }}
+                  onMouseEnter={e => { if(url !== p.url) e.currentTarget.style.background='var(--s3)' }}
+                  onMouseLeave={e => { if(url !== p.url) e.currentTarget.style.background='transparent' }}>
+                  <span style={{ fontSize:12, fontWeight:600 }}>{p.name}</span>
+                  <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{p.category}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="field">
           <label>Source Name</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. BBC News, Al Jazeera…" maxLength={40} autoFocus />
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. BBC News…" maxLength={40} autoFocus={isEdit} />
         </div>
         <div className="field">
           <label>RSS Feed URL</label>
@@ -55,40 +93,15 @@ export default function SourceModal({ source, onSave, onClose }) {
               {showImages ? 'Images visible on cards' : 'Text-only cards'}
             </div>
           </div>
-          <button
-            onClick={() => setShowImages(v => !v)}
-            style={{
-              width:42, height:24, borderRadius:12, border:'none', cursor:'pointer',
-              background: showImages ? 'var(--accent)' : 'var(--s4)',
-              position:'relative', transition:'background .2s', flexShrink:0,
-            }}
-          >
-            <span style={{
-              position:'absolute', top:3, left: showImages ? 21 : 3,
-              width:18, height:18, borderRadius:'50%', background:'#fff',
-              transition:'left .2s', display:'block',
-            }} />
+          <button onClick={() => setShowImages(v => !v)}
+            style={{ width:42, height:24, borderRadius:12, border:'none', cursor:'pointer', background: showImages ? 'var(--accent)' : 'var(--s4)', position:'relative', transition:'background .2s', flexShrink:0 }}>
+            <span style={{ position:'absolute', top:3, left: showImages ? 21 : 3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
           </button>
         </div>
 
-        {!isEdit && (
-          <div style={{ marginBottom:16 }}>
-            <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--text3)', marginBottom:8, textTransform:'uppercase', letterSpacing:'.07em' }}>Quick presets</div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-              {RSS_PRESETS.map(p => (
-                <div key={p.name}
-                  onClick={() => { setName(p.name); setUrl(p.url); setCategory(p.category) }}
-                  style={{ background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:20, padding:'4px 12px', fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text2)', cursor:'pointer' }}>
-                  {p.name}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="modal-actions">
           <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" style={{ width:'auto' }} onClick={handleSave}>
+          <button className="btn-primary" style={{ width:'auto' }} onClick={handleSave} disabled={!name.trim() || !url.trim()}>
             {isEdit ? 'Save changes' : 'Add Source'}
           </button>
         </div>

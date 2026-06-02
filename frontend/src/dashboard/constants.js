@@ -40,16 +40,77 @@ export const DEFAULT_NEWS_SOURCES = [
 ]
 
 export const RSS_PRESETS = [
-  { name:'The Guardian',  url:'https://www.theguardian.com/world/rss',                                category:'general' },
-  { name:'BBC News',      url:'https://feeds.bbci.co.uk/news/rss.xml',                                category:'general' },
-  { name:'Al Jazeera',    url:'https://www.aljazeera.com/xml/rss/all.xml',                            category:'general' },
-  { name:'NY Times',      url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',            category:'general' },
-  { name:'TechCrunch',    url:'https://techcrunch.com/feed/',                                         category:'tech'    },
-  { name:'Hacker News',   url:'https://news.ycombinator.com/rss',                                     category:'tech'    },
-  { name:'The Verge',     url:'https://www.theverge.com/rss/index.xml',                               category:'tech'    },
-  { name:'Ars Technica',  url:'https://feeds.arstechnica.com/arstechnica/index',                      category:'tech'    },
-  { name:'NASA',          url:'https://www.nasa.gov/rss/dyn/breaking_news.rss',                       category:'science' },
-  { name:'Science Daily', url:'https://www.sciencedaily.com/rss/all.xml',                             category:'science' },
-  { name:"L'Équipe",      url:'https://www.lequipe.fr/rss/actu_rss.xml',                              category:'sports'  },
-  { name:'Sky Sports',    url:'https://www.skysports.com/rss/12040',                                  category:'sports'  },
+  // ── World News ────────────────────────────────────────────────────────────
+  { group:'World News',     name:'BBC News',         url:'https://feeds.bbci.co.uk/news/rss.xml',                                       category:'general' },
+  { group:'World News',     name:'Reuters',          url:'https://feeds.reuters.com/reuters/topNews',                                   category:'general' },
+  { group:'World News',     name:'AP News',          url:'https://rsshub.app/apnews/topics/apf-topnews',                               category:'general' },
+  { group:'World News',     name:'Al Jazeera',       url:'https://www.aljazeera.com/xml/rss/all.xml',                                  category:'general' },
+  { group:'World News',     name:'The Guardian',     url:'https://www.theguardian.com/world/rss',                                      category:'general' },
+  { group:'World News',     name:'DW News',          url:'https://rss.dw.com/rdf/rss-en-all',                                          category:'general' },
+  { group:'World News',     name:'France 24',        url:'https://www.france24.com/en/rss',                                            category:'general' },
+  { group:'World News',     name:'Euronews',         url:'https://feeds.feedburner.com/euronews/en/home/',                             category:'general' },
+
+  // ── Newspapers ───────────────────────────────────────────────────────────
+  { group:'Newspapers',     name:'NY Times',         url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',                  category:'general' },
+  { group:'Newspapers',     name:'Washington Post',  url:'https://feeds.washingtonpost.com/rss/world',                                 category:'general' },
+  { group:'Newspapers',     name:'The Independent',  url:'https://www.independent.co.uk/news/rss',                                     category:'general' },
+  { group:'Newspapers',     name:'The Telegraph',    url:'https://www.telegraph.co.uk/news/rss.xml',                                   category:'general' },
+  { group:'Newspapers',     name:'Le Monde',         url:'https://www.lemonde.fr/rss/une.xml',                                         category:'general' },
+  { group:'Newspapers',     name:'El País',          url:'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada',           category:'general' },
+  { group:'Newspapers',     name:'Der Spiegel',      url:'https://www.spiegel.de/international/index.rss',                             category:'general' },
+  { group:'Newspapers',     name:'The Times',        url:'https://www.thetimes.co.uk/rss/world',                                       category:'general' },
+
+  // ── Tech News ────────────────────────────────────────────────────────────
+  { group:'Tech News',      name:'TechCrunch',       url:'https://techcrunch.com/feed/',                                               category:'tech'    },
+  { group:'Tech News',      name:'Hacker News',      url:'https://news.ycombinator.com/rss',                                          category:'tech'    },
+  { group:'Tech News',      name:'The Verge',        url:'https://www.theverge.com/rss/index.xml',                                     category:'tech'    },
+  { group:'Tech News',      name:'Ars Technica',     url:'https://feeds.arstechnica.com/arstechnica/index',                            category:'tech'    },
+  { group:'Tech News',      name:'Engadget',         url:'https://www.engadget.com/rss.xml',                                           category:'tech'    },
+  { group:'Tech News',      name:'WIRED',            url:'https://www.wired.com/feed/rss',                                             category:'tech'    },
+  { group:'Tech News',      name:'MIT Tech Review',  url:'https://www.technologyreview.com/topnews.rss',                               category:'tech'    },
+  { group:'Tech News',      name:'ZDNet',            url:'https://www.zdnet.com/news/rss.xml',                                         category:'tech'    },
+  { group:'Tech News',      name:'9to5Mac',          url:'https://9to5mac.com/feed/',                                                  category:'tech'    },
+  { group:'Tech News',      name:'Android Authority',url:'https://www.androidauthority.com/feed/',                                     category:'tech'    },
+
+  // ── Tech Magazines ───────────────────────────────────────────────────────
+  { group:'Tech Magazines', name:'IEEE Spectrum',    url:'https://spectrum.ieee.org/rss/fulltext',                                     category:'tech'    },
+  { group:'Tech Magazines', name:'Slashdot',         url:'http://rss.slashdot.org/Slashdot/slashdotMain',                             category:'tech'    },
+  { group:'Tech Magazines', name:'InfoQ',            url:'https://feed.infoq.com/',                                                    category:'tech'    },
+  { group:'Tech Magazines', name:'Dev.to',           url:'https://dev.to/feed',                                                        category:'tech'    },
+  { group:'Tech Magazines', name:'Smashing Magazine',url:'https://www.smashingmagazine.com/feed/',                                    category:'tech'    },
+  { group:'Tech Magazines', name:'CSS-Tricks',       url:'https://css-tricks.com/feed/',                                               category:'tech'    },
+  { group:'Tech Magazines', name:'A List Apart',     url:'https://alistapart.com/main/feed/',                                          category:'tech'    },
+  { group:'Tech Magazines', name:'GitHub Blog',      url:'https://github.blog/feed/',                                                  category:'tech'    },
+
+  // ── Business & Finance ───────────────────────────────────────────────────
+  { group:'Business',       name:'Bloomberg',        url:'https://feeds.bloomberg.com/markets/news.rss',                               category:'business'},
+  { group:'Business',       name:'Financial Times',  url:'https://www.ft.com/?format=rss',                                             category:'business'},
+  { group:'Business',       name:'Forbes',           url:'https://www.forbes.com/real-time/feed2/',                                    category:'business'},
+  { group:'Business',       name:'Business Insider', url:'https://feeds.businessinsider.com/custom/all',                               category:'business'},
+  { group:'Business',       name:'Economist',        url:'https://www.economist.com/business/rss.xml',                                 category:'business'},
+  { group:'Business',       name:'CNBC',             url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',                      category:'business'},
+
+  // ── Science ──────────────────────────────────────────────────────────────
+  { group:'Science',        name:'NASA',             url:'https://www.nasa.gov/rss/dyn/breaking_news.rss',                             category:'science' },
+  { group:'Science',        name:'Science Daily',    url:'https://www.sciencedaily.com/rss/all.xml',                                   category:'science' },
+  { group:'Science',        name:'New Scientist',    url:'https://www.newscientist.com/feed/home/',                                    category:'science' },
+  { group:'Science',        name:'Nature',           url:'https://www.nature.com/nature.rss',                                          category:'science' },
+  { group:'Science',        name:'Scientific American',url:'http://rss.sciam.com/ScientificAmerican-Global',                           category:'science' },
+
+  // ── World Soccer ─────────────────────────────────────────────────────────
+  { group:'World Soccer',   name:'BBC Sport Football',url:'https://feeds.bbci.co.uk/sport/football/rss.xml',                          category:'sports'  },
+  { group:'World Soccer',   name:'Sky Sports Football',url:'https://www.skysports.com/rss/12040',                                     category:'sports'  },
+  { group:'World Soccer',   name:'UEFA',              url:'https://www.uefa.com/rssfeed/index/type/1/id/52.rss',                       category:'sports'  },
+  { group:'World Soccer',   name:'ESPN FC',           url:'https://www.espn.com/espn/rss/soccer/news',                                 category:'sports'  },
+  { group:'World Soccer',   name:'The Athletic',      url:'https://theathletic.com/rss-feed/',                                         category:'sports'  },
+  { group:'World Soccer',   name:'90min',             url:'https://www.90min.com/feed',                                                category:'sports'  },
+  { group:'World Soccer',   name:"L'Équipe",          url:'https://www.lequipe.fr/rss/actu_rss.xml',                                   category:'sports'  },
+  { group:'World Soccer',   name:'Marca',             url:'https://www.marca.com/rss/portada.xml',                                     category:'sports'  },
+  { group:'World Soccer',   name:'AS',                url:'https://as.com/rss/tags/soccer.xml',                                        category:'sports'  },
+  { group:'World Soccer',   name:'Goal.com',          url:'https://www.goal.com/feeds/en/news',                                        category:'sports'  },
+
+  // ── Entertainment ────────────────────────────────────────────────────────
+  { group:'Entertainment',  name:'Variety',          url:'https://variety.com/feed/',                                                  category:'entertainment'},
+  { group:'Entertainment',  name:'Hollywood Reporter',url:'https://www.hollywoodreporter.com/feed/',                                  category:'entertainment'},
+  { group:'Entertainment',  name:'Rolling Stone',    url:'https://www.rollingstone.com/feed/',                                        category:'entertainment'},
 ]
