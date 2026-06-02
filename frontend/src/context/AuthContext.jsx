@@ -76,8 +76,22 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── logout ────────────────────────────────────────────────────────────────────
-  const logout = useCallback(async () => {
+  // ── logout: auto-sync before logging out so latest changes are saved ──────────
+  const logout = useCallback(async (token) => {
+    // Final sync before logout to capture any unsaved changes (icons, tab order, etc.)
+    if (cryptoKeyRef.current && token) {
+      try {
+        const { encryptSettings } = await import('../lib/crypto')
+        const blob = await encryptSettings(cryptoKeyRef.current)
+        await fetch('/api/settings/sync', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(blob),
+        })
+      } catch (err) {
+        console.error('pre-logout sync failed:', err.message)
+      }
+    }
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {}

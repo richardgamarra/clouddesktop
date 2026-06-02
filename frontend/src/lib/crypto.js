@@ -7,9 +7,10 @@ export const SYNC_KEYS = [
   'hub_icon_overrides',  // legacy icon overrides per app
   'wsh_tab_overrides',   // custom names/icons for News & Apps tabs
   'wsh_tab_order',       // tab ordering
-  'wsh_active_tab',      // last active tab
   'wsh_apps_view',       // cards vs desktop view mode
   'wsh_desktop_layout',  // desktop panel positions & sizes
+  // NOTE: wsh_active_tab is intentionally NOT here — it's a local UI preference,
+  // not data, and should NOT be overwritten by cloud restore.
 ]
 
 // SessionStorage key for the exported CryptoKey

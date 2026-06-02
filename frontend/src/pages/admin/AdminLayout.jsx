@@ -8,10 +8,10 @@ const navItems = [
 ]
 
 export default function AdminLayout({ children }) {
-  const { logout } = useAuth()
+  const { logout, accessToken } = useAuth()
   const navigate   = useNavigate()
 
-  async function handleLogout() { await logout(); navigate('/') }
+  async function handleLogout() { await logout(accessToken); navigate('/') }
 
   return (
     <div style={{ display:'flex', minHeight:'100vh', background:'var(--bg)', color:'var(--text)', fontFamily:"'Plus Jakarta Sans',sans-serif" }}>

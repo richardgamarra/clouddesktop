@@ -265,7 +265,7 @@ export default function DashboardPage() {
     e.target.value = ''
   }
 
-  async function handleLogout() { await logout(); navigate('/') }
+  async function handleLogout() { await logout(accessToken); navigate('/') }
 
   const activeCustomTab = customTabs.tabs.find(t => t.id === activeTab)
 
