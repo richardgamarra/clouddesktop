@@ -18,6 +18,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [restoring, setRestoring] = useState(null)
   const [pwdModal, setPwdModal] = useState(null) // {action, backupId}
+  const [baking, setBaking] = useState(false)
+  const [bakeProgress, setBakeProgress] = useState('')
 
   useEffect(() => {
     if (!accessToken) return
@@ -51,6 +53,53 @@ export default function SettingsPage() {
     } finally {
       setSaving(false)
       setTimeout(() => setStatus(''), 5000)
+    }
+  }
+
+  // ── Bake icons: fetch all app favicons and store as base64 data URLs ──────────
+  async function handleBakeIcons() {
+    setBaking(true)
+    setBakeProgress('Reading apps…')
+    setStatus('')
+    try {
+      const apps = JSON.parse(localStorage.getItem('wsh_apps') || '[]')
+      const overrides = JSON.parse(localStorage.getItem('hub_icon_overrides') || '{}')
+      let updated = 0, failed = 0
+
+      for (let i = 0; i < apps.length; i++) {
+        const app = apps[i]
+        if (app.emoji) continue // already has emoji, skip
+        if (app.favicon && app.favicon.startsWith('data:')) continue // already base64
+
+        const faviconUrl = app.favicon ||
+          `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent((() => { try { return new URL(app.url).hostname } catch { return app.url } })())}`
+
+        setBakeProgress(`Fetching icon ${i + 1}/${apps.length}: ${app.name}…`)
+        try {
+          const res = await fetch(`/api/icons/fetch?url=${encodeURIComponent(faviconUrl)}`)
+          if (res.ok) {
+            const { dataUrl } = await res.json()
+            if (dataUrl && dataUrl.startsWith('data:')) {
+              apps[i] = { ...app, favicon: dataUrl }
+              // Also update hub_icon_overrides if it had an entry
+              if (overrides[app.id]) overrides[app.id] = dataUrl
+              updated++
+            } else { failed++ }
+          } else { failed++ }
+        } catch { failed++ }
+        await new Promise(r => setTimeout(r, 80)) // small delay to avoid hammering
+      }
+
+      localStorage.setItem('wsh_apps', JSON.stringify(apps))
+      if (Object.keys(overrides).length) localStorage.setItem('hub_icon_overrides', JSON.stringify(overrides))
+      setBakeProgress('')
+      setStatus(`✓ Icons baked: ${updated} embedded permanently${failed ? `, ${failed} failed` : ''}. Reload the page to see them.`)
+      setTimeout(() => setStatus(''), 6000)
+    } catch (err) {
+      setStatus('✗ Failed to bake icons: ' + err.message)
+      setTimeout(() => setStatus(''), 5000)
+    } finally {
+      setBaking(false)
     }
   }
 
@@ -193,6 +242,25 @@ export default function SettingsPage() {
               </div>
             </>
           )}
+        </div>
+
+        {/* ── Bake Icons ────────────────────────────────────────── */}
+        <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
+          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>🖼 Bake Icons Permanently</h2>
+          <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16, lineHeight:1.6 }}>
+            Fetches every app icon from the web and stores it as a permanent base64 image in your settings.
+            Icons will show correctly everywhere — even offline — and are included in backups.
+          </p>
+          {bakeProgress && (
+            <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--accent2)', marginBottom:12 }}>{bakeProgress}</div>
+          )}
+          <button onClick={handleBakeIcons} disabled={baking}
+            style={{ background:'rgba(167,139,250,.13)', border:'1px solid rgba(167,139,250,.3)', borderRadius:8, color:'var(--purple)', fontSize:13, fontWeight:700, padding:'10px 18px', cursor:'pointer', opacity:baking?.6:1 }}>
+            {baking ? 'Baking…' : '🖼 Bake All Icons Now'}
+          </button>
+          <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:8 }}>
+            After baking, click <strong>💾 Save to Cloud Now</strong> to persist permanently.
+          </div>
         </div>
 
         {/* ── Export / Import (local JSON) ──────────────────────── */}

@@ -30,6 +30,9 @@ app.use('/api/news', newsRouter)
 const settingsRouter = require('./routes/settings')
 app.use('/api/settings', settingsRouter)
 
+const iconsRouter = require('./routes/icons')
+app.use('/api/icons', iconsRouter)
+
 // ── Protected API routes ──────────────────────────────────────────────────────
 app.get('/api/user/me', requireAuth, (req, res) => {
   res.json({ user: req.user })
