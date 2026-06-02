@@ -57,19 +57,35 @@ export default function DashboardPage() {
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
 
+  const [restorePrompt, setRestorePrompt] = useState(false)
+  const pendingRestore = useRef(null)
+
   // ── Cloud sync init: runs once per browser session ───────────────────────────
-  // Uses sessionStorage flag to prevent infinite reload loop
   useEffect(() => {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
-    if (sessionStorage.getItem(SYNC_DONE)) return // already synced this tab session
+    if (sessionStorage.getItem(SYNC_DONE)) return
     initSync(accessToken).then(hadCloudData => {
-      sessionStorage.setItem(SYNC_DONE, '1') // mark done before any reload
-      if (hadCloudData) window.location.reload()
+      sessionStorage.setItem(SYNC_DONE, '1')
+      if (hadCloudData) {
+        // Ask user before overwriting local settings
+        setRestorePrompt(true)
+      }
     }).catch(() => {
       sessionStorage.setItem(SYNC_DONE, '1')
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleRestoreYes() {
+    setRestorePrompt(false)
+    window.location.reload()
+  }
+
+  function handleRestoreNo() {
+    setRestorePrompt(false)
+    // User chose to keep current — upload their local settings to cloud
+    if (sync && accessToken) sync(accessToken)
+  }
 
   useEffect(() => {
     function handler(e) {
@@ -321,6 +337,28 @@ export default function DashboardPage() {
       )}
       {showAddTab && (
         <AddTabModal onAdd={handleAddCustomTab} onClose={() => setShowAddTab(false)} />
+      )}
+
+      {/* Restore from cloud prompt */}
+      {restorePrompt && (
+        <div className="modal-overlay open">
+          <div className="modal-box" style={{ width: 440, textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>☁️</div>
+            <div className="modal-title" style={{ textAlign: 'center' }}>Saved workspace found</div>
+            <div className="modal-sub" style={{ textAlign: 'center', marginBottom: 24 }}>
+              We found your saved settings on the server.<br/>
+              Do you want to restore them on this device?
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button className="btn-primary" onClick={handleRestoreYes}>
+                ☁ Yes, restore from cloud
+              </button>
+              <button className="btn-cancel" onClick={handleRestoreNo} style={{ width: '100%' }}>
+                Keep current local settings (and save them to cloud)
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

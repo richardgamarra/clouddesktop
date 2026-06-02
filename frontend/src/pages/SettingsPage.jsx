@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage } from '../lib/crypto'
+import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage, encryptSettings } from '../lib/crypto'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 export default function SettingsPage() {
-  const { accessToken, user } = useAuth()
+  const { accessToken, user, sync } = useAuth()
   const navigate = useNavigate()
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
+  const [saving, setSaving] = useState(false)
   const [restoring, setRestoring] = useState(null)
 
   useEffect(() => {
@@ -21,6 +22,25 @@ export default function SettingsPage() {
       .then(d => { setBackups(d.backups || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [accessToken])
+
+  // ── Save current settings to cloud ───────────────────────────────────────────
+  async function handleSaveToCloud() {
+    if (!sync || !accessToken) { setStatus('✗ Not connected — please log in again'); return }
+    setSaving(true); setStatus('')
+    try {
+      await sync(accessToken)
+      // Refresh backup list
+      const res = await fetch('/api/settings/backups', { headers: { Authorization: `Bearer ${accessToken}` } })
+      const d = await res.json()
+      setBackups(d.backups || [])
+      setStatus('✓ Settings saved to cloud successfully')
+    } catch {
+      setStatus('✗ Failed to save — check your connection')
+    } finally {
+      setSaving(false)
+      setTimeout(() => setStatus(''), 4000)
+    }
+  }
 
   // ── Export current settings as JSON ───────────────────────────────────────────
   function handleExport() {
@@ -93,6 +113,20 @@ export default function SettingsPage() {
           ← Back
         </button>
         <h1 style={{ fontSize:22, fontWeight:800, letterSpacing:'-.5px' }}>🗄 Settings & Backups</h1>
+      </div>
+
+      {/* Primary action — save to cloud */}
+      <div style={{ background:'rgba(91,127,255,.08)', border:'1px solid rgba(91,127,255,.25)', borderRadius:12, padding:'20px 24px', marginBottom:24, maxWidth:900, display:'flex', alignItems:'center', gap:20 }}>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>☁ Save to Cloud</div>
+          <div style={{ fontSize:12, color:'var(--text2)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
+            Manually save your current workspace (apps, groups, news sources, notes, tabs) to the server so you can restore it on any device.
+          </div>
+        </div>
+        <button onClick={handleSaveToCloud} disabled={saving}
+          style={{ background:'var(--accent)', border:'none', borderRadius:10, color:'#fff', fontSize:14, fontWeight:700, padding:'12px 24px', cursor:'pointer', opacity:saving?.6:1, whiteSpace:'nowrap', flexShrink:0 }}>
+          {saving ? 'Saving…' : '💾 Save to Cloud Now'}
+        </button>
       </div>
 
       {status && (
