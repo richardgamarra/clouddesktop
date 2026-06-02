@@ -49,7 +49,10 @@ export default function DashboardPage() {
   const { openApp, isOpen } = useOpenWindows()
   const customTabs = useCustomTabs()
 
-  const [activeTab, setActiveTabRaw] = useState(() => localStorage.getItem('wsh_active_tab') || 'news')
+  const [defaultTab, setDefaultTabState] = useState(() => localStorage.getItem('wsh_default_tab') || 'news')
+  function setDefaultTab(id) { setDefaultTabState(id); localStorage.setItem('wsh_default_tab', id) }
+
+  const [activeTab, setActiveTabRaw] = useState(() => localStorage.getItem('wsh_active_tab') || localStorage.getItem('wsh_default_tab') || 'news')
   function setActiveTab(id) { setActiveTabRaw(id); localStorage.setItem('wsh_active_tab', id) }
   const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
@@ -358,8 +361,14 @@ export default function DashboardPage() {
                   {!isFirst && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, -1) }} title="Move left">◀</span>}
                   <span>{def.icon}</span>
                   {def.name}
+                  {defaultTab === id && <span style={{ fontSize:9, color:'var(--yellow)', marginLeft:1 }} title="Default login tab">★</span>}
                   {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
                   <span className="tab-move-btn" onClick={e => { e.stopPropagation(); openTabEdit(id) }} title="Edit name & icon">✎</span>
+                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); setDefaultTab(id) }}
+                    title={defaultTab === id ? 'Default login tab (click to unset)' : 'Set as default login tab'}
+                    style={{ color: defaultTab === id ? 'var(--yellow)' : undefined }}>
+                    {defaultTab === id ? '★' : '☆'}
+                  </span>
                 </button>
               )
             }
@@ -379,8 +388,14 @@ export default function DashboardPage() {
                 {!isFirst && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, -1) }} title="Move left">◀</span>}
                 <span>{def.icon}</span>
                 {def.name}
+                {defaultTab === id && <span style={{ fontSize:9, color:'var(--yellow)', marginLeft:1 }} title="Default login tab">★</span>}
                 {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
                 <span className="tab-move-btn" onClick={e => { e.stopPropagation(); openTabEdit(id) }} title="Edit name & icon">✎</span>
+                <span className="tab-move-btn" onClick={e => { e.stopPropagation(); setDefaultTab(id) }}
+                  title={defaultTab === id ? 'Default login tab (click to unset)' : 'Set as default login tab'}
+                  style={{ color: defaultTab === id ? 'var(--yellow)' : undefined }}>
+                  {defaultTab === id ? '★' : '☆'}
+                </span>
                 <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, id)} title="Close tab">×</button>
               </button>
             )
