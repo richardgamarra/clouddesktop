@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PasswordModal from '../components/PasswordModal'
 import TabEditModal from '../dashboard/TabEditModal'
+import DesktopView from '../dashboard/DesktopView'
 import { deriveKey, encryptSettings } from '../lib/crypto'
 import { useHubState } from '../dashboard/hooks/useHubState'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const customTabs = useCustomTabs()
 
   const [activeTab, setActiveTab] = useState('news')
+  const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
   const [ctx, setCtx] = useState(null)
   const [appModal, setAppModal] = useState(null)
@@ -384,7 +386,12 @@ export default function DashboardPage() {
             )}
             {activeTab === 'hub' && (
               <>
-                <button className="tb-btn" onClick={() => setShowManage(true)}>⊞ Groups</button>
+                <button className="tb-btn" onClick={() => { const v = appsView === 'cards' ? 'desktop' : 'cards'; setAppsView(v); localStorage.setItem('wsh_apps_view', v) }}
+                  title={appsView === 'cards' ? 'Switch to Desktop view' : 'Switch to Cards view'}
+                  style={{ fontFamily:"'DM Mono',monospace", letterSpacing:'.02em' }}>
+                  {appsView === 'cards' ? '🖥 Desktop' : '⊞ Cards'}
+                </button>
+                {appsView === 'cards' && <button className="tb-btn" onClick={() => setShowManage(true)}>⊞ Groups</button>}
                 <button className="tb-btn" onClick={() => openAddApp()}>+ Add App</button>
                 <button className="open-all-btn" onClick={() => hub.apps.forEach((app, i) => setTimeout(() => openApp(app), i * 100))}>⚡ Open All</button>
               </>
@@ -411,13 +418,21 @@ export default function DashboardPage() {
             <NewsTab sources={sources} onSourcesChange={setSources} onAddSource={() => setShowSourceModal(true)} />
           </div>
         )}
-        {activeTab === 'hub' && (
+        {activeTab === 'hub' && appsView === 'cards' && (
           <div className="tab-panel">
             <AppsTab
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
               onContextMenu={handleContextMenu} onAddApp={openAddApp}
               onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
               onReorder={hub.reorderApps}
+            />
+          </div>
+        )}
+        {activeTab === 'hub' && appsView === 'desktop' && (
+          <div className="tab-panel">
+            <DesktopView
+              groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
+              onContextMenu={handleContextMenu} onAddApp={openAddApp}
             />
           </div>
         )}
