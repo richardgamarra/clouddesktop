@@ -17,7 +17,7 @@ export const DEFAULT_APPS = [
   { id:'trello',    name:'Trello',          url:'https://trello.com',           groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=trello.com',         shortcut:'' },
   { id:'slack',     name:'Slack',           url:'https://app.slack.com',        groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=slack.com',          shortcut:'' },
   { id:'chatgpt',   name:'ChatGPT',         url:'https://chat.openai.com',      groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=openai.com',         shortcut:'' },
-  { id:'terminal',  name:'Terminal',        url:'/terminal/',                   groupId:'g_tools',     emoji:'⌨',  favicon:null,                                                                    shortcut:'', showInSidebar:true },
+  { id:'terminal',  name:'Terminal',        url:'/terminal/',                   groupId:'g_tools',     emoji:'🖥️', favicon:null,                                                                    shortcut:'', showInSidebar:true },
 ]
 
 export const GROUP_COLORS = ['#5b7fff','#a78bfa','#3ddcaa','#f5a623','#ff5b6e','#f472b6','#38bdf8','#fb923c','#a3e635','#e2e8f0']

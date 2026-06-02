@@ -15,10 +15,16 @@ export function useHubState() {
   })
   const [apps, setApps] = useState(() => {
     const a = load('wsh_apps', DEFAULT_APPS)
-    // Seed Terminal app if missing
-    if (!a.find(x => x.id === 'terminal')) {
-      a.push({ id:'terminal', name:'Terminal', url:'/terminal/', groupId:'g_tools', emoji:'⌨', favicon:null, shortcut:'', showInSidebar:true })
+    // Seed Terminal app if missing, also fix emoji if old version had ⌨
+    const existing = a.find(x => x.id === 'terminal')
+    if (!existing) {
+      a.push({ id:'terminal', name:'Terminal', url:'/terminal/', groupId:'g_tools', emoji:'🖥️', favicon:null, shortcut:'', showInSidebar:true })
+    } else if (existing.emoji === '⌨') {
+      existing.emoji = '🖥️'
     }
+    // Remove duplicate terminal entries (keep only the one with id 'terminal')
+    const seen = new Set()
+    return a.filter(x => { if (x.url === '/terminal/') { if (seen.has('terminal')) return false; seen.add('terminal') } return true })
     return a
   })
 
