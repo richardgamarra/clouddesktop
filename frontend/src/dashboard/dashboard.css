@@ -432,6 +432,13 @@
 .weather-search { display: flex; gap: 8px; margin-bottom: 20px; }
 .weather-search input { flex: 1; }
 
+/* ═══ NEWS COMPACT VIEW ═══ */
+.news-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1100px) { .news-cards-grid { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width:900px) { .news-cards-grid { grid-template-columns: repeat(2, 1fr); } }

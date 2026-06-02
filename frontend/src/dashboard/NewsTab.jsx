@@ -113,12 +113,58 @@ function SkeletonCard({ isHero }) {
   )
 }
 
+// ── Compact view: hero card + text-only rows ──────────────────────────────────
+function CompactSource({ src, items }) {
+  if (!Array.isArray(items)) return null
+  const [hero, ...rest] = items
+  const showImg = src.showImages !== false
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+      {/* Hero: first article with image */}
+      {hero && (
+        <a href={hero.link} target="_blank" rel="noopener noreferrer"
+          style={{ display:'flex', gap:10, padding:'8px 0', borderBottom:'1px solid var(--border)', textDecoration:'none', alignItems:'flex-start' }}
+          onMouseEnter={e => e.currentTarget.style.background='var(--s3)'}
+          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+          {showImg && hero.image && (
+            <img src={hero.image} alt="" loading="lazy"
+              style={{ width:80, height:54, objectFit:'cover', borderRadius:6, flexShrink:0 }}
+              onError={e => { e.target.style.display='none' }} />
+          )}
+          {showImg && !hero.image && (
+            <div style={{ width:80, height:54, borderRadius:6, background:'var(--s3)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>📰</div>
+          )}
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'var(--text)', lineHeight:1.4, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{hero.title}</div>
+            {hero.desc && <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", lineHeight:1.4, marginTop:3, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{hero.desc}</div>}
+            <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:4 }}>{formatAge(hero.pubDate)}</div>
+          </div>
+        </a>
+      )}
+      {/* Rest: text-only rows */}
+      {rest.map((item, i) => (
+        <a key={item.link + i} href={item.link} target="_blank" rel="noopener noreferrer"
+          style={{ display:'flex', alignItems:'baseline', gap:8, padding:'6px 0', borderBottom: i < rest.length-1 ? '1px solid var(--border)' : 'none', textDecoration:'none' }}
+          onMouseEnter={e => e.currentTarget.style.background='var(--s3)'}
+          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+          <span style={{ fontSize:10, color:'var(--accent)', flexShrink:0 }}>›</span>
+          <span style={{ fontSize:12, color:'var(--text)', lineHeight:1.4, flex:1, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{item.title}</span>
+          <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", flexShrink:0, whiteSpace:'nowrap' }}>{formatAge(item.pubDate)}</span>
+        </a>
+      ))}
+    </div>
+  )
+}
+
 export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [cache, setCache]       = useState({})
   const [filter, setFilter]     = useState('all')
   const [spinning, setSpinning] = useState(false)
   const [lastUpdated, setLastUpdated] = useState('Fetching latest headlines…')
   const [editSource, setEditSource] = useState(null)
+  const [newsView, setNewsView] = useState(() => localStorage.getItem('wsh_news_view') || 'grid')
+
+  function toggleView(v) { setNewsView(v); localStorage.setItem('wsh_news_view', v) }
 
   const fetchAll = useCallback(async (force = false) => {
     setSpinning(true)
@@ -170,6 +216,18 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           <p>{lastUpdated}</p>
         </div>
         <div className="news-header-right">
+          {/* View toggle */}
+          <div style={{ display:'flex', borderRadius:6, overflow:'hidden', border:'1px solid var(--border2)', flexShrink:0 }}>
+            {[
+              { v:'grid',    label:'▦', title:'Grid view' },
+              { v:'compact', label:'≡', title:'Compact view' },
+            ].map(({ v, label, title }) => (
+              <button key={v} onClick={() => toggleView(v)} title={title}
+                style={{ padding:'4px 10px', border:'none', cursor:'pointer', fontSize:13, fontFamily:"'DM Mono',monospace", fontWeight:700, background: newsView === v ? 'var(--accent)' : 'var(--s3)', color: newsView === v ? '#fff' : 'var(--text3)', transition:'background .15s' }}>
+                {label}
+              </button>
+            ))}
+          </div>
           <button className={`news-refresh-btn${spinning ? ' spinning' : ''}`} onClick={() => fetchAll(true)}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M11 2v4H7"/><path d="M1 10V6h4"/><path d="M10.5 6A4.5 4.5 0 002.2 3.2"/><path d="M1.5 6a4.5 4.5 0 008.3 2.8"/>
@@ -191,6 +249,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           </div>
         ))}
       </div>
+      <div className={newsView === 'compact' ? 'news-compact-grid' : ''}>
       {displayed.map(src => {
         const items = cache[src.id]
         const favicon = `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(tryHost(src.url))}`
@@ -216,22 +275,35 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
               <button className="news-open-source-btn" onClick={() => setEditSource(src)} style={{ marginRight: 6 }}>✎ Edit</button>
               <button className="news-open-source-btn" onClick={() => window.open(src.url.split('/rss')[0] || src.url, '_blank')}>Visit site ↗</button>
             </div>
-            <div className="news-cards-grid">
-              {!items && [0,1,2,3,4].map(n => <SkeletonCard key={n} isHero={false} />)}
-              {items?.error && (
-                <div className="news-error" style={{ gridColumn:'1/-1' }}>
-                  ⚠ Could not fetch "{src.name}": {items.message}.{' '}
-                  <a href={src.url} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent2)', marginLeft:6 }}>Try RSS directly ↗</a>
-                </div>
-              )}
-              {Array.isArray(items) && items.map((item, i) => (
-                <NewsCard key={item.link + i} item={item} src={src} isHero={false} />
-              ))}
-            </div>
+            {newsView === 'grid' ? (
+              <div className="news-cards-grid">
+                {!items && [0,1,2,3,4].map(n => <SkeletonCard key={n} />)}
+                {items?.error && (
+                  <div className="news-error" style={{ gridColumn:'1/-1' }}>
+                    ⚠ Could not fetch "{src.name}": {items.message}.{' '}
+                    <a href={src.url} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent2)', marginLeft:6 }}>Try RSS directly ↗</a>
+                  </div>
+                )}
+                {Array.isArray(items) && items.map((item, i) => (
+                  <NewsCard key={item.link + i} item={item} src={src} />
+                ))}
+              </div>
+            ) : (
+              <div>
+                {!items && <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'8px 0' }}>Loading…</div>}
+                {items?.error && (
+                  <div className="news-error">
+                    ⚠ Could not fetch "{src.name}": {items.message}.
+                  </div>
+                )}
+                {Array.isArray(items) && <CompactSource src={src} items={items} />}
+              </div>
+            )}
           </div>
         )
       })}
 
+      </div>
       {editSource && (
         <SourceModal
           source={editSource}
