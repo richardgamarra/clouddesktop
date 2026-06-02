@@ -7,8 +7,20 @@ function load(key, fallback) {
 }
 
 export function useHubState() {
-  const [groups, setGroups] = useState(() => load('wsh_groups', DEFAULT_GROUPS))
-  const [apps,   setApps]   = useState(() => load('wsh_apps',   DEFAULT_APPS))
+  const [groups, setGroups] = useState(() => {
+    const g = load('wsh_groups', DEFAULT_GROUPS)
+    // Seed Tools group if missing
+    if (!g.find(x => x.id === 'g_tools')) g.push({ id:'g_tools', name:'Tools', color:'#a78bfa' })
+    return g
+  })
+  const [apps, setApps] = useState(() => {
+    const a = load('wsh_apps', DEFAULT_APPS)
+    // Seed Terminal app if missing
+    if (!a.find(x => x.id === 'terminal')) {
+      a.push({ id:'terminal', name:'Terminal', url:'/terminal/', groupId:'g_tools', emoji:'⌨', favicon:null, shortcut:'', showInSidebar:true })
+    }
+    return a
+  })
 
   useEffect(() => { localStorage.setItem('wsh_groups', JSON.stringify(groups)) }, [groups])
   useEffect(() => { localStorage.setItem('wsh_apps',   JSON.stringify(apps))   }, [apps])
