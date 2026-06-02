@@ -63,6 +63,7 @@ export default function DashboardPage() {
   const [showSourceModal, setShowSourceModal] = useState(false)
   const [showAddTab, setShowAddTab] = useState(false)
   const [confirmCloseTab, setConfirmCloseTab] = useState(null) // tab id to close
+  const [confirmDeleteApp, setConfirmDeleteApp] = useState(null) // app id to delete (right-click path)
 
   const dragTabId = useRef(null)
 
@@ -471,7 +472,7 @@ export default function DashboardPage() {
       {ctx && (
         <ContextMenu ctx={ctx} groups={hub.groups} onClose={() => setCtx(null)}
           onOpen={(id) => openApp(hub.getApp(id))} onEdit={openEditApp}
-          onDelete={handleDeleteApp} onMoveToGroup={handleCtxMoveToGroup} onNewGroup={handleCtxNewGroup} />
+          onDelete={(id) => { setCtx(null); setConfirmDeleteApp(id) }} onMoveToGroup={handleCtxMoveToGroup} onNewGroup={handleCtxNewGroup} />
       )}
       {appModal && (
         <AppModal app={appModal.app} groups={hub.groups} onSave={handleSaveApp}
@@ -499,16 +500,27 @@ export default function DashboardPage() {
 
       {confirmCloseTab && (
         <ConfirmModal
-          title="Close Tab"
-          message={`Close "${customTabs.tabs.find(t => t.id === confirmCloseTab)?.name || 'this tab'}"? Its content will be saved and can be re-added later.`}
-          confirmLabel="Close Tab"
-          confirmStyle="accent"
+          title="Delete Tab"
+          message={`Delete "${customTabs.tabs.find(t => t.id === confirmCloseTab)?.name || 'this tab'}"? This cannot be undone — all content in this tab will be permanently removed.`}
+          confirmLabel="Delete Tab"
+          confirmStyle="danger"
           onConfirm={() => {
             if (activeTab === confirmCloseTab) setActiveTab('news')
             customTabs.removeTab(confirmCloseTab)
             setConfirmCloseTab(null)
           }}
           onCancel={() => setConfirmCloseTab(null)}
+        />
+      )}
+
+      {confirmDeleteApp && (
+        <ConfirmModal
+          title="Delete App"
+          message={`Delete "${hub.apps.find(a => a.id === confirmDeleteApp)?.name || 'this app'}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          confirmStyle="danger"
+          onConfirm={() => { handleDeleteApp(confirmDeleteApp); setConfirmDeleteApp(null) }}
+          onCancel={() => setConfirmDeleteApp(null)}
         />
       )}
 
