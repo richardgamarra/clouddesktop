@@ -22,6 +22,10 @@ export function useHubState() {
     } else if (existing.emoji === '⌨') {
       existing.emoji = '🖥️'
     }
+    // Seed Guacamole app if missing
+    if (!a.find(x => x.id === 'guacamole')) {
+      a.push({ id:'guacamole', name:'Remote Desktop', url:'/guacamole/', groupId:'g_tools', emoji:'🖱️', favicon:null, shortcut:'', showInSidebar:true })
+    }
     // Remove duplicate terminal entries (keep only the one with id 'terminal')
     const seen = new Set()
     return a.filter(x => { if (x.url === '/terminal/') { if (seen.has('terminal')) return false; seen.add('terminal') } return true })
