@@ -8,7 +8,8 @@ import CalendarWidget  from '../widgets/CalendarWidget'
 import PomodoroWidget  from '../widgets/PomodoroWidget'
 import CountdownWidget from '../widgets/CountdownWidget'
 import CalculatorWidget from '../widgets/CalculatorWidget'
-import TodoWidget      from '../widgets/TodoWidget'
+import TodoWidget        from '../widgets/TodoWidget'
+import CommoditiesWidget from '../widgets/CommoditiesWidget'
 
 const WIDGET_TYPES = [
   { type:'clock',      icon:'🕐', name:'World Clock',  desc:'Multiple timezone clocks',   defaultConfig:{ cities:[] } },
@@ -20,7 +21,8 @@ const WIDGET_TYPES = [
   { type:'pomodoro',   icon:'⏱', name:'Pomodoro',      desc:'25/5 focus timer',           defaultConfig:{} },
   { type:'countdown',  icon:'⏳', name:'Countdown',     desc:'Count down to a date',       defaultConfig:{ label:'', targetDate:'' } },
   { type:'calculator', icon:'🧮', name:'Calculator',    desc:'Standard calculator',        defaultConfig:{} },
-  { type:'todo',       icon:'✅', name:'Quick To-Do',   desc:'Checkbox list, auto-saves',  defaultConfig:{ items:[] } },
+  { type:'todo',        icon:'✅', name:'Quick To-Do',    desc:'Checkbox list, auto-saves',   defaultConfig:{ items:[] } },
+  { type:'commodities', icon:'🥇', name:'Commodities',   desc:'Gold, oil, grains & more',    defaultConfig:{ symbols:['GC=F','SI=F','CL=F','NG=F','ZC=F'] } },
 ]
 
 function WidgetComponent({ widget, onUpdate }) {
@@ -35,8 +37,9 @@ function WidgetComponent({ widget, onUpdate }) {
     case 'pomodoro':   return <PomodoroWidget />
     case 'countdown':  return <CountdownWidget {...props} />
     case 'calculator': return <CalculatorWidget />
-    case 'todo':       return <TodoWidget {...props} />
-    default:           return null
+    case 'todo':        return <TodoWidget {...props} />
+    case 'commodities': return <CommoditiesWidget {...props} />
+    default:            return null
   }
 }
 
