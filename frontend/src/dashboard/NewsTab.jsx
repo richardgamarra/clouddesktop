@@ -136,7 +136,7 @@ function CompactSource({ src, items }) {
           )}
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:12, fontWeight:700, color:'var(--text)', lineHeight:1.4, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{hero.title}</div>
-            {hero.desc && <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", lineHeight:1.4, marginTop:3, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{hero.desc}</div>}
+            {hero.desc && <div style={{ fontSize:11, color:'#ffffff', fontFamily:"'DM Mono',monospace", lineHeight:1.4, marginTop:3, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{hero.desc}</div>}
             <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:4 }}>{formatAge(hero.pubDate)}</div>
           </div>
         </a>
