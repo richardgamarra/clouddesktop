@@ -3,6 +3,127 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage, encryptSettings, deriveKey } from '../lib/crypto'
 
+const DARK_PRESETS = [
+  { label:'City Night',   url:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80' },
+  { label:'Space',        url:'https://images.unsplash.com/photo-1462332420958-a05d1e002413?w=1920&q=80' },
+  { label:'Dark Forest',  url:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=80' },
+  { label:'Mountains',    url:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80' },
+  { label:'Aurora',       url:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1920&q=80' },
+  { label:'Dark Ocean',   url:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80' },
+]
+const LIGHT_PRESETS = [
+  { label:'Mountains',    url:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80' },
+  { label:'Sunrise',      url:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1920&q=80' },
+  { label:'Beach',        url:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80' },
+  { label:'Green Hills',  url:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1920&q=80' },
+  { label:'Lavender',     url:'https://images.unsplash.com/photo-1490750967868-88df5691cc1b?w=1920&q=80' },
+  { label:'City Day',     url:'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&q=80' },
+]
+
+function BgSettings() {
+  const [darkBg,   setDarkBg]   = useState(() => localStorage.getItem('wsh_bg_dark')    || '')
+  const [lightBg,  setLightBg]  = useState(() => localStorage.getItem('wsh_bg_light')   || '')
+  const [opacity,  setOpacity]  = useState(() => parseFloat(localStorage.getItem('wsh_bg_opacity') || '0.85'))
+  const [customD,  setCustomD]  = useState('')
+  const [customL,  setCustomL]  = useState('')
+  const [mode,     setMode]     = useState(() => localStorage.getItem('wsh_theme') || 'dark')
+
+  function save(key, val) {
+    localStorage.setItem(key, val)
+    window.dispatchEvent(new Event('wsh_bg_changed'))
+  }
+  function pickPreset(url, isDark) {
+    if (isDark) { setDarkBg(url);  save('wsh_bg_dark',  url) }
+    else        { setLightBg(url); save('wsh_bg_light', url) }
+  }
+  function clearBg(isDark) {
+    if (isDark) { setDarkBg('');  save('wsh_bg_dark',  '') }
+    else        { setLightBg(''); save('wsh_bg_light', '') }
+  }
+  function applyCustom(isDark) {
+    const url = isDark ? customD : customL
+    if (!url.trim()) return
+    pickPreset(url.trim(), isDark)
+    if (isDark) setCustomD(''); else setCustomL('')
+  }
+  function changeOpacity(v) {
+    setOpacity(v)
+    save('wsh_bg_opacity', String(v))
+  }
+
+  const iStyle = { background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'7px 10px', outline:'none', flex:1 }
+
+  return (
+    <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
+      <h2 style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>🖼 Background Images</h2>
+      <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:20 }}>Set a background image for dark and light mode. Syncs to cloud.</p>
+
+      {/* Mode tabs */}
+      <div style={{ display:'flex', gap:8, marginBottom:20 }}>
+        {['dark','light'].map(m => (
+          <button key={m} onClick={() => setMode(m)}
+            style={{ padding:'6px 16px', borderRadius:8, border:'none', cursor:'pointer', fontSize:12, fontWeight:700, background: mode===m ? 'var(--accent)' : 'var(--s3)', color: mode===m ? '#fff' : 'var(--text3)' }}>
+            {m === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </button>
+        ))}
+      </div>
+
+      {/* Presets grid */}
+      {[DARK_PRESETS, LIGHT_PRESETS].map((presets, pi) => {
+        const isDark = pi === 0
+        const current = isDark ? darkBg : lightBg
+        if ((isDark && mode !== 'dark') || (!isDark && mode !== 'light')) return null
+        return (
+          <div key={pi}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:10, marginBottom:16 }}>
+              {presets.map(p => (
+                <div key={p.url} onClick={() => pickPreset(p.url, isDark)}
+                  style={{ borderRadius:10, overflow:'hidden', cursor:'pointer', border:`2px solid ${current===p.url ? 'var(--accent)' : 'transparent'}`, position:'relative', aspectRatio:'16/9' }}>
+                  <img src={p.url.replace('w=1920','w=400')} alt={p.label} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                  <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,.55)', padding:'4px 8px', fontSize:10, color:'#fff', fontFamily:"'DM Mono',monospace" }}>{p.label}</div>
+                  {current===p.url && <div style={{ position:'absolute', top:6, right:6, background:'var(--accent)', borderRadius:'50%', width:18, height:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#fff' }}>✓</div>}
+                </div>
+              ))}
+            </div>
+
+            {/* Custom URL */}
+            <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+              <input style={iStyle} type="url" value={isDark ? customD : customL}
+                onChange={e => isDark ? setCustomD(e.target.value) : setCustomL(e.target.value)}
+                placeholder="Or paste any image URL…"
+                onKeyDown={e => e.key === 'Enter' && applyCustom(isDark)} />
+              <button onClick={() => applyCustom(isDark)}
+                style={{ padding:'7px 14px', borderRadius:8, border:'none', background:'var(--accent)', color:'#fff', fontSize:12, cursor:'pointer', fontWeight:700 }}>Apply</button>
+              {current && <button onClick={() => clearBg(isDark)}
+                style={{ padding:'7px 12px', borderRadius:8, border:'1px solid var(--border2)', background:'var(--s3)', color:'var(--red)', fontSize:12, cursor:'pointer' }}>✕ Clear</button>}
+            </div>
+
+            {/* Current preview */}
+            {current && (
+              <div style={{ borderRadius:10, overflow:'hidden', marginBottom:16, height:120, position:'relative' }}>
+                <img src={current} alt="Current background" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                <div style={{ position:'absolute', inset:0, background:`rgba(0,0,0,${opacity})` }} />
+                <div style={{ position:'absolute', bottom:8, left:12, fontSize:11, color:'#fff', fontFamily:"'DM Mono',monospace" }}>Preview with overlay</div>
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Overlay opacity */}
+      <div style={{ marginTop:4 }}>
+        <div style={{ fontSize:12, fontFamily:"'DM Mono',monospace", color:'var(--text2)', marginBottom:8 }}>
+          Overlay darkness: <strong>{Math.round(opacity * 100)}%</strong>
+          <span style={{ color:'var(--text3)', marginLeft:8 }}>(higher = darker overlay, better readability)</span>
+        </div>
+        <input type="range" min="0.3" max="0.97" step="0.05" value={opacity}
+          onChange={e => changeOpacity(parseFloat(e.target.value))}
+          style={{ width:'100%', accentColor:'var(--accent)' }} />
+      </div>
+    </div>
+  )
+}
+
 function formatDate(iso) {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
@@ -308,6 +429,9 @@ export default function SettingsPage() {
             </>
           )}
         </div>
+
+        {/* ── Background Images ─────────────────────────────────── */}
+        <BgSettings />
 
         {/* ── Bake Icons ────────────────────────────────────────── */}
         <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>

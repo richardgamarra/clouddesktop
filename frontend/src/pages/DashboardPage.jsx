@@ -58,6 +58,22 @@ export default function DashboardPage() {
   function setActiveTab(id) { setActiveTabRaw(id); localStorage.setItem('wsh_active_tab', id) }
   const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
+
+  // Background image — reads current theme to pick correct bg
+  const getBg = () => {
+    const theme = localStorage.getItem('wsh_theme') || 'dark'
+    return theme === 'light' ? localStorage.getItem('wsh_bg_light') || '' : localStorage.getItem('wsh_bg_dark') || ''
+  }
+  const [bgImage, setBgImage] = useState(getBg)
+  const bgOpacity = parseFloat(localStorage.getItem('wsh_bg_opacity') || '0.85')
+
+  // Re-read background when storage changes (e.g. theme toggle or settings change)
+  useEffect(() => {
+    const handler = () => setBgImage(getBg())
+    window.addEventListener('storage', handler)
+    window.addEventListener('wsh_bg_changed', handler)
+    return () => { window.removeEventListener('storage', handler); window.removeEventListener('wsh_bg_changed', handler) }
+  }, [])
   const [ctx, setCtx] = useState(null)
   const [appModal, setAppModal] = useState(null)
   const [groupModal, setGroupModal] = useState(null)
@@ -330,7 +346,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div id="dashboard-root">
+    <div id="dashboard-root" style={bgImage ? {
+      backgroundImage: `url(${bgImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+    } : {}}>
+      {bgImage && <div style={{ position:'fixed', inset:0, background:`rgba(0,0,0,${bgOpacity})`, zIndex:0, pointerEvents:'none' }} />}
       <Sidebar
         groups={hub.groups} apps={hub.apps} openApp={openApp} isOpen={isOpen}
         onAddApp={() => openAddApp()} onContextMenu={handleContextMenu}

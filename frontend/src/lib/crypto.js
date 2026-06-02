@@ -10,6 +10,9 @@ export const SYNC_KEYS = [
   'wsh_default_tab',     // default tab shown on login
   'wsh_apps_view',       // cards vs desktop view mode
   'wsh_desktop_layout',  // desktop panel positions & sizes
+  'wsh_bg_dark',         // background image URL for dark mode
+  'wsh_bg_light',        // background image URL for light mode
+  'wsh_bg_opacity',      // background overlay opacity (0.0 - 0.95)
   // NOTE: wsh_active_tab is intentionally NOT here — it's a local UI preference,
   // not data, and should NOT be overwritten by cloud restore.
 ]
