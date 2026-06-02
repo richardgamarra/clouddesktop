@@ -1,7 +1,21 @@
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 
+// Read icon overrides (supports both new wsh_apps.emoji and old hub_icon_overrides system)
+function getIconOverrides() {
+  try { return JSON.parse(localStorage.getItem('hub_icon_overrides') || '{}') } catch { return {} }
+}
+
 function AppIcon({ app }) {
-  if (app.emoji) return <span style={{ fontSize: 22, lineHeight: '26px', display: 'block', textAlign: 'center' }}>{app.emoji}</span>
+  const overrides = getIconOverrides()
+  const override = overrides[app.id]
+  // Check override first (old system compatibility), then app.emoji, then favicon
+  const emojiValue = override || app.emoji
+  if (emojiValue) {
+    if (emojiValue.startsWith('http')) {
+      return <img src={emojiValue} alt="" style={{ width: 26, height: 26, borderRadius: 5, display: 'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:18px">🌐</span>' }} />
+    }
+    return <span style={{ fontSize: 22, lineHeight: '26px', display: 'block', textAlign: 'center' }}>{emojiValue}</span>
+  }
   const src = app.favicon || `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(tryHost(app.url))}`
   return <img src={src} alt="" style={{ width: 26, height: 26, borderRadius: 5, display: 'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:18px">🌐</span>' }} />
 }
