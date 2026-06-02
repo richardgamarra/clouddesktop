@@ -6,14 +6,6 @@ function getIconOverrides() {
   try { return JSON.parse(localStorage.getItem('hub_icon_overrides') || '{}') } catch { return {} }
 }
 
-function getBestFavicon(app) {
-  const stored = app.favicon || ''
-  if (!stored || stored.includes('s2/favicons')) {
-    try { return `https://${new URL(app.url).hostname}/favicon.ico` } catch {}
-  }
-  return stored || `https://${tryHost(app.url)}/favicon.ico`
-}
-
 function AppIcon({ app }) {
   const overrides = getIconOverrides()
   const override = overrides[app.id]
@@ -24,7 +16,7 @@ function AppIcon({ app }) {
     }
     return <span style={{ fontSize: 21 }}>{emojiValue}</span>
   }
-  const src = getBestFavicon(app)
+  const src = app.favicon || `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(tryHost(app.url))}`
   return <img src={src} alt="" style={{ width:26, height:26, borderRadius:5, display:'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:18px">🌐</span>' }} />
 }
 
