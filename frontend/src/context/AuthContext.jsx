@@ -99,6 +99,7 @@ export function AuthProvider({ children }) {
     cryptoKeyRef.current = null
     pendingPassword.current = null
     sessionStorage.removeItem(SESSION_KEY)
+    sessionStorage.removeItem('cw_synced')
     setSyncReady(false)
     setSyncStatus('idle')
     setAccessToken(null)

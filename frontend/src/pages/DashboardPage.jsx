@@ -57,12 +57,18 @@ export default function DashboardPage() {
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
 
-  // ── Cloud sync init: runs once on mount ──────────────────────────────────────
+  // ── Cloud sync init: runs once per browser session ───────────────────────────
+  // Uses sessionStorage flag to prevent infinite reload loop
   useEffect(() => {
     if (!accessToken) return
+    const SYNC_DONE = 'cw_synced'
+    if (sessionStorage.getItem(SYNC_DONE)) return // already synced this tab session
     initSync(accessToken).then(hadCloudData => {
-      if (hadCloudData) window.location.reload() // reload so React re-reads hydrated localStorage
-    }).catch(() => {})
+      sessionStorage.setItem(SYNC_DONE, '1') // mark done before any reload
+      if (hadCloudData) window.location.reload()
+    }).catch(() => {
+      sessionStorage.setItem(SYNC_DONE, '1')
+    })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
