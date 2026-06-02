@@ -102,6 +102,10 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
         <button className="sb-add-btn" title="Admin Panel" onClick={() => navigate('/admin')}
           style={{ fontSize: 16, marginBottom: 4 }}>⚙</button>
       )}
+      {user?.role === 'admin' && (
+        <button className="sb-add-btn" title="Server Terminal" onClick={() => window.open('/terminal/', '_blank')}
+          style={{ fontSize: 16, marginBottom: 4 }}>⌨</button>
+      )}
       <button className="sb-add-btn" title="Settings & Backups" onClick={() => navigate('/settings')}
         style={{ fontSize: 16, marginBottom: 4 }}>🗄</button>
       <button className="sb-add-btn" title={theme === 'dark' ? 'Switch to Light mode' : 'Switch to Dark mode'} onClick={toggleTheme}
