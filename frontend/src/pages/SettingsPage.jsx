@@ -56,6 +56,44 @@ export default function SettingsPage() {
     }
   }
 
+  // ── Fix Google icons: replace CDN URLs with official gstatic product icons ────
+  function handleFixGoogleIcons() {
+    const GOOGLE_ICON_MAP = {
+      'mail.google.com':     'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png',
+      'docs.google.com':     'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png',
+      'sheets.google.com':   'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png',
+      'slides.google.com':   'https://www.gstatic.com/images/branding/product/2x/slides_2020q4_48dp.png',
+      'drive.google.com':    'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png',
+      'calendar.google.com': 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png',
+      'keep.google.com':     'https://www.gstatic.com/images/branding/product/2x/keep_2020q4_48dp.png',
+      'meet.google.com':     'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_48dp.png',
+      'maps.google.com':     'https://www.gstatic.com/images/branding/product/2x/maps_2020q4_48dp.png',
+      'youtube.com':         'https://www.gstatic.com/images/branding/product/2x/youtube_2020q4_48dp.png',
+      'analytics.google.com':'https://www.gstatic.com/images/branding/product/2x/analytics_2020q4_48dp.png',
+    }
+    try {
+      const apps = JSON.parse(localStorage.getItem('wsh_apps') || '[]')
+      let fixed = 0
+      const updated = apps.map(app => {
+        if (app.emoji) return app // skip apps with custom emoji
+        // Match by domain in favicon URL or app URL
+        for (const [domain, icon] of Object.entries(GOOGLE_ICON_MAP)) {
+          if ((app.favicon && app.favicon.includes(domain)) || (app.url && app.url.includes(domain))) {
+            fixed++
+            return { ...app, favicon: icon }
+          }
+        }
+        return app
+      })
+      localStorage.setItem('wsh_apps', JSON.stringify(updated))
+      setStatus(`✓ Fixed ${fixed} Google app icons — reloading…`)
+      setTimeout(() => window.location.reload(), 900)
+    } catch {
+      setStatus('✗ Failed to fix icons')
+      setTimeout(() => setStatus(''), 3000)
+    }
+  }
+
   // ── Bake icons: fetch all app favicons and store as base64 data URLs ──────────
   async function handleBakeIcons() {
     setBaking(true)
@@ -260,7 +298,16 @@ export default function SettingsPage() {
 
         {/* ── Bake Icons ────────────────────────────────────────── */}
         <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
-          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>🖼 Bake Icons Permanently</h2>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+            <h2 style={{ fontSize:15, fontWeight:700 }}>🖼 Fix & Bake Icons</h2>
+            <button onClick={handleFixGoogleIcons}
+              style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:8, color:'var(--green)', fontSize:12, fontWeight:700, padding:'6px 14px', cursor:'pointer' }}>
+              🔧 Fix Google Icons Now
+            </button>
+          </div>
+          <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16 }}>
+            Click <strong style={{ color:'var(--green)' }}>Fix Google Icons Now</strong> to instantly replace the generic "G" with the correct Gmail, Drive, Calendar, Keep, Docs icons.
+          </div>
           <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16, lineHeight:1.6 }}>
             Fetches every app icon from the web and stores it as a permanent base64 image in your settings.
             Icons will show correctly everywhere — even offline — and are included in backups.
