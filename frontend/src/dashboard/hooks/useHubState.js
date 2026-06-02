@@ -15,7 +15,12 @@ export function useHubState() {
   })
   const [apps, setApps] = useState(() => {
     const a = load('wsh_apps', DEFAULT_APPS)
-    // Fix Google icons to real gstatic URLs for existing users
+    // Remove Terminal and Guacamole from all non-admin users
+    // (admin keeps them via sidebar buttons, not app cards)
+    const filtered = a.filter(x => x.id !== 'terminal' && x.id !== 'guacamole' &&
+      x.url !== '/terminal/' && x.url !== '/guacamole/')
+
+    // Fix Google icons to real gstatic URLs for all users
     const GSTATIC = {
       gmail:  'https://www.gstatic.com/images/branding/product/1x/gmail_48dp.png',
       gdocs:  'https://www.gstatic.com/images/branding/product/1x/docs_48dp.png',
@@ -23,10 +28,10 @@ export function useHubState() {
       gkeep:  'https://www.gstatic.com/images/branding/product/1x/keep_48dp.png',
       gcal:   'https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png',
     }
-    a.forEach(app => {
+    filtered.forEach(app => {
       if (GSTATIC[app.id]) { app.favicon = GSTATIC[app.id]; app.emoji = null }
     })
-    return a
+    return filtered
   })
 
   useEffect(() => { localStorage.setItem('wsh_groups', JSON.stringify(groups)) }, [groups])
