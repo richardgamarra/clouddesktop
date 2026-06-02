@@ -1,8 +1,26 @@
-// The localStorage keys that get synced to the cloud
-export const SYNC_KEYS = ['wsh_groups', 'wsh_apps', 'wsh_news_sources', 'wsh_custom_tabs']
+// Static keys always synced
+export const SYNC_KEYS = [
+  'wsh_groups',
+  'wsh_apps',
+  'wsh_news_sources',
+  'wsh_custom_tabs',
+  'hub_icon_overrides',   // icon overrides per app
+]
 
-// SessionStorage key for the exported CryptoKey (survives page refresh, cleared on browser close)
+// SessionStorage key for the exported CryptoKey
 export const SESSION_KEY = 'cw_sync_key'
+
+// ── Collect ALL keys to backup (static + dynamic notes) ──────────────────────
+
+function getAllSyncKeys() {
+  const keys = [...SYNC_KEYS]
+  // Include all wsh_notes_{id} keys for Notes tabs
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k && k.startsWith('wsh_notes_')) keys.push(k)
+  }
+  return keys
+}
 
 // ── Key derivation ────────────────────────────────────────────────────────────
 
@@ -36,9 +54,12 @@ export async function importCryptoKey(base64) {
 
 export async function encryptSettings(key) {
   const settings = {}
-  for (const k of SYNC_KEYS) {
+  for (const k of getAllSyncKeys()) {
     const val = localStorage.getItem(k)
-    if (val) { try { settings[k] = JSON.parse(val) } catch {} }
+    if (val !== null) {
+      try { settings[k] = JSON.parse(val) }
+      catch { settings[k] = val } // plain string (e.g. notes text)
+    }
   }
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const enc = new TextEncoder()
@@ -64,7 +85,12 @@ export async function decryptSettings(key, encryptedBlob, ivBase64) {
 
 export function hydrateLocalStorage(settings) {
   for (const [k, v] of Object.entries(settings)) {
-    if (SYNC_KEYS.includes(k)) localStorage.setItem(k, JSON.stringify(v))
+    // Accept static keys + any wsh_notes_* keys
+    if (SYNC_KEYS.includes(k) || k.startsWith('wsh_notes_')) {
+      try {
+        localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v))
+      } catch {}
+    }
   }
 }
 
@@ -72,15 +98,22 @@ export function hydrateLocalStorage(settings) {
 
 export function getSettingsJson() {
   const out = {}
-  for (const k of SYNC_KEYS) {
+  for (const k of getAllSyncKeys()) {
     const val = localStorage.getItem(k)
-    if (val) { try { out[k] = JSON.parse(val) } catch {} }
+    if (val !== null) {
+      try { out[k] = JSON.parse(val) }
+      catch { out[k] = val }
+    }
   }
   return out
 }
 
 export function loadSettingsJson(json) {
   for (const [k, v] of Object.entries(json)) {
-    if (SYNC_KEYS.includes(k)) localStorage.setItem(k, JSON.stringify(v))
+    if (SYNC_KEYS.includes(k) || k.startsWith('wsh_notes_')) {
+      try {
+        localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v))
+      } catch {}
+    }
   }
 }
