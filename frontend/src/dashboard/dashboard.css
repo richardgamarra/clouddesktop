@@ -436,3 +436,12 @@
 @media(max-width:1100px) { .news-cards-grid { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width:900px) { .news-cards-grid { grid-template-columns: repeat(2, 1fr); } }
 @media(max-width:640px) { #sb-sidebar { width: 56px; } .app-btn { width: 40px; height: 40px; } .app-btn::after { display: none; } #hub-panel, #news-panel { padding: 18px 14px; } .app-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); } .news-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ═══ TAB MOVE BUTTONS ═══ */
+.tab-move-btn {
+  font-size: 9px; color: var(--text3); cursor: pointer;
+  padding: 0 2px; line-height: 1; transition: color var(--t);
+  display: none;
+}
+.tab-btn-custom:hover .tab-move-btn { display: inline; }
+.tab-move-btn:hover { color: var(--accent2); }

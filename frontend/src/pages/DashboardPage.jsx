@@ -139,6 +139,22 @@ export default function DashboardPage() {
     customTabs.reorderTabs(newOrder)
   }
 
+  function moveTab(id, dir) {
+    const ids = customTabs.tabs.map(t => t.id)
+    const i = ids.indexOf(id)
+    const j = i + dir
+    if (j < 0 || j >= ids.length) return
+    const next = [...ids]; [next[i], next[j]] = [next[j], next[i]]
+    customTabs.reorderTabs(next)
+  }
+
+  function renameTab(id) {
+    const tab = customTabs.tabs.find(t => t.id === id)
+    if (!tab) return
+    const name = prompt('Rename tab:', tab.name)
+    if (name && name.trim()) customTabs.updateTab(id, { name: name.trim() })
+  }
+
   // ── Cloud sync — debounced 2s after any settings change ──────────────────────
   useEffect(() => {
     if (!syncReady) return
@@ -200,20 +216,33 @@ export default function DashboardPage() {
           </button>
           <div className="tab-divider" />
 
-          {customTabs.tabs.map(tab => (
-            <button
+          {customTabs.tabs.map((tab, idx) => (
+            <div
               key={tab.id}
-              className={`tab-btn-custom${activeTab === tab.id ? ' active' : ''}`}
-              draggable
-              onDragStart={e => handleTabDragStart(e, tab.id)}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => handleTabDrop(e, tab.id)}
-              onClick={() => setActiveTab(tab.id)}
+              style={{ position: 'relative', display: 'flex', flexShrink: 0 }}
+              className="tab-custom-wrap"
             >
-              <span>{tab.icon}</span>
-              {tab.name}
-              <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, tab.id)} title="Close tab">×</button>
-            </button>
+              <button
+                className={`tab-btn-custom${activeTab === tab.id ? ' active' : ''}`}
+                draggable
+                onDragStart={e => handleTabDragStart(e, tab.id)}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => handleTabDrop(e, tab.id)}
+                onClick={() => setActiveTab(tab.id)}
+                onDoubleClick={() => renameTab(tab.id)}
+                title="Double-click to rename · Drag to reorder"
+              >
+                {idx > 0 && (
+                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTab(tab.id, -1) }} title="Move left">◀</span>
+                )}
+                <span>{tab.icon}</span>
+                {tab.name}
+                {idx < customTabs.tabs.length - 1 && (
+                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTab(tab.id, 1) }} title="Move right">▶</span>
+                )}
+                <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, tab.id)} title="Close tab">×</button>
+              </button>
+            </div>
           ))}
 
           <button className="tab-add-btn" onClick={() => setShowAddTab(true)} title="Add new tab">+</button>
