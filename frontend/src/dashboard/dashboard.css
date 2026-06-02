@@ -250,6 +250,29 @@
 .add-card-label { font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: .04em; }
 .app-card.dragging { opacity: .4; transform: scale(.92); }
 
+/* ↑ ↓ reorder buttons on app cards */
+.app-reorder-btns {
+  display: none;
+  position: absolute;
+  top: 4px; right: 4px;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+}
+.app-card-wrap:hover .app-reorder-btns { display: flex; }
+.app-reorder-btns button {
+  background: rgba(0,0,0,.55);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 9px;
+  padding: 1px 5px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background .12s;
+}
+.app-reorder-btns button:hover { background: var(--accent); }
+
 /* ═══ CONTEXT MENU ═══ */
 .ctx-menu {
   position: fixed; z-index: 9100; min-width: 180px;

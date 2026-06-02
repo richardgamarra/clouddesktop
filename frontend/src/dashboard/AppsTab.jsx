@@ -92,7 +92,7 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
         </div>
       </div>
       <div className="app-grid">
-        {apps.map(app => (
+        {apps.map((app, i) => (
           <div
             key={app.id}
             data-id={app.id}
@@ -101,9 +101,21 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
             onDragEnd={handleDragEnd}
             onDragOver={e => handleDragOver(e, app.id)}
             onDrop={e => handleDrop(e, app.id)}
-            style={{ borderRadius:'var(--r)', outline: dragOver === app.id ? '2px solid var(--accent)' : 'none', outlineOffset:2 }}
+            style={{ borderRadius:'var(--r)', outline: dragOver === app.id ? '2px solid var(--accent)' : 'none', outlineOffset:2, position:'relative' }}
+            className="app-card-wrap"
           >
             <AppCard app={app} isOpen={isOpen} onOpen={onOpen} onContextMenu={onContextMenu} />
+            {/* ↑ ↓ reorder buttons — visible on hover */}
+            <div className="app-reorder-btns">
+              <button
+                onClick={e => { e.stopPropagation(); if(i===0) return; const ids=apps.map(a=>a.id); [ids[i-1],ids[i]]=[ids[i],ids[i-1]]; onReorder(group.id,ids) }}
+                style={{ opacity: i===0 ? 0.3 : 1, cursor: i===0 ? 'default':'pointer' }}
+                title="Move up">▲</button>
+              <button
+                onClick={e => { e.stopPropagation(); if(i===apps.length-1) return; const ids=apps.map(a=>a.id); [ids[i],ids[i+1]]=[ids[i+1],ids[i]]; onReorder(group.id,ids) }}
+                style={{ opacity: i===apps.length-1 ? 0.3 : 1, cursor: i===apps.length-1 ? 'default':'pointer' }}
+                title="Move down">▼</button>
+            </div>
           </div>
         ))}
         <div className="add-card" onClick={() => onAddApp(group.id)}>
