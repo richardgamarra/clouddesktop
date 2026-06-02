@@ -452,7 +452,7 @@ export default function DashboardPage() {
           <div className="tab-panel">
             <AppsTab
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
-              onContextMenu={handleContextMenu} onAddApp={openAddApp}
+              onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
               onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
               onReorder={hub.reorderApps}
               onNewGroup={() => setGroupModal({})}
@@ -463,7 +463,7 @@ export default function DashboardPage() {
           <div className="tab-panel">
             <DesktopView
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
-              onContextMenu={handleContextMenu} onAddApp={openAddApp}
+              onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
             />
           </div>
         )}

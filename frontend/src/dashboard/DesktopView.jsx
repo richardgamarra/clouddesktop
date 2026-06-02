@@ -25,11 +25,28 @@ const DEFAULT_PANEL_H = 200
 const MIN_W = 180
 const MIN_H = 120
 
-function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onContextMenu, onAddApp }) {
-  const panelRef = useRef(null)
-  const dragRef  = useRef(null) // { startX, startY, origX, origY, type }
+function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onContextMenu, onAddApp, onReorder }) {
+  const panelRef   = useRef(null)
+  const dragRef    = useRef(null) // panel move/resize
+  const iconDragId = useRef(null) // icon reorder
+  const [iconDragOver, setIconDragOver] = useState(null)
 
   const { x = 20, y = 20, width = DEFAULT_PANEL_W, height = DEFAULT_PANEL_H } = layout || {}
+
+  function onIconDragStart(e, id) { iconDragId.current = id; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation() }
+  function onIconDragOver(e, id)  { e.preventDefault(); e.stopPropagation(); if (id !== iconDragId.current) setIconDragOver(id) }
+  function onIconDrop(e, targetId) {
+    e.preventDefault(); e.stopPropagation()
+    const srcId = iconDragId.current
+    if (!srcId || srcId === targetId) { setIconDragOver(null); return }
+    const ids = apps.map(a => a.id)
+    const si = ids.indexOf(srcId), ti = ids.indexOf(targetId)
+    if (si < 0 || ti < 0) { setIconDragOver(null); return }
+    const newOrder = [...ids]; newOrder.splice(si, 1); newOrder.splice(ti, 0, srcId)
+    onReorder(group.id, newOrder)
+    iconDragId.current = null; setIconDragOver(null)
+  }
+  function onIconDragEnd() { iconDragId.current = null; setIconDragOver(null) }
 
   // ── Drag title bar ────────────────────────────────────────────────────────────
   function onTitleMouseDown(e) {
@@ -121,18 +138,23 @@ function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onCo
         {apps.map(app => (
           <div
             key={app.id}
+            draggable
+            onDragStart={e => onIconDragStart(e, app.id)}
+            onDragOver={e => onIconDragOver(e, app.id)}
+            onDrop={e => onIconDrop(e, app.id)}
+            onDragEnd={onIconDragEnd}
             onClick={() => openApp(app)}
             onContextMenu={e => { e.preventDefault(); onContextMenu(e, app.id) }}
             title={app.name}
             style={{
               width:72, display:'flex', flexDirection:'column', alignItems:'center', gap:4,
-              padding:'6px 4px', borderRadius:8, cursor:'pointer',
-              transition:'background .15s',
-              background: isOpen(app.id) ? 'rgba(91,127,255,.15)' : 'transparent',
-              outline: isOpen(app.id) ? '1px solid rgba(91,127,255,.4)' : 'none',
+              padding:'6px 4px', borderRadius:8, cursor:'grab',
+              transition:'background .15s, outline .1s',
+              background: iconDragOver === app.id ? 'rgba(91,127,255,.18)' : isOpen(app.id) ? 'rgba(91,127,255,.15)' : 'transparent',
+              outline: iconDragOver === app.id ? '2px solid var(--accent)' : isOpen(app.id) ? '1px solid rgba(91,127,255,.4)' : 'none',
             }}
-            onMouseEnter={e => { if (!isOpen(app.id)) e.currentTarget.style.background = 'rgba(255,255,255,.06)' }}
-            onMouseLeave={e => { if (!isOpen(app.id)) e.currentTarget.style.background = 'transparent' }}
+            onMouseEnter={e => { if (!isOpen(app.id) && iconDragOver !== app.id) e.currentTarget.style.background = 'rgba(255,255,255,.06)' }}
+            onMouseLeave={e => { if (!isOpen(app.id) && iconDragOver !== app.id) e.currentTarget.style.background = 'transparent' }}
           >
             <AppIcon app={app} />
             <div style={{ fontSize:10, fontWeight:600, color:'var(--text)', textAlign:'center', lineHeight:1.2, wordBreak:'break-word', maxWidth:68, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
@@ -148,7 +170,7 @@ function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onCo
   )
 }
 
-export default function DesktopView({ groups, apps, isOpen, openApp, onContextMenu, onAddApp }) {
+export default function DesktopView({ groups, apps, isOpen, openApp, onContextMenu, onAddApp, onReorder }) {
   const LAYOUT_KEY = 'wsh_desktop_layout'
 
   function loadLayout() {
@@ -226,6 +248,7 @@ export default function DesktopView({ groups, apps, isOpen, openApp, onContextMe
               isOpen={isOpen}
               onContextMenu={onContextMenu}
               onAddApp={onAddApp}
+              onReorder={onReorder}
             />
           )
         })}
@@ -241,6 +264,7 @@ export default function DesktopView({ groups, apps, isOpen, openApp, onContextMe
             isOpen={isOpen}
             onContextMenu={onContextMenu}
             onAddApp={() => {}}
+            onReorder={onReorder}
           />
         )}
       </div>
