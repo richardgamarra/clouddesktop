@@ -1,12 +1,15 @@
 // Static keys always synced
 export const SYNC_KEYS = [
   'wsh_groups',
-  'wsh_apps',
+  'wsh_apps',            // includes baked base64 icons in .favicon field
   'wsh_news_sources',
   'wsh_custom_tabs',
-  'hub_icon_overrides',   // icon overrides per app
+  'hub_icon_overrides',  // legacy icon overrides per app
   'wsh_tab_overrides',   // custom names/icons for News & Apps tabs
   'wsh_tab_order',       // tab ordering
+  'wsh_active_tab',      // last active tab
+  'wsh_apps_view',       // cards vs desktop view mode
+  'wsh_desktop_layout',  // desktop panel positions & sizes
 ]
 
 // SessionStorage key for the exported CryptoKey

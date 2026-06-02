@@ -22,69 +22,58 @@ export function AuthProvider({ children }) {
     if (password) pendingPassword.current = { password, userId: userData.id, token }
   }, [])
 
-  // ── initSync: called by DashboardPage after mount ────────────────────────────
-  // Returns true if cloud settings were loaded and localStorage was hydrated
+  // ── initSync: fetch + decrypt cloud settings WITHOUT applying them
+  // Returns the decrypted settings object for the caller to decide what to do,
+  // or null if no cloud data exists.
   const initSync = useCallback(async (token) => {
+    let key = null
+
     // Case 1: fresh login with password
     if (pendingPassword.current) {
       const { password, userId } = pendingPassword.current
       pendingPassword.current = null
       setSyncStatus('syncing')
       try {
-        const key = await deriveKey(password, userId)
+        key = await deriveKey(password, userId)
         cryptoKeyRef.current = key
         sessionStorage.setItem(SESSION_KEY, await exportCryptoKey(key))
-
-        const res = await fetch('/api/settings', { headers: { Authorization: `Bearer ${token}` } })
-        if (res.ok) {
-          const { encrypted_blob, iv } = await res.json()
-          if (encrypted_blob && iv) {
-            // Has cloud data — decrypt, hydrate, reload so React re-reads localStorage
-            const settings = await decryptSettings(key, encrypted_blob, iv)
-            hydrateLocalStorage(settings)
-            setSyncReady(true)
-            setSyncStatus('synced')
-            return true // caller should reload
-          }
-          // No cloud data yet — do NOT auto-upload (prevents wiping with empty/default data)
-          // User must explicitly sync via the debounced effect after making changes
-        }
-        setSyncReady(true)
-        setSyncStatus('synced')
       } catch (err) {
-        console.error('initSync (login) error:', err.message)
+        console.error('initSync key derivation error:', err.message)
         setSyncStatus('error')
+        return null
       }
-      return false
     }
 
     // Case 2: page refresh — restore key from sessionStorage
-    const stored = sessionStorage.getItem(SESSION_KEY)
-    if (stored) {
+    if (!key) {
+      const stored = sessionStorage.getItem(SESSION_KEY)
+      if (!stored) return null
       setSyncStatus('syncing')
       try {
-        const key = await importCryptoKey(stored)
+        key = await importCryptoKey(stored)
         cryptoKeyRef.current = key
-        const res = await fetch('/api/settings', { headers: { Authorization: `Bearer ${token}` } })
-        if (res.ok) {
-          const { encrypted_blob, iv } = await res.json()
-          if (encrypted_blob && iv) {
-            const settings = await decryptSettings(key, encrypted_blob, iv)
-            hydrateLocalStorage(settings)
-            setSyncReady(true)
-            setSyncStatus('synced')
-            return true // caller should reload
-          }
-        }
-        setSyncReady(true)
-        setSyncStatus('synced')
-        return false
       } catch (err) {
-        console.error('initSync (refresh) error:', err.message)
+        console.error('initSync key import error:', err.message)
         setSyncStatus('error')
+        return null
       }
     }
-    return false
+
+    // Fetch + decrypt — return settings WITHOUT hydrating (caller decides)
+    try {
+      const res = await fetch('/api/settings', { headers: { Authorization: `Bearer ${token}` } })
+      if (!res.ok) { setSyncReady(true); setSyncStatus('synced'); return null }
+      const { encrypted_blob, iv } = await res.json()
+      if (!encrypted_blob || !iv) { setSyncReady(true); setSyncStatus('synced'); return null }
+      const settings = await decryptSettings(key, encrypted_blob, iv)
+      setSyncReady(true)
+      setSyncStatus('synced')
+      return settings // caller calls hydrateLocalStorage() + reload
+    } catch (err) {
+      console.error('initSync fetch/decrypt error:', err.message)
+      setSyncStatus('error')
+      return null
+    }
   }, [])
 
   // ── logout ────────────────────────────────────────────────────────────────────

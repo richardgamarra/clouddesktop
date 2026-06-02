@@ -5,7 +5,7 @@ import PasswordModal from '../components/PasswordModal'
 import ConfirmModal from '../components/ConfirmModal'
 import TabEditModal from '../dashboard/TabEditModal'
 import DesktopView from '../dashboard/DesktopView'
-import { deriveKey, encryptSettings } from '../lib/crypto'
+import { deriveKey, encryptSettings, hydrateLocalStorage } from '../lib/crypto'
 import { useHubState } from '../dashboard/hooks/useHubState'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
 import { useCustomTabs } from '../dashboard/hooks/useCustomTabs'
@@ -96,7 +96,7 @@ export default function DashboardPage() {
   }
 
   const [restorePrompt, setRestorePrompt] = useState(false)
-  const pendingRestore = useRef(null)
+  const pendingRestore = useRef(null) // holds the decrypted settings object
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [saveStatus, setSaveStatus] = useState('')
 
@@ -123,10 +123,11 @@ export default function DashboardPage() {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
     if (sessionStorage.getItem(SYNC_DONE)) return
-    initSync(accessToken).then(hadCloudData => {
+    initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
-      if (hadCloudData) {
-        // Ask user before overwriting local settings
+      if (cloudSettings) {
+        // Got decrypted cloud settings — store them and ask user
+        pendingRestore.current = cloudSettings
         setRestorePrompt(true)
       }
     }).catch(() => {
@@ -136,12 +137,18 @@ export default function DashboardPage() {
 
   function handleRestoreYes() {
     setRestorePrompt(false)
+    if (pendingRestore.current) {
+      // Apply cloud settings to localStorage, then reload
+      hydrateLocalStorage(pendingRestore.current)
+      pendingRestore.current = null
+    }
     window.location.reload()
   }
 
   function handleRestoreNo() {
     setRestorePrompt(false)
-    // User chose to keep current — upload their local settings to cloud
+    pendingRestore.current = null
+    // Upload current local settings to cloud instead
     if (sync && accessToken) sync(accessToken)
   }
 
@@ -512,17 +519,17 @@ export default function DashboardPage() {
         <div className="modal-overlay open">
           <div className="modal-box" style={{ width: 440, textAlign: 'center' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>☁️</div>
-            <div className="modal-title" style={{ textAlign: 'center' }}>Saved workspace found</div>
+            <div className="modal-title" style={{ textAlign: 'center' }}>☁ Saved workspace found</div>
             <div className="modal-sub" style={{ textAlign: 'center', marginBottom: 24 }}>
-              We found your saved settings on the server.<br/>
-              Do you want to restore them on this device?
+              Your saved workspace was found on the server — including apps, groups, icons, news sources, custom tabs, layout and view settings.<br/><br/>
+              Restore it on this device?
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn-primary" onClick={handleRestoreYes}>
-                ☁ Yes, restore from cloud
+                ↩ Yes, restore from cloud (replaces local)
               </button>
               <button className="btn-cancel" onClick={handleRestoreNo} style={{ width: '100%' }}>
-                Keep current local settings (and save them to cloud)
+                Keep local settings (upload them to cloud instead)
               </button>
             </div>
           </div>
