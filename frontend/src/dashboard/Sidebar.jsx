@@ -25,8 +25,9 @@ import { useAuth } from '../context/AuthContext'
 export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onContextMenu }) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  function appsInGroup(gid) { return apps.filter(a => a.groupId === gid) }
-  function ungrouped() { return apps.filter(a => !a.groupId || !groups.find(g => g.id === a.groupId)) }
+  const sidebarApps = apps.filter(a => a.showInSidebar !== false)
+  function appsInGroup(gid) { return sidebarApps.filter(a => a.groupId === gid) }
+  function ungrouped() { return sidebarApps.filter(a => !a.groupId || !groups.find(g => g.id === a.groupId)) }
 
   return (
     <nav id="sb-sidebar">

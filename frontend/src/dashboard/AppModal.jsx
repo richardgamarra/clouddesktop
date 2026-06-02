@@ -127,11 +127,12 @@ function renderShortcutText(sc) {
 
 export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   const isNew = !app?.id || app.id === '__new__'
-  const [name, setName]       = useState(app?.name || '')
-  const [url, setUrl]         = useState(app?.url || '')
-  const [groupId, setGroupId] = useState(app?.groupId || groups[0]?.id || '')
-  const [iconVal, setIconVal] = useState(app?.emoji || '')
+  const [name, setName]         = useState(app?.name || '')
+  const [url, setUrl]           = useState(app?.url || '')
+  const [groupId, setGroupId]   = useState(app?.groupId || groups[0]?.id || '')
+  const [iconVal, setIconVal]   = useState(app?.emoji || '')
   const [shortcut, setShortcut] = useState(app?.shortcut || '')
+  const [showInSidebar, setShowInSidebar] = useState(app?.showInSidebar !== false) // default true
   const [listening, setListening] = useState(false)
   const nameRef = useRef(null)
 
@@ -174,7 +175,7 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
     if (iconVal.startsWith('http')) favicon = iconVal
     else if (iconVal) emoji = iconVal
     else { try { favicon = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(new URL(url).hostname)}` } catch {} }
-    onSave({ id: app?.id || '__new__', name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, shortcut })
+    onSave({ id: app?.id || '__new__', name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, shortcut, showInSidebar })
   }
 
   return (
@@ -228,6 +229,19 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
           </div>
         </div>
         <div className="modal-actions">
+          {/* Visibility toggle */}
+          <div style={{ display:'flex', alignItems:'center', gap:12, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, padding:'10px 14px', marginBottom:8, width:'100%' }}>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12, fontWeight:700 }}>Show in left sidebar</div>
+              <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>
+                {showInSidebar ? 'Visible as icon in sidebar' : 'Only in center area'}
+              </div>
+            </div>
+            <button type="button" onClick={() => setShowInSidebar(v => !v)}
+              style={{ width:40, height:22, borderRadius:11, border:'none', cursor:'pointer', background: showInSidebar ? 'var(--accent)' : 'var(--s4)', position:'relative', transition:'background .2s', flexShrink:0 }}>
+              <span style={{ position:'absolute', top:3, left: showInSidebar ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
+            </button>
+          </div>
           {!isNew && <button className="btn-danger" onClick={() => { if (window.confirm('Delete this app?')) onDelete(app.id) }}>Delete</button>}
           <button className="btn-cancel" onClick={onClose}>Cancel</button>
           <button className="btn-primary" style={{ width:'auto' }} onClick={handleSave}>Save</button>
