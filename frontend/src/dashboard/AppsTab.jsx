@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 
@@ -48,7 +48,8 @@ function AppCard({ app, isOpen, onOpen, onContextMenu }) {
 }
 
 function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, onEditGroup, onReorder }) {
-  const dragId = useRef(null)
+  const dragId  = useRef(null)
+  const [dragOver, setDragOver] = useState(null)
 
   function handleDragStart(e, id) {
     dragId.current = id
@@ -57,15 +58,16 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
   }
   function handleDragEnd(e) {
     e.currentTarget.classList.remove('dragging')
-    const grid = e.currentTarget.closest('.app-grid')
-    if (!grid) return
-    const newOrder = [...grid.querySelectorAll('[data-id]')].map(c => c.dataset.id).filter(Boolean)
-    onReorder(group.id, newOrder)
     dragId.current = null
+    setDragOver(null)
   }
-  function handleDragOver(e) { e.preventDefault() }
+  function handleDragOver(e, id) {
+    e.preventDefault()
+    if (id !== dragId.current) setDragOver(id)
+  }
   function handleDrop(e, targetId) {
     e.preventDefault()
+    setDragOver(null)
     const sourceId = dragId.current
     if (!sourceId || sourceId === targetId) return
     const ids = apps.map(a => a.id)
@@ -74,6 +76,7 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
     const newOrder = [...ids]
     newOrder.splice(si, 1); newOrder.splice(ti, 0, sourceId)
     onReorder(group.id, newOrder)
+    dragId.current = null
   }
 
   return (
@@ -96,8 +99,9 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
             draggable
             onDragStart={e => handleDragStart(e, app.id)}
             onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
+            onDragOver={e => handleDragOver(e, app.id)}
             onDrop={e => handleDrop(e, app.id)}
+            style={{ borderRadius:'var(--r)', outline: dragOver === app.id ? '2px solid var(--accent)' : 'none', outlineOffset:2 }}
           >
             <AppCard app={app} isOpen={isOpen} onOpen={onOpen} onContextMenu={onContextMenu} />
           </div>
