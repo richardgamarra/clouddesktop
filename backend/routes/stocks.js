@@ -18,11 +18,23 @@ router.get('/', async (req, res) => {
       const data = await response.json()
       const meta = data?.chart?.result?.[0]?.meta
       if (!meta) return null
+      const price    = meta.regularMarketPrice || null
+      const prevClose = meta.chartPreviousClose || meta.previousClose || null
+      const changeAbs = meta.regularMarketChange || null
+      let change = meta.regularMarketChangePercent || null
+      // Calculate percent if not provided but we have price + previous close
+      if (!change && price && prevClose && prevClose !== 0) {
+        change = ((price - prevClose) / prevClose) * 100
+      }
+      // Or calculate from absolute change
+      if (!change && price && changeAbs) {
+        change = (changeAbs / (price - changeAbs)) * 100
+      }
       return {
         symbol,
         name: meta.shortName || meta.longName || symbol,
-        price: meta.regularMarketPrice || null,
-        change: meta.regularMarketChangePercent || null,
+        price,
+        change: change !== null ? parseFloat(change.toFixed(2)) : null,
       }
     } catch {
       return null
