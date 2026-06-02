@@ -22,15 +22,19 @@ function AppIcon({ app }) {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onContextMenu }) {
+export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onContextMenu, sidebarOpen, onClose }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const sidebarApps = apps.filter(a => a.showInSidebar !== false)
   function appsInGroup(gid) { return sidebarApps.filter(a => a.groupId === gid) }
   function ungrouped() { return sidebarApps.filter(a => !a.groupId || !groups.find(g => g.id === a.groupId)) }
 
+  function handleAppClick(app) { openApp(app); if (onClose) onClose() }
+
   return (
-    <nav id="sb-sidebar">
+    <>
+    <div className={`sb-drawer-backdrop${sidebarOpen ? ' open' : ''}`} onClick={onClose} />
+    <nav id="sb-sidebar" className={sidebarOpen ? 'drawer-open' : ''}>
       <div className="sb-logo" title="CloudDesktop Workspace">CW</div>
       <div className="sb-sep" />
       {groups.map(g => {
@@ -46,7 +50,7 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
                 key={app.id}
                 className={`app-btn${isOpen(app.id) ? ' is-open' : ''}`}
                 data-tip={app.name + (app.shortcut ? ` [${app.shortcut}]` : '')}
-                onClick={() => openApp(app)}
+                onClick={() => handleAppClick(app)}
                 onContextMenu={e => { e.preventDefault(); onContextMenu(e, app.id) }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -66,7 +70,7 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
               key={app.id}
               className={`app-btn${isOpen(app.id) ? ' is-open' : ''}`}
               data-tip={app.name}
-              onClick={() => openApp(app)}
+              onClick={() => handleAppClick(app)}
               onContextMenu={e => { e.preventDefault(); onContextMenu(e, app.id) }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -87,5 +91,6 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
         style={{ fontSize: 16, marginBottom: 4 }}>🗄</button>
       <button className="sb-add-btn" title="Add App (Ctrl+K)" onClick={onAddApp}>+</button>
     </nav>
+    </>
   )
 }

@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const [showAddTab, setShowAddTab] = useState(false)
   const [confirmCloseTab, setConfirmCloseTab] = useState(null) // tab id to close
   const [confirmDeleteApp, setConfirmDeleteApp] = useState(null) // app id to delete (right-click path)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const dragTabId = useRef(null)
 
@@ -333,6 +334,7 @@ export default function DashboardPage() {
       <Sidebar
         groups={hub.groups} apps={hub.apps} openApp={openApp} isOpen={isOpen}
         onAddApp={() => openAddApp()} onContextMenu={handleContextMenu}
+        sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}
       />
 
       <div id="db-main">
@@ -340,6 +342,7 @@ export default function DashboardPage() {
 
         {/* TAB BAR — unified reorderable */}
         <div id="tabs-bar">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(v => !v)}>☰</button>
           {tabOrder.map((id, idx) => {
             const def = getTabDef(id)
             if (!def) return null
