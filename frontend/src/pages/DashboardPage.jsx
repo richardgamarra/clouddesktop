@@ -517,6 +517,8 @@ export default function DashboardPage() {
           tab={editingTab}
           onSave={saveTabEdit}
           onClose={() => setEditingTab(null)}
+          isDefault={defaultTab === editingTab.id}
+          onSetDefault={setDefaultTab}
         />
       )}
 
