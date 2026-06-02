@@ -1,6 +1,70 @@
 import { useState, useEffect, useRef } from 'react'
 import { EMOJI_LIST } from './constants'
 
+// 30+ popular app icons — name + Google favicon CDN URL
+const POPULAR_APPS = [
+  // Google
+  { name:'Gmail',            url:'https://www.google.com/s2/favicons?sz=64&domain=mail.google.com' },
+  { name:'Google Docs',      url:'https://www.google.com/s2/favicons?sz=64&domain=docs.google.com' },
+  { name:'Google Sheets',    url:'https://www.google.com/s2/favicons?sz=64&domain=sheets.google.com' },
+  { name:'Google Slides',    url:'https://www.google.com/s2/favicons?sz=64&domain=slides.google.com' },
+  { name:'Google Drive',     url:'https://www.google.com/s2/favicons?sz=64&domain=drive.google.com' },
+  { name:'Google Calendar',  url:'https://www.google.com/s2/favicons?sz=64&domain=calendar.google.com' },
+  { name:'Google Keep',      url:'https://www.google.com/s2/favicons?sz=64&domain=keep.google.com' },
+  { name:'Google Meet',      url:'https://www.google.com/s2/favicons?sz=64&domain=meet.google.com' },
+  { name:'Google Maps',      url:'https://www.google.com/s2/favicons?sz=64&domain=maps.google.com' },
+  { name:'YouTube',          url:'https://www.google.com/s2/favicons?sz=64&domain=youtube.com' },
+  { name:'Google Analytics', url:'https://www.google.com/s2/favicons?sz=64&domain=analytics.google.com' },
+  // Microsoft
+  { name:'Outlook',          url:'https://www.google.com/s2/favicons?sz=64&domain=outlook.live.com' },
+  { name:'Microsoft 365',    url:'https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com' },
+  { name:'OneDrive',         url:'https://www.google.com/s2/favicons?sz=64&domain=onedrive.live.com' },
+  { name:'Teams',            url:'https://www.google.com/s2/favicons?sz=64&domain=teams.microsoft.com' },
+  { name:'SharePoint',       url:'https://www.google.com/s2/favicons?sz=64&domain=sharepoint.com' },
+  { name:'Azure',            url:'https://www.google.com/s2/favicons?sz=64&domain=portal.azure.com' },
+  // Productivity
+  { name:'Notion',           url:'https://www.google.com/s2/favicons?sz=64&domain=notion.so' },
+  { name:'Trello',           url:'https://www.google.com/s2/favicons?sz=64&domain=trello.com' },
+  { name:'Asana',            url:'https://www.google.com/s2/favicons?sz=64&domain=asana.com' },
+  { name:'Monday.com',       url:'https://www.google.com/s2/favicons?sz=64&domain=monday.com' },
+  { name:'Airtable',         url:'https://www.google.com/s2/favicons?sz=64&domain=airtable.com' },
+  { name:'ClickUp',          url:'https://www.google.com/s2/favicons?sz=64&domain=clickup.com' },
+  { name:'Jira',             url:'https://www.google.com/s2/favicons?sz=64&domain=atlassian.com' },
+  { name:'Confluence',       url:'https://www.google.com/s2/favicons?sz=64&domain=confluence.atlassian.com' },
+  // Communication
+  { name:'Slack',            url:'https://www.google.com/s2/favicons?sz=64&domain=slack.com' },
+  { name:'Zoom',             url:'https://www.google.com/s2/favicons?sz=64&domain=zoom.us' },
+  { name:'Discord',          url:'https://www.google.com/s2/favicons?sz=64&domain=discord.com' },
+  { name:'WhatsApp',         url:'https://www.google.com/s2/favicons?sz=64&domain=web.whatsapp.com' },
+  { name:'Telegram',         url:'https://www.google.com/s2/favicons?sz=64&domain=web.telegram.org' },
+  // Dev & Design
+  { name:'GitHub',           url:'https://www.google.com/s2/favicons?sz=64&domain=github.com' },
+  { name:'GitLab',           url:'https://www.google.com/s2/favicons?sz=64&domain=gitlab.com' },
+  { name:'Figma',            url:'https://www.google.com/s2/favicons?sz=64&domain=figma.com' },
+  { name:'Canva',            url:'https://www.google.com/s2/favicons?sz=64&domain=canva.com' },
+  { name:'Linear',           url:'https://www.google.com/s2/favicons?sz=64&domain=linear.app' },
+  { name:'Vercel',           url:'https://www.google.com/s2/favicons?sz=64&domain=vercel.com' },
+  // AI
+  { name:'ChatGPT',          url:'https://www.google.com/s2/favicons?sz=64&domain=chat.openai.com' },
+  { name:'Claude',           url:'https://www.google.com/s2/favicons?sz=64&domain=claude.ai' },
+  { name:'Gemini',           url:'https://www.google.com/s2/favicons?sz=64&domain=gemini.google.com' },
+  // Storage & Cloud
+  { name:'Dropbox',          url:'https://www.google.com/s2/favicons?sz=64&domain=dropbox.com' },
+  { name:'Box',              url:'https://www.google.com/s2/favicons?sz=64&domain=box.com' },
+  // Social & Media
+  { name:'LinkedIn',         url:'https://www.google.com/s2/favicons?sz=64&domain=linkedin.com' },
+  { name:'Twitter / X',      url:'https://www.google.com/s2/favicons?sz=64&domain=x.com' },
+  { name:'Instagram',        url:'https://www.google.com/s2/favicons?sz=64&domain=instagram.com' },
+  { name:'Facebook',         url:'https://www.google.com/s2/favicons?sz=64&domain=facebook.com' },
+  { name:'Spotify',          url:'https://www.google.com/s2/favicons?sz=64&domain=spotify.com' },
+  { name:'Netflix',          url:'https://www.google.com/s2/favicons?sz=64&domain=netflix.com' },
+  // Business
+  { name:'Salesforce',       url:'https://www.google.com/s2/favicons?sz=64&domain=salesforce.com' },
+  { name:'HubSpot',          url:'https://www.google.com/s2/favicons?sz=64&domain=hubspot.com' },
+  { name:'Zendesk',          url:'https://www.google.com/s2/favicons?sz=64&domain=zendesk.com' },
+  { name:'Stripe',           url:'https://www.google.com/s2/favicons?sz=64&domain=stripe.com' },
+]
+
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function isValidUrl(s) { try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:' } catch { return false } }
 
@@ -86,7 +150,21 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
           </select>
         </div>
         <div className="field"><label>Icon — emoji or image URL</label><input id="ae-icon-input" type="text" value={iconVal} onChange={e => setIconVal(e.target.value)} placeholder="🚀 or https://…" maxLength={200} /></div>
-        <div className="emoji-section-title">Quick pick</div>
+        {/* Popular app icons */}
+        <div className="emoji-section-title" style={{ marginTop: 4 }}>Popular apps</div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(10,1fr)', gap:2, marginBottom:12, maxHeight:120, overflowY:'auto' }}>
+          {POPULAR_APPS.map(app => (
+            <button key={app.name} type="button" title={app.name}
+              className={`epick-cell${iconVal === app.url ? ' sel' : ''}`}
+              style={{ padding:2 }}
+              onClick={() => setIconVal(iconVal === app.url ? '' : app.url)}>
+              <img src={app.url} alt={app.name} style={{ width:22, height:22, borderRadius:4, display:'block' }}
+                onError={e => { e.target.style.opacity='0.3' }} />
+            </button>
+          ))}
+        </div>
+
+        <div className="emoji-section-title">Emoji</div>
         <div className="emoji-picker-grid">
           {EMOJI_LIST.map(em => (
             <button key={em} type="button" className={`epick-cell${iconVal === em ? ' sel' : ''}`} onClick={() => setIconVal(iconVal === em ? '' : em)}>{em}</button>
