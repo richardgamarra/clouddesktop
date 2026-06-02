@@ -3,18 +3,18 @@ import { EMOJI_LIST } from './constants'
 
 // 30+ popular app icons — name + Google favicon CDN URL
 const POPULAR_APPS = [
-  // Google
-  { name:'Gmail',            url:'https://www.google.com/s2/favicons?sz=64&domain=mail.google.com' },
-  { name:'Google Docs',      url:'https://www.google.com/s2/favicons?sz=64&domain=docs.google.com' },
-  { name:'Google Sheets',    url:'https://www.google.com/s2/favicons?sz=64&domain=sheets.google.com' },
-  { name:'Google Slides',    url:'https://www.google.com/s2/favicons?sz=64&domain=slides.google.com' },
-  { name:'Google Drive',     url:'https://www.google.com/s2/favicons?sz=64&domain=drive.google.com' },
-  { name:'Google Calendar',  url:'https://www.google.com/s2/favicons?sz=64&domain=calendar.google.com' },
-  { name:'Google Keep',      url:'https://www.google.com/s2/favicons?sz=64&domain=keep.google.com' },
-  { name:'Google Meet',      url:'https://www.google.com/s2/favicons?sz=64&domain=meet.google.com' },
-  { name:'Google Maps',      url:'https://www.google.com/s2/favicons?sz=64&domain=maps.google.com' },
-  { name:'YouTube',          url:'https://www.google.com/s2/favicons?sz=64&domain=youtube.com' },
-  { name:'Google Analytics', url:'https://www.google.com/s2/favicons?sz=64&domain=analytics.google.com' },
+  // Google — using official gstatic.com product branding icons
+  { name:'Gmail',            url:'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png' },
+  { name:'Google Docs',      url:'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png' },
+  { name:'Google Sheets',    url:'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png' },
+  { name:'Google Slides',    url:'https://www.gstatic.com/images/branding/product/2x/slides_2020q4_48dp.png' },
+  { name:'Google Drive',     url:'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png' },
+  { name:'Google Calendar',  url:'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png' },
+  { name:'Google Keep',      url:'https://www.gstatic.com/images/branding/product/2x/keep_2020q4_48dp.png' },
+  { name:'Google Meet',      url:'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_48dp.png' },
+  { name:'Google Maps',      url:'https://www.gstatic.com/images/branding/product/2x/maps_2020q4_48dp.png' },
+  { name:'YouTube',          url:'https://www.gstatic.com/images/branding/product/2x/youtube_2020q4_48dp.png' },
+  { name:'Google Analytics', url:'https://www.gstatic.com/images/branding/product/2x/analytics_2020q4_48dp.png' },
   // Microsoft
   { name:'Outlook',          url:'https://www.google.com/s2/favicons?sz=64&domain=outlook.live.com' },
   { name:'Microsoft 365',    url:'https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com' },
