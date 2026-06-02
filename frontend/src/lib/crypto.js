@@ -5,6 +5,8 @@ export const SYNC_KEYS = [
   'wsh_news_sources',
   'wsh_custom_tabs',
   'hub_icon_overrides',   // icon overrides per app
+  'wsh_tab_overrides',   // custom names/icons for News & Apps tabs
+  'wsh_tab_order',       // tab ordering
 ]
 
 // SessionStorage key for the exported CryptoKey

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PasswordModal from '../components/PasswordModal'
+import TabEditModal from '../dashboard/TabEditModal'
 import { deriveKey, encryptSettings } from '../lib/crypto'
 import { useHubState } from '../dashboard/hooks/useHubState'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
@@ -58,6 +59,36 @@ export default function DashboardPage() {
   const dragTabId = useRef(null)
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
+
+  // Tab name/icon overrides for fixed tabs (news/hub) stored in localStorage
+  const [tabOverrides, setTabOverrides] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wsh_tab_overrides') || '{}') } catch { return {} }
+  })
+  useEffect(() => { localStorage.setItem('wsh_tab_overrides', JSON.stringify(tabOverrides)) }, [tabOverrides])
+
+  const [editingTab, setEditingTab] = useState(null) // { id, name, icon }
+
+  function openTabEdit(id) {
+    const def = getTabDef(id)
+    if (!def) return
+    const over = tabOverrides[id] || {}
+    setEditingTab({ id, name: over.name || def.name, icon: over.icon || def.icon })
+  }
+
+  function saveTabEdit({ name, icon }) {
+    if (!editingTab) return
+    const { id } = editingTab
+    const def = getTabDef(id)
+    if (!def) return
+    if (!def.isCustom) {
+      // Fixed tab — save to overrides
+      setTabOverrides(prev => ({ ...prev, [id]: { name, icon } }))
+    } else {
+      // Custom tab — update via hook
+      customTabs.updateTab(id, { name, icon })
+    }
+    setEditingTab(null)
+  }
 
   const [restorePrompt, setRestorePrompt] = useState(false)
   const pendingRestore = useRef(null)
@@ -272,7 +303,10 @@ export default function DashboardPage() {
 
   function getTabDef(id) {
     const fixed = FIXED_TABS.find(t => t.id === id)
-    if (fixed) return fixed
+    if (fixed) {
+      const over = tabOverrides[id] || {}
+      return { ...fixed, name: over.name || fixed.name, icon: over.icon || fixed.icon }
+    }
     const custom = customTabs.tabs.find(t => t.id === id)
     return custom ? { id: custom.id, icon: custom.icon, name: custom.name, isCustom: true } : null
   }
@@ -314,6 +348,7 @@ export default function DashboardPage() {
                   <span>{def.icon}</span>
                   {def.name}
                   {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
+                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); openTabEdit(id) }} title="Edit name & icon">✎</span>
                 </button>
               )
             }
@@ -328,13 +363,13 @@ export default function DashboardPage() {
                 onDragOver={e => e.preventDefault()}
                 onDrop={e => handleTabDrop(e, id)}
                 onClick={() => setActiveTab(id)}
-                onDoubleClick={() => renameTab(id)}
-                title="Double-click to rename · Drag to reorder"
+                title="Drag to reorder"
               >
                 {!isFirst && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, -1) }} title="Move left">◀</span>}
                 <span>{def.icon}</span>
                 {def.name}
                 {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
+                <span className="tab-move-btn" onClick={e => { e.stopPropagation(); openTabEdit(id) }} title="Edit name & icon">✎</span>
                 <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, id)} title="Close tab">×</button>
               </button>
             )
@@ -420,6 +455,14 @@ export default function DashboardPage() {
       )}
       {showAddTab && (
         <AddTabModal onAdd={handleAddCustomTab} onClose={() => setShowAddTab(false)} />
+      )}
+
+      {editingTab && (
+        <TabEditModal
+          tab={editingTab}
+          onSave={saveTabEdit}
+          onClose={() => setEditingTab(null)}
+        />
       )}
 
       {showSaveModal && (
