@@ -146,6 +146,10 @@ export default function DashboardPage() {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
     if (sessionStorage.getItem(SYNC_DONE)) return
+    // Fresh login — clear any previous user's workspace from localStorage
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('wsh_') || k.startsWith('hub_'))
+      .forEach(k => localStorage.removeItem(k))
     initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
       if (cloudSettings) {
@@ -153,6 +157,7 @@ export default function DashboardPage() {
         pendingRestore.current = cloudSettings
         setRestorePrompt(true)
       }
+      // If no cloud settings → user gets fresh default workspace (localStorage was cleared above)
     }).catch(() => {
       sessionStorage.setItem(SYNC_DONE, '1')
     })
@@ -576,17 +581,17 @@ export default function DashboardPage() {
         <div className="modal-overlay open">
           <div className="modal-box" style={{ width: 440, textAlign: 'center' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>☁️</div>
-            <div className="modal-title" style={{ textAlign: 'center' }}>☁ Saved workspace found</div>
+            <div className="modal-title" style={{ textAlign: 'center' }}>☁ Your workspace is ready</div>
             <div className="modal-sub" style={{ textAlign: 'center', marginBottom: 24 }}>
-              Your saved workspace was found on the server — including apps, groups, icons, news sources, custom tabs, layout and view settings.<br/><br/>
-              Restore it on this device?
+              Your saved workspace was found — apps, groups, news sources, bookmarks, widgets, tabs and all your settings.<br/><br/>
+              Load it now?
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button className="btn-primary" onClick={handleRestoreYes}>
-                ↩ Yes, restore from cloud (replaces local)
+                ↩ Yes, load my workspace
               </button>
               <button className="btn-cancel" onClick={handleRestoreNo} style={{ width: '100%' }}>
-                Keep local settings (upload them to cloud instead)
+                Start fresh (save my cloud workspace anyway)
               </button>
             </div>
           </div>

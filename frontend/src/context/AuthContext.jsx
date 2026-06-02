@@ -99,6 +99,11 @@ export function AuthProvider({ children }) {
     pendingPassword.current = null
     sessionStorage.removeItem(SESSION_KEY)
     sessionStorage.removeItem('cw_synced')
+    // Clear workspace localStorage so next user starts clean
+    const { SYNC_KEYS } = await import('../lib/crypto')
+    SYNC_KEYS.forEach(k => localStorage.removeItem(k))
+    // Also clear notes tabs and other dynamic keys
+    Object.keys(localStorage).filter(k => k.startsWith('wsh_notes_') || k.startsWith('wsh_')).forEach(k => localStorage.removeItem(k))
     setSyncReady(false)
     setSyncStatus('idle')
     setAccessToken(null)
