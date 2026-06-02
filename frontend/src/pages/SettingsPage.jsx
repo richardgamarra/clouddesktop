@@ -71,23 +71,37 @@ export default function SettingsPage() {
         if (app.emoji) continue // already has emoji, skip
         if (app.favicon && app.favicon.startsWith('data:')) continue // already base64
 
-        const faviconUrl = app.favicon ||
-          `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent((() => { try { return new URL(app.url).hostname } catch { return app.url } })())}`
-
         setBakeProgress(`Fetching icon ${i + 1}/${apps.length}: ${app.name}…`)
-        try {
-          const res = await fetch(`/api/icons/fetch?url=${encodeURIComponent(faviconUrl)}`)
-          if (res.ok) {
-            const { dataUrl } = await res.json()
-            if (dataUrl && dataUrl.startsWith('data:')) {
-              apps[i] = { ...app, favicon: dataUrl }
-              // Also update hub_icon_overrides if it had an entry
-              if (overrides[app.id]) overrides[app.id] = dataUrl
-              updated++
-            } else { failed++ }
-          } else { failed++ }
-        } catch { failed++ }
-        await new Promise(r => setTimeout(r, 80)) // small delay to avoid hammering
+
+        let hostname = ''
+        try { hostname = new URL(app.url).hostname } catch {}
+
+        // Build candidate URLs — try direct favicon.ico first, then fallback to Google CDN
+        const candidates = [
+          app.favicon && !app.favicon.includes('s2/favicons') ? app.favicon : null,
+          hostname ? `https://${hostname}/favicon.ico` : null,
+          hostname ? `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(hostname)}` : null,
+        ].filter(Boolean)
+
+        let baked = false
+        for (const url of candidates) {
+          try {
+            const res = await fetch(`/api/icons/fetch?url=${encodeURIComponent(url)}`)
+            if (res.ok) {
+              const { dataUrl } = await res.json()
+              if (dataUrl && dataUrl.startsWith('data:') && dataUrl.length > 200) {
+                apps[i] = { ...app, favicon: dataUrl }
+                if (overrides[app.id]) overrides[app.id] = dataUrl
+                updated++
+                baked = true
+                break
+              }
+            }
+          } catch {}
+          await new Promise(r => setTimeout(r, 50))
+        }
+        if (!baked) failed++
+        await new Promise(r => setTimeout(r, 100))
       }
 
       localStorage.setItem('wsh_apps', JSON.stringify(apps))
