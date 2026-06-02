@@ -4,8 +4,7 @@ const TAB_TYPES = [
   { type: 'webpage',    icon: '🌐', name: 'Web Page',    desc: 'Embed any public URL in a panel' },
   { type: 'bookmarks', icon: '🔖', name: 'Bookmarks',   desc: 'Quick-launch link grid' },
   { type: 'notes',     icon: '📝', name: 'Notes',       desc: 'Persistent scratch pad, auto-saves' },
-  { type: 'worldclock',icon: '🕐', name: 'World Clock', desc: 'Multiple timezone clocks' },
-  { type: 'weather',   icon: '🌦️', name: 'Weather',     desc: 'Live city forecast' },
+  { type: 'widgets',   icon: '🧩', name: 'Widgets',     desc: 'Add clocks, weather, stocks, crypto & more' },
 ]
 
 const COMMON_TIMEZONES = [
@@ -78,6 +77,7 @@ export default function AddTabModal({ onAdd, onClose }) {
       if (!weatherResult) return
       config = { city: weatherResult.name, lat: weatherResult.latitude, lon: weatherResult.longitude }
     }
+    if (chosen.type === 'widgets') config = { widgets: [] }
     onAdd({ type: chosen.type, name, icon: chosen.icon, config })
     onClose()
   }
@@ -86,6 +86,7 @@ export default function AddTabModal({ onAdd, onClose }) {
     if (!chosen) return false
     if (chosen.type === 'webpage' && !webUrl.trim()) return false
     if (chosen.type === 'weather' && !weatherResult) return false
+    if (chosen.type === 'widgets') return true
     return true
   }
 
@@ -173,6 +174,12 @@ export default function AddTabModal({ onAdd, onClose }) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {chosen.type === 'widgets' && (
+              <div style={{ background:'var(--s2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 14px', marginBottom:12, fontSize:12, color:'var(--text2)', fontFamily:"'DM Mono',monospace" }}>
+                You can add widgets after creating the tab — clocks, weather, crypto, stocks, currency, calendar, timer, countdown, calculator, and to-do.
               </div>
             )}
 

@@ -24,6 +24,7 @@ import BookmarksTab from '../dashboard/tabs/BookmarksTab'
 import NotesTab from '../dashboard/tabs/NotesTab'
 import WorldClockTab from '../dashboard/tabs/WorldClockTab'
 import WeatherTab from '../dashboard/tabs/WeatherTab'
+import WidgetsTab from '../dashboard/tabs/WidgetsTab'
 import AnnouncementBanner from '../components/AnnouncementBanner'
 import '../dashboard/dashboard.css'
 import { getSettingsJson, loadSettingsJson } from '../lib/crypto'
@@ -39,6 +40,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
   if (tab.type === 'notes')      return <NotesTab tab={tab} />
   if (tab.type === 'worldclock') return <WorldClockTab tab={tab} onUpdateTab={onUpdateTab} />
   if (tab.type === 'weather')    return <WeatherTab tab={tab} />
+  if (tab.type === 'widgets')    return <WidgetsTab tab={tab} onUpdateTab={onUpdateTab} />
   return null
 }
 

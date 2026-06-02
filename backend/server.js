@@ -33,6 +33,9 @@ app.use('/api/settings', settingsRouter)
 const iconsRouter = require('./routes/icons')
 app.use('/api/icons', iconsRouter)
 
+const stocksRouter = require('./routes/stocks')
+app.use('/api/stocks', stocksRouter)
+
 // ── Protected API routes ──────────────────────────────────────────────────────
 app.get('/api/user/me', requireAuth, (req, res) => {
   res.json({ user: req.user })
