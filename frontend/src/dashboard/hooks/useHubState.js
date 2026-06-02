@@ -15,20 +15,17 @@ export function useHubState() {
   })
   const [apps, setApps] = useState(() => {
     const a = load('wsh_apps', DEFAULT_APPS)
-    // Seed Terminal app if missing, also fix emoji if old version had ⌨
-    const existing = a.find(x => x.id === 'terminal')
-    if (!existing) {
-      a.push({ id:'terminal', name:'Terminal', url:'/terminal/', groupId:'g_tools', emoji:'🖥️', favicon:null, shortcut:'', showInSidebar:true })
-    } else if (existing.emoji === '⌨') {
-      existing.emoji = '🖥️'
+    // Fix Google icons to real gstatic URLs for existing users
+    const GSTATIC = {
+      gmail:  'https://www.gstatic.com/images/branding/product/1x/gmail_48dp.png',
+      gdocs:  'https://www.gstatic.com/images/branding/product/1x/docs_48dp.png',
+      gdrive: 'https://www.gstatic.com/images/branding/product/1x/drive_48dp.png',
+      gkeep:  'https://www.gstatic.com/images/branding/product/1x/keep_48dp.png',
+      gcal:   'https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png',
     }
-    // Seed Guacamole app if missing
-    if (!a.find(x => x.id === 'guacamole')) {
-      a.push({ id:'guacamole', name:'Remote Desktop', url:'/guacamole/', groupId:'g_tools', emoji:'🖱️', favicon:null, shortcut:'', showInSidebar:true })
-    }
-    // Remove duplicate terminal entries (keep only the one with id 'terminal')
-    const seen = new Set()
-    return a.filter(x => { if (x.url === '/terminal/') { if (seen.has('terminal')) return false; seen.add('terminal') } return true })
+    a.forEach(app => {
+      if (GSTATIC[app.id]) { app.favicon = GSTATIC[app.id]; app.emoji = null }
+    })
     return a
   })
 

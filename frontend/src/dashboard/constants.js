@@ -5,20 +5,21 @@ export const DEFAULT_GROUPS = [
 ]
 
 export const DEFAULT_APPS = [
-  { id:'gmail',     name:'Gmail',           url:'https://mail.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=mail.google.com',     shortcut:'' },
-  { id:'gdocs',     name:'Google Docs',     url:'https://docs.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=docs.google.com',     shortcut:'' },
-  { id:'gdrive',    name:'Google Drive',    url:'https://drive.google.com',     groupId:'g_google',    emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=drive.google.com',    shortcut:'' },
-  { id:'gkeep',     name:'Google Keep',     url:'https://keep.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=keep.google.com',     shortcut:'' },
-  { id:'gcal',      name:'Google Calendar', url:'https://calendar.google.com',  groupId:'g_google',    emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=calendar.google.com', shortcut:'' },
-  { id:'outlook',   name:'Outlook',         url:'https://outlook.live.com',     groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=outlook.live.com',   shortcut:'' },
-  { id:'m365',      name:'Microsoft 365',   url:'https://www.microsoft365.com', groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com',   shortcut:'' },
-  { id:'onedrive',  name:'OneDrive',        url:'https://onedrive.live.com',    groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=onedrive.live.com',  shortcut:'' },
-  { id:'notion',    name:'Notion',          url:'https://www.notion.so',        groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=notion.so',          shortcut:'' },
-  { id:'trello',    name:'Trello',          url:'https://trello.com',           groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=trello.com',         shortcut:'' },
-  { id:'slack',     name:'Slack',           url:'https://app.slack.com',        groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=slack.com',          shortcut:'' },
-  { id:'chatgpt',   name:'ChatGPT',         url:'https://chat.openai.com',      groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=openai.com',         shortcut:'' },
-  { id:'terminal',  name:'Terminal',        url:'/terminal/',                   groupId:'g_tools',     emoji:'🖥️', favicon:null,                                                                    shortcut:'', showInSidebar:true },
-  { id:'guacamole', name:'Remote Desktop',  url:'/guacamole/',                  groupId:'g_tools',     emoji:'🖱️', favicon:null,                                                                    shortcut:'', showInSidebar:true },
+  // Google — real gstatic brand icons
+  { id:'gmail',     name:'Gmail',           url:'https://mail.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.gstatic.com/images/branding/product/1x/gmail_48dp.png',              shortcut:'' },
+  { id:'gdocs',     name:'Google Docs',     url:'https://docs.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.gstatic.com/images/branding/product/1x/docs_48dp.png',              shortcut:'' },
+  { id:'gdrive',    name:'Google Drive',    url:'https://drive.google.com',     groupId:'g_google',    emoji:null, favicon:'https://www.gstatic.com/images/branding/product/1x/drive_48dp.png',             shortcut:'' },
+  { id:'gkeep',     name:'Google Keep',     url:'https://keep.google.com',      groupId:'g_google',    emoji:null, favicon:'https://www.gstatic.com/images/branding/product/1x/keep_48dp.png',              shortcut:'' },
+  { id:'gcal',      name:'Google Calendar', url:'https://calendar.google.com',  groupId:'g_google',    emoji:null, favicon:'https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png',          shortcut:'' },
+  // Microsoft
+  { id:'outlook',   name:'Outlook',         url:'https://outlook.live.com',     groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=outlook.live.com',              shortcut:'' },
+  { id:'m365',      name:'Microsoft 365',   url:'https://www.microsoft365.com', groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com',              shortcut:'' },
+  { id:'onedrive',  name:'OneDrive',        url:'https://onedrive.live.com',    groupId:'g_microsoft', emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=onedrive.live.com',             shortcut:'' },
+  // Tools
+  { id:'notion',    name:'Notion',          url:'https://www.notion.so',        groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=notion.so',                    shortcut:'' },
+  { id:'trello',    name:'Trello',          url:'https://trello.com',           groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=trello.com',                   shortcut:'' },
+  { id:'slack',     name:'Slack',           url:'https://app.slack.com',        groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=slack.com',                    shortcut:'' },
+  { id:'chatgpt',   name:'ChatGPT',         url:'https://chat.openai.com',      groupId:'g_tools',     emoji:null, favicon:'https://www.google.com/s2/favicons?sz=64&domain=openai.com',                   shortcut:'' },
 ]
 
 export const GROUP_COLORS = ['#5b7fff','#a78bfa','#3ddcaa','#f5a623','#ff5b6e','#f472b6','#38bdf8','#fb923c','#a3e635','#e2e8f0']

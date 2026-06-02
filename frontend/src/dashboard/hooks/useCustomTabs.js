@@ -1,8 +1,17 @@
 import { useState, useCallback } from 'react'
 
+const DEFAULT_TABS = [
+  { id:'tab_widgets_default', type:'widgets', name:'Widgets', icon:'🧩', config:{ widgets:[] } },
+]
+
 function load() {
-  try { return JSON.parse(localStorage.getItem('wsh_custom_tabs')) || [] }
-  catch { return [] }
+  try {
+    const saved = JSON.parse(localStorage.getItem('wsh_custom_tabs'))
+    if (saved && saved.length > 0) return saved
+    // New user — seed a default empty Widgets tab
+    return JSON.parse(JSON.stringify(DEFAULT_TABS))
+  }
+  catch { return JSON.parse(JSON.stringify(DEFAULT_TABS)) }
 }
 
 function save(tabs) {
