@@ -17,12 +17,15 @@ function wmoInfo(code) {
   return { emoji, desc }
 }
 
+function toF(c) { return Math.round(c * 9/5 + 32) }
+function fmt(c, unit) { return unit === 'F' ? `${toF(c)}°F` : `${Math.round(c)}°C` }
+
 export default function WeatherWidget({ config, onUpdate }) {
-  const { city, lat, lon } = config
-  const [weather, setWeather] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState('')
-  const [search, setSearch]   = useState('')
+  const { city, lat, lon, unit = 'C' } = config
+  const [weather, setWeather]     = useState(null)
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
+  const [search, setSearch]       = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
 
@@ -70,7 +73,7 @@ export default function WeatherWidget({ config, onUpdate }) {
   )
 
   if (loading) return <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>Loading…</div>
-  if (error) return <div style={{ color:'var(--red)', fontSize:12, fontFamily:"'DM Mono',monospace" }}>{error}</div>
+  if (error)   return <div style={{ color:'var(--red)', fontSize:12, fontFamily:"'DM Mono',monospace" }}>{error}</div>
   if (!weather) return null
 
   const cw    = weather.current_weather
@@ -86,9 +89,10 @@ export default function WeatherWidget({ config, onUpdate }) {
         </div>
         <div style={{ textAlign:'right' }}>
           <div style={{ fontSize:28 }}>{emoji}</div>
-          <div style={{ fontSize:22, fontWeight:800, fontFamily:"'DM Mono',monospace" }}>{Math.round(cw.temperature)}°C</div>
+          <div style={{ fontSize:22, fontWeight:800, fontFamily:"'DM Mono',monospace" }}>{fmt(cw.temperature, unit)}</div>
         </div>
       </div>
+
       {daily && (
         <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
           {daily.time.slice(0,5).map((date, i) => {
@@ -98,16 +102,37 @@ export default function WeatherWidget({ config, onUpdate }) {
               <div key={date} style={{ flex:1, minWidth:40, textAlign:'center', background:'var(--s3)', borderRadius:6, padding:'4px 2px' }}>
                 <div style={{ fontSize:9, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{DAYS[d.getDay()]}</div>
                 <div style={{ fontSize:14 }}>{de}</div>
-                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)' }}>{Math.round(daily.temperature_2m_max[i])}°</div>
+                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)' }}>
+                  {unit === 'F' ? toF(daily.temperature_2m_max[i]) : Math.round(daily.temperature_2m_max[i])}°
+                </div>
               </div>
             )
           })}
         </div>
       )}
-      <button onClick={() => onUpdate({ city: '', lat: null, lon: null })}
-        style={{ marginTop:8, background:'none', border:'none', color:'var(--text3)', fontSize:10, cursor:'pointer', fontFamily:"'DM Mono',monospace" }}>
-        Change city
-      </button>
+
+      {/* Footer actions */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
+        <button onClick={() => onUpdate({ city: '', lat: null, lon: null })}
+          style={{ background:'none', border:'none', color:'var(--text3)', fontSize:10, cursor:'pointer', fontFamily:"'DM Mono',monospace" }}>
+          Change city
+        </button>
+        {/* °C / °F toggle */}
+        <div style={{ display:'flex', borderRadius:6, overflow:'hidden', border:'1px solid var(--border2)' }}>
+          {['C','F'].map(u => (
+            <button key={u} onClick={() => onUpdate({ unit: u })}
+              style={{
+                padding:'3px 9px', border:'none', cursor:'pointer', fontSize:11,
+                fontFamily:"'DM Mono',monospace", fontWeight:700,
+                background: unit === u ? 'var(--accent)' : 'var(--s3)',
+                color: unit === u ? '#fff' : 'var(--text3)',
+                transition:'background .15s, color .15s',
+              }}>
+              °{u}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
