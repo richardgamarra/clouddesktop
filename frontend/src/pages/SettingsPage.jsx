@@ -56,28 +56,41 @@ export default function SettingsPage() {
     }
   }
 
-  // ── Fix Google icons: replace CDN URLs with official gstatic product icons ────
+  // ── Fix icons: replace CDN URLs with official product icons ─────────────────
   function handleFixGoogleIcons() {
-    const GOOGLE_ICON_MAP = {
-      'mail.google.com':     'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png',
-      'docs.google.com':     'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png',
-      'sheets.google.com':   'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png',
-      'slides.google.com':   'https://www.gstatic.com/images/branding/product/2x/slides_2020q4_48dp.png',
-      'drive.google.com':    'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png',
-      'calendar.google.com': 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png',
-      'keep.google.com':     'https://www.gstatic.com/images/branding/product/2x/keep_2020q4_48dp.png',
-      'meet.google.com':     'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_48dp.png',
-      'maps.google.com':     'https://www.gstatic.com/images/branding/product/2x/maps_2020q4_48dp.png',
-      'youtube.com':         'https://www.gstatic.com/images/branding/product/2x/youtube_2020q4_48dp.png',
-      'analytics.google.com':'https://www.gstatic.com/images/branding/product/2x/analytics_2020q4_48dp.png',
+    const G = 'https://www.gstatic.com/images/branding/product/2x/'
+    const M = 'https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/png/'
+    const ICON_MAP = {
+      // Google — gstatic official
+      'mail.google.com':     G + 'gmail_2020q4_48dp.png',
+      'docs.google.com':     G + 'docs_2020q4_48dp.png',
+      'sheets.google.com':   G + 'sheets_2020q4_48dp.png',
+      'slides.google.com':   G + 'slides_2020q4_48dp.png',
+      'drive.google.com':    G + 'drive_2020q4_48dp.png',
+      'calendar.google.com': G + 'calendar_2020q4_48dp.png',
+      'keep.google.com':     G + 'keep_2020q4_48dp.png',
+      'meet.google.com':     G + 'meet_2020q4_48dp.png',
+      'maps.google.com':     G + 'maps_2020q4_48dp.png',
+      'youtube.com':         G + 'youtube_2020q4_48dp.png',
+      // Microsoft — Fluent UI CDN
+      'outlook.live.com':    M + 'outlook_96x1.png',
+      'outlook.office.com':  M + 'outlook_96x1.png',
+      'microsoft365.com':    M + 'office_96x1.png',
+      'office.com':          M + 'office_96x1.png',
+      'onedrive.live.com':   M + 'onedrive_96x1.png',
+      'onedrive.com':        M + 'onedrive_96x1.png',
+      'teams.microsoft.com': M + 'teams_96x1.png',
+      'sharepoint.com':      M + 'sharepoint_96x1.png',
+      'powerbi.com':         M + 'powerbi_96x1.png',
+      'powerapps.com':       M + 'powerapps_96x1.png',
+      'make.powerautomate.com': M + 'powerautomate_96x1.png',
     }
     try {
       const apps = JSON.parse(localStorage.getItem('wsh_apps') || '[]')
       let fixed = 0
       const updated = apps.map(app => {
-        if (app.emoji) return app // skip apps with custom emoji
-        // Match by domain in favicon URL or app URL
-        for (const [domain, icon] of Object.entries(GOOGLE_ICON_MAP)) {
+        if (app.emoji) return app
+        for (const [domain, icon] of Object.entries(ICON_MAP)) {
           if ((app.favicon && app.favicon.includes(domain)) || (app.url && app.url.includes(domain))) {
             fixed++
             return { ...app, favicon: icon }
@@ -86,7 +99,7 @@ export default function SettingsPage() {
         return app
       })
       localStorage.setItem('wsh_apps', JSON.stringify(updated))
-      setStatus(`✓ Fixed ${fixed} Google app icons — reloading…`)
+      setStatus(`✓ Fixed ${fixed} app icons (Google + Microsoft) — reloading…`)
       setTimeout(() => window.location.reload(), 900)
     } catch {
       setStatus('✗ Failed to fix icons')
@@ -302,11 +315,11 @@ export default function SettingsPage() {
             <h2 style={{ fontSize:15, fontWeight:700 }}>🖼 Fix & Bake Icons</h2>
             <button onClick={handleFixGoogleIcons}
               style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:8, color:'var(--green)', fontSize:12, fontWeight:700, padding:'6px 14px', cursor:'pointer' }}>
-              🔧 Fix Google Icons Now
+              🔧 Fix Google & Microsoft Icons
             </button>
           </div>
           <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16 }}>
-            Click <strong style={{ color:'var(--green)' }}>Fix Google Icons Now</strong> to instantly replace the generic "G" with the correct Gmail, Drive, Calendar, Keep, Docs icons.
+            Click <strong style={{ color:'var(--green)' }}>Fix Google & Microsoft Icons</strong> to instantly replace generic icons with the correct Gmail, Drive, Calendar, Outlook, Teams, Word, Excel, PowerPoint and more.
           </div>
           <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16, lineHeight:1.6 }}>
             Fetches every app icon from the web and stores it as a permanent base64 image in your settings.
