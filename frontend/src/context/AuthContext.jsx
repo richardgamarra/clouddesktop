@@ -46,13 +46,8 @@ export function AuthProvider({ children }) {
             setSyncStatus('synced')
             return true // caller should reload
           }
-          // No cloud data yet — upload current settings
-          const blob = await encryptSettings(key)
-          await fetch('/api/settings/sync', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify(blob),
-          })
+          // No cloud data yet — do NOT auto-upload (prevents wiping with empty/default data)
+          // User must explicitly sync via the debounced effect after making changes
         }
         setSyncReady(true)
         setSyncStatus('synced')
@@ -83,6 +78,7 @@ export function AuthProvider({ children }) {
         }
         setSyncReady(true)
         setSyncStatus('synced')
+        return false
       } catch (err) {
         console.error('initSync (refresh) error:', err.message)
         setSyncStatus('error')

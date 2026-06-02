@@ -6,7 +6,12 @@ function AppIcon({ app }) {
   return <img src={src} alt="" style={{ width: 26, height: 26, borderRadius: 5, display: 'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:18px">🌐</span>' }} />
 }
 
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
 export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onContextMenu }) {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   function appsInGroup(gid) { return apps.filter(a => a.groupId === gid) }
   function ungrouped() { return apps.filter(a => !a.groupId || !groups.find(g => g.id === a.groupId)) }
 
@@ -60,6 +65,12 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
       )}
       <div className="sb-spacer" />
       <div className="sb-sep" />
+      {user?.role === 'admin' && (
+        <button className="sb-add-btn" title="Admin Panel" onClick={() => navigate('/admin')}
+          style={{ fontSize: 16, marginBottom: 4 }}>⚙</button>
+      )}
+      <button className="sb-add-btn" title="Settings & Backups" onClick={() => navigate('/settings')}
+        style={{ fontSize: 16, marginBottom: 4 }}>🗄</button>
       <button className="sb-add-btn" title="Add App (Ctrl+K)" onClick={onAddApp}>+</button>
     </nav>
   )
