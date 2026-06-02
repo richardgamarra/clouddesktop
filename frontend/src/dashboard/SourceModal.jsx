@@ -9,21 +9,26 @@ const selectStyle = {
 
 const GROUPS = [...new Set(RSS_PRESETS.map(p => p.group))]
 
-export default function SourceModal({ source, onSave, onClose }) {
+export default function SourceModal({ source, onSave, onClose, groups = [] }) {
   const isEdit = !!source
   const [name, setName]             = useState(source?.name || '')
   const [url, setUrl]               = useState(source?.url || '')
   const [category, setCategory]     = useState(source?.category || 'general')
   const [showImages, setShowImages] = useState(source?.showImages !== false)
   const [activeGroup, setActiveGroup] = useState(GROUPS[0])
+  // news group assignment
+  const [selectedGroup, setSelectedGroup] = useState(source?.group || '')
+  const [newGroupName, setNewGroupName]   = useState('')
+  const isNewGroup = selectedGroup === '__new__'
 
   function handleSave() {
     if (!name.trim() || !url.trim()) return
     const color = CATEGORY_COLORS[category] || '#5b7fff'
+    const groupVal = isNewGroup ? (newGroupName.trim() || '') : selectedGroup
     if (isEdit) {
-      onSave({ ...source, name: name.trim(), url: url.trim(), category, color, showImages })
+      onSave({ ...source, name: name.trim(), url: url.trim(), category, color, showImages, group: groupVal })
     } else {
-      onSave({ id: 'src_' + Date.now(), name: name.trim(), url: url.trim(), category, color, enabled: true, showImages })
+      onSave({ id: 'src_' + Date.now(), name: name.trim(), url: url.trim(), category, color, enabled: true, showImages, group: groupVal })
     }
   }
 
@@ -98,6 +103,30 @@ export default function SourceModal({ source, onSave, onClose }) {
             <span style={{ position:'absolute', top:3, left: showImages ? 21 : 3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
           </button>
         </div>
+
+        {/* News group selector — only shown when groups are available */}
+        {groups.length > 0 && (
+          <div className="field">
+            <label>News Group</label>
+            <select value={selectedGroup} onChange={e => setSelectedGroup(e.target.value)} style={selectStyle}>
+              <option value="">— No group —</option>
+              {groups.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+              <option value="__new__">+ New group…</option>
+            </select>
+            {isNewGroup && (
+              <input
+                type="text"
+                value={newGroupName}
+                onChange={e => setNewGroupName(e.target.value)}
+                placeholder="New group name…"
+                maxLength={40}
+                style={{ marginTop:8 }}
+              />
+            )}
+          </div>
+        )}
 
         <div className="modal-actions">
           <button className="btn-cancel" onClick={onClose}>Cancel</button>

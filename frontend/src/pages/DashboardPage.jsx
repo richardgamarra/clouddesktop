@@ -519,7 +519,8 @@ export default function DashboardPage() {
       {showSourceModal && (
         <SourceModal
           onSave={(src) => { setSources(prev => [...prev, src]); setShowSourceModal(false) }}
-          onClose={() => setShowSourceModal(false)} />
+          onClose={() => setShowSourceModal(false)}
+          groups={(() => { try { return JSON.parse(localStorage.getItem('wsh_news_groups') || '[]') } catch { return [] } })()} />
       )}
       {showAddTab && (
         <AddTabModal onAdd={handleAddCustomTab} onClose={() => setShowAddTab(false)} />

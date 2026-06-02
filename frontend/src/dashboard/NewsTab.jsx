@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { DEFAULT_NEWS_SOURCES, CATEGORY_COLORS } from './constants'
+import { DEFAULT_NEWS_SOURCES, CATEGORY_COLORS, GROUP_COLORS } from './constants'
 import SourceModal from './SourceModal'
 import ConfirmModal from '../components/ConfirmModal'
+import NewsGroupsView from './NewsGroupsView'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function stripTags(s) { return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() }
@@ -157,6 +158,11 @@ function CompactSource({ src, items }) {
   )
 }
 
+const DEFAULT_NEWS_GROUPS = [
+  { id: 'ng_general', name: 'General', color: '#5b7fff' },
+  { id: 'ng_soccer',  name: 'Soccer',  color: '#3ddcaa' },
+]
+
 export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [cache, setCache]       = useState({})
   const [filter, setFilter]     = useState('all')
@@ -166,7 +172,80 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [confirmRemove, setConfirmRemove] = useState(null) // source id to remove
   const [newsView, setNewsView] = useState(() => localStorage.getItem('wsh_news_view') || 'grid')
 
+  const [newsGroups, setNewsGroups] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wsh_news_groups') || 'null') || DEFAULT_NEWS_GROUPS }
+    catch { return DEFAULT_NEWS_GROUPS }
+  })
+
+  const [groupLayout, setGroupLayout] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wsh_news_layout_news') || '{}') }
+    catch { return {} }
+  })
+
+  // Manage groups panel state
+  const [showManageGroups, setShowManageGroups] = useState(false)
+  const [newGroupName, setNewGroupName]   = useState('')
+  const [newGroupColor, setNewGroupColor] = useState(GROUP_COLORS[0])
+  const [editGroupId, setEditGroupId]     = useState(null)
+  const [editGroupName, setEditGroupName] = useState('')
+
+  useEffect(() => {
+    localStorage.setItem('wsh_news_groups', JSON.stringify(newsGroups))
+  }, [newsGroups])
+
+  useEffect(() => {
+    localStorage.setItem('wsh_news_layout_news', JSON.stringify(groupLayout))
+  }, [groupLayout])
+
   function toggleView(v) { setNewsView(v); localStorage.setItem('wsh_news_view', v) }
+
+  function handleGroupLayoutChange(groupId, patch) {
+    setGroupLayout(prev => ({ ...prev, [groupId]: { ...(prev[groupId] || {}), ...patch } }))
+  }
+
+  function handleSourceMove(sourceId, toGroupId) {
+    onSourcesChange(sources.map(s => s.id === sourceId ? { ...s, group: toGroupId } : s))
+  }
+
+  function addGroup() {
+    if (!newGroupName.trim()) return
+    const id = 'ng_' + Date.now()
+    setNewsGroups(prev => [...prev, { id, name: newGroupName.trim(), color: newGroupColor }])
+    setNewGroupName('')
+    setNewGroupColor(GROUP_COLORS[0])
+  }
+
+  function deleteGroup(id) {
+    setNewsGroups(prev => prev.filter(g => g.id !== id))
+    // ungrouped sources that were in this group
+    onSourcesChange(sources.map(s => s.group === id ? { ...s, group: '' } : s))
+  }
+
+  function saveGroupName(id) {
+    if (!editGroupName.trim()) return
+    setNewsGroups(prev => prev.map(g => g.id === id ? { ...g, name: editGroupName.trim() } : g))
+    setEditGroupId(null)
+    setEditGroupName('')
+  }
+
+  // When a new group name is typed into SourceModal, create it if it doesn't exist
+  function handleSaveSource(updated) {
+    // If group is a name (not an id), check if we need to create a new group
+    const groupVal = updated.group || ''
+    const existingGroup = newsGroups.find(g => g.id === groupVal || g.name === groupVal)
+    let finalGroup = groupVal
+    if (groupVal && !existingGroup) {
+      // It's a new group name — create the group
+      const newId = 'ng_' + Date.now()
+      const color = GROUP_COLORS[newsGroups.length % GROUP_COLORS.length]
+      setNewsGroups(prev => [...prev, { id: newId, name: groupVal, color }])
+      finalGroup = newId
+    } else if (existingGroup && existingGroup.name === groupVal) {
+      finalGroup = existingGroup.id
+    }
+    onSourcesChange(sources.map(s => s.id === updated.id ? { ...updated, group: finalGroup } : s))
+    setEditSource(null)
+  }
 
   const fetchAll = useCallback(async (force = false) => {
     setSpinning(true)
@@ -196,8 +275,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   }
 
   function handleEditSave(updated) {
-    onSourcesChange(sources.map(s => s.id === updated.id ? updated : s))
-    setEditSource(null)
+    handleSaveSource(updated)
   }
 
   function moveSource(id, dir) {
@@ -223,6 +301,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
             {[
               { v:'grid',    label:'▦', title:'Grid view' },
               { v:'compact', label:'≡', title:'Compact view' },
+              { v:'groups',  label:'⊞', title:'Groups view' },
             ].map(({ v, label, title }) => (
               <button key={v} onClick={() => toggleView(v)} title={title}
                 style={{ padding:'4px 10px', border:'none', cursor:'pointer', fontSize:13, fontFamily:"'DM Mono',monospace", fontWeight:700, background: newsView === v ? 'var(--accent)' : 'var(--s3)', color: newsView === v ? '#fff' : 'var(--text3)', transition:'background .15s' }}>
@@ -236,6 +315,12 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
             </svg>
             Refresh
           </button>
+          {newsView === 'groups' && (
+            <button className="news-add-source-btn" onClick={() => setShowManageGroups(v => !v)}
+              style={{ background: showManageGroups ? 'var(--accent)' : undefined }}>
+              ⊞ Groups
+            </button>
+          )}
           <button className="news-add-source-btn" onClick={onAddSource}>+ Source</button>
         </div>
       </div>
@@ -251,6 +336,69 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           </div>
         ))}
       </div>
+      {/* Manage Groups panel */}
+      {newsView === 'groups' && showManageGroups && (
+        <div style={{ margin:'0 0 16px', padding:16, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:10 }}>
+          <div style={{ fontWeight:700, fontSize:13, marginBottom:12 }}>Manage Groups</div>
+          {/* Existing groups */}
+          <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:14 }}>
+            {newsGroups.map(g => (
+              <div key={g.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 10px', background:'var(--s3)', borderRadius:7 }}>
+                <span style={{ width:12, height:12, borderRadius:'50%', background:g.color, flexShrink:0, display:'inline-block' }} />
+                {editGroupId === g.id ? (
+                  <>
+                    <input type="text" value={editGroupName} onChange={e => setEditGroupName(e.target.value)}
+                      style={{ flex:1, background:'var(--bg)', border:'1px solid var(--border2)', borderRadius:5, padding:'3px 8px', fontSize:12, color:'var(--text)', fontFamily:"'DM Mono',monospace" }}
+                      onKeyDown={e => { if (e.key === 'Enter') saveGroupName(g.id); if (e.key === 'Escape') { setEditGroupId(null); setEditGroupName('') } }}
+                      autoFocus />
+                    <button onClick={() => saveGroupName(g.id)} style={{ background:'var(--accent)', border:'none', borderRadius:5, color:'#fff', fontSize:11, padding:'3px 8px', cursor:'pointer' }}>Save</button>
+                    <button onClick={() => { setEditGroupId(null); setEditGroupName('') }} style={{ background:'var(--s4)', border:'none', borderRadius:5, color:'var(--text3)', fontSize:11, padding:'3px 8px', cursor:'pointer' }}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ flex:1, fontSize:12, fontWeight:600 }}>{g.name}</span>
+                    <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>
+                      {sources.filter(s => s.group === g.id || s.group === g.name).length} src
+                    </span>
+                    <button onClick={() => { setEditGroupId(g.id); setEditGroupName(g.name) }}
+                      style={{ background:'none', border:'1px solid var(--border2)', borderRadius:5, color:'var(--text3)', fontSize:10, padding:'2px 6px', cursor:'pointer' }}>✎</button>
+                    <button onClick={() => deleteGroup(g.id)}
+                      style={{ background:'none', border:'1px solid var(--border2)', borderRadius:5, color:'var(--red)', fontSize:10, padding:'2px 6px', cursor:'pointer' }}>✕</button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Add new group */}
+          <div style={{ display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+            <input type="text" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
+              placeholder="New group name…" maxLength={40}
+              style={{ flex:1, minWidth:120, background:'var(--bg)', border:'1px solid var(--border2)', borderRadius:6, padding:'6px 10px', fontSize:12, color:'var(--text)', fontFamily:"'DM Mono',monospace" }}
+              onKeyDown={e => { if (e.key === 'Enter') addGroup() }} />
+            <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+              {GROUP_COLORS.map(c => (
+                <div key={c} onClick={() => setNewGroupColor(c)}
+                  style={{ width:18, height:18, borderRadius:'50%', background:c, cursor:'pointer', outline: newGroupColor === c ? '2px solid var(--text)' : 'none', outlineOffset:1 }} />
+              ))}
+            </div>
+            <button onClick={addGroup} disabled={!newGroupName.trim()}
+              style={{ background:'var(--accent)', border:'none', borderRadius:6, color:'#fff', fontSize:12, fontWeight:700, padding:'6px 14px', cursor:'pointer', opacity: newGroupName.trim() ? 1 : .4 }}>
+              + Add
+            </button>
+          </div>
+        </div>
+      )}
+
+      {newsView === 'groups' ? (
+        <NewsGroupsView
+          sources={sources}
+          cache={cache}
+          newsGroups={newsGroups}
+          groupLayout={groupLayout}
+          onLayoutChange={handleGroupLayoutChange}
+          onSourceMove={handleSourceMove}
+        />
+      ) : (
       <div className={newsView === 'compact' ? 'news-compact-grid' : ''}>
       {displayed.map(src => {
         const items = cache[src.id]
@@ -306,11 +454,13 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
       })}
 
       </div>
+      )}
       {editSource && (
         <SourceModal
           source={editSource}
           onSave={handleEditSave}
           onClose={() => setEditSource(null)}
+          groups={newsGroups}
         />
       )}
 
