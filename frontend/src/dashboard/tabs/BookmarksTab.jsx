@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import ConfirmModal from '../../components/ConfirmModal'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function faviconUrl(url) {
@@ -14,13 +15,26 @@ const inputStyle = {
 
 // ── Grid view bookmark card ───────────────────────────────────────────────────
 function BookmarkCard({ item, onRemove }) {
+  const [confirming, setConfirming] = useState(false)
   return (
-    <a className="bookmark-card" href={item.url} target="_blank" rel="noopener noreferrer">
-      <img src={faviconUrl(item.url)} alt="" onError={e => { e.target.style.display='none' }} />
-      <div className="bookmark-card-name">{item.name}</div>
-      <div className="bookmark-card-url">{tryHost(item.url)}</div>
-      <button className="bookmark-remove" onClick={e => { e.preventDefault(); onRemove(item.id) }}>×</button>
-    </a>
+    <>
+      <a className="bookmark-card" href={item.url} target="_blank" rel="noopener noreferrer">
+        <img src={faviconUrl(item.url)} alt="" onError={e => { e.target.style.display='none' }} />
+        <div className="bookmark-card-name">{item.name}</div>
+        <div className="bookmark-card-url">{tryHost(item.url)}</div>
+        <button className="bookmark-remove" onClick={e => { e.preventDefault(); setConfirming(true) }}>×</button>
+      </a>
+      {confirming && (
+        <ConfirmModal
+          title="Delete Bookmark"
+          message={`Delete "${item.name}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          confirmStyle="danger"
+          onConfirm={() => { onRemove(item.id); setConfirming(false) }}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </>
   )
 }
 
@@ -31,8 +45,7 @@ const MIN_W = 180, MIN_H = 140
 function FolderPanel({ title, items, layout, onLayoutChange, onOpen, onRemove }) {
   const { x=20, y=20, w=260, h=220 } = layout || {}
   const panelRef  = useRef(null)
-  const dragRef   = useRef(null)
-  const resizeRef = useRef(null)
+  const [confirmId, setConfirmId] = useState(null)
 
   // ── Drag ──
   function onDragStart(e) {
@@ -115,12 +128,23 @@ function FolderPanel({ title, items, layout, onLayoutChange, onOpen, onRemove })
             <span style={{ fontSize:9, color:'var(--text2)', fontFamily:"'DM Mono',monospace", textAlign:'center', lineHeight:1.3, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', width:'100%' }}>
               {item.name}
             </span>
-            <button onClick={e => { e.stopPropagation(); onRemove(item.id) }}
+            <button onClick={e => { e.stopPropagation(); setConfirmId(item.id) }}
               style={{ position:'absolute', top:2, right:2, width:14, height:14, borderRadius:'50%', background:'rgba(255,91,110,.85)', border:'none', color:'#fff', fontSize:9, cursor:'pointer', display:'none', alignItems:'center', justifyContent:'center', lineHeight:1 }}
               className="bm-folder-remove">×</button>
           </div>
         ))}
       </div>
+
+      {confirmId && (
+        <ConfirmModal
+          title="Delete Bookmark"
+          message={`Delete "${items.find(i => i.id === confirmId)?.name || 'this bookmark'}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          confirmStyle="danger"
+          onConfirm={() => { onRemove(confirmId); setConfirmId(null) }}
+          onCancel={() => setConfirmId(null)}
+        />
+      )}
     </div>
   )
 }
