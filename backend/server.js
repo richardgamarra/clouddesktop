@@ -36,6 +36,13 @@ app.use('/api/icons', iconsRouter)
 const stocksRouter = require('./routes/stocks')
 app.use('/api/stocks', stocksRouter)
 
+const uploadRouter = require('./routes/upload')
+app.use('/api/upload', uploadRouter)
+
+// Serve uploaded background images as static files
+const uploadsDir = require('path').join(__dirname, '../uploads')
+app.use('/uploads', require('express').static(uploadsDir))
+
 // ── Protected API routes ──────────────────────────────────────────────────────
 app.get('/api/user/me', requireAuth, (req, res) => {
   res.json({ user: req.user })

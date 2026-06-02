@@ -21,12 +21,14 @@ const LIGHT_PRESETS = [
 ]
 
 function BgSettings() {
-  const [darkBg,   setDarkBg]   = useState(() => localStorage.getItem('wsh_bg_dark')    || '')
-  const [lightBg,  setLightBg]  = useState(() => localStorage.getItem('wsh_bg_light')   || '')
-  const [opacity,  setOpacity]  = useState(() => parseFloat(localStorage.getItem('wsh_bg_opacity') || '0.85'))
-  const [customD,  setCustomD]  = useState('')
-  const [customL,  setCustomL]  = useState('')
-  const [mode,     setMode]     = useState(() => localStorage.getItem('wsh_theme') || 'dark')
+  const [darkBg,    setDarkBg]    = useState(() => localStorage.getItem('wsh_bg_dark')    || '')
+  const [lightBg,   setLightBg]   = useState(() => localStorage.getItem('wsh_bg_light')   || '')
+  const [opacity,   setOpacity]   = useState(() => parseFloat(localStorage.getItem('wsh_bg_opacity') || '0.85'))
+  const [customD,   setCustomD]   = useState('')
+  const [customL,   setCustomL]   = useState('')
+  const [mode,      setMode]      = useState(() => localStorage.getItem('wsh_theme') || 'dark')
+  const [uploading, setUploading] = useState(false)
+  const { accessToken } = useAuth()
 
   function save(key, val) {
     localStorage.setItem(key, val)
@@ -49,6 +51,25 @@ function BgSettings() {
   function changeOpacity(v) {
     setOpacity(v)
     save('wsh_bg_opacity', String(v))
+  }
+
+  async function handleUpload(e, isDark) {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('image', file)
+      const res = await fetch('/api/upload/background', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: fd,
+      })
+      const data = await res.json()
+      if (data.url) pickPreset(data.url, isDark)
+    } catch {}
+    setUploading(false)
+    e.target.value = ''
   }
 
   const iStyle = { background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'7px 10px', outline:'none', flex:1 }
@@ -85,6 +106,16 @@ function BgSettings() {
                 </div>
               ))}
             </div>
+
+            {/* Upload own image */}
+            <label style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10, cursor:'pointer' }}>
+              <span style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:8, padding:'7px 14px', fontSize:12, fontWeight:700, color:'var(--text2)', cursor:'pointer', whiteSpace:'nowrap' }}>
+                {uploading ? '⏳ Uploading…' : '📁 Upload image'}
+              </span>
+              <span style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>JPG, PNG, WebP — max 10MB</span>
+              <input type="file" accept="image/*" style={{ display:'none' }} disabled={uploading}
+                onChange={e => handleUpload(e, isDark)} />
+            </label>
 
             {/* Custom URL */}
             <div style={{ display:'flex', gap:8, marginBottom:12 }}>
