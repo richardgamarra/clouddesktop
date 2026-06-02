@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DEFAULT_NEWS_SOURCES, CATEGORY_COLORS } from './constants'
 import SourceModal from './SourceModal'
+import ConfirmModal from '../components/ConfirmModal'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function stripTags(s) { return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() }
@@ -162,6 +163,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [spinning, setSpinning] = useState(false)
   const [lastUpdated, setLastUpdated] = useState('Fetching latest headlines…')
   const [editSource, setEditSource] = useState(null)
+  const [confirmRemove, setConfirmRemove] = useState(null) // source id to remove
   const [newsView, setNewsView] = useState(() => localStorage.getItem('wsh_news_view') || 'grid')
 
   function toggleView(v) { setNewsView(v); localStorage.setItem('wsh_news_view', v) }
@@ -187,10 +189,10 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const displayed = filter === 'all' ? sources : sources.filter(s => s.id === filter)
 
   function removeSource(id) {
-    if (!window.confirm('Remove this source?')) return
     onSourcesChange(sources.filter(s => s.id !== id))
     setCache(c => { const n = { ...c }; delete n[id]; return n })
     if (filter === id) setFilter('all')
+    setConfirmRemove(null)
   }
 
   function handleEditSave(updated) {
@@ -245,7 +247,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           <div key={src.id} className={`source-pill${filter === src.id ? ' active' : ''}`} onClick={() => setFilter(src.id)}>
             <span className="pill-dot" style={{ background: src.color }} />
             {src.name}
-            <button className="pill-remove" onClick={e => { e.stopPropagation(); removeSource(src.id) }}>×</button>
+            <button className="pill-remove" onClick={e => { e.stopPropagation(); setConfirmRemove(src.id) }}>×</button>
           </div>
         ))}
       </div>
@@ -309,6 +311,17 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           source={editSource}
           onSave={handleEditSave}
           onClose={() => setEditSource(null)}
+        />
+      )}
+
+      {confirmRemove && (
+        <ConfirmModal
+          title="Remove News Source"
+          message={`Remove "${sources.find(s => s.id === confirmRemove)?.name || 'this source'}"? You can add it back later.`}
+          confirmLabel="Remove"
+          confirmStyle="danger"
+          onConfirm={() => removeSource(confirmRemove)}
+          onCancel={() => setConfirmRemove(null)}
         />
       )}
     </div>
