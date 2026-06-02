@@ -1,44 +1,76 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage, encryptSettings } from '../lib/crypto'
+import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage, encryptSettings, deriveKey } from '../lib/crypto'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+// ── Password modal component ──────────────────────────────────────────────────
+function PasswordModal({ onConfirm, onCancel, title, sub }) {
+  const [pwd, setPwd] = useState('')
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.75)', backdropFilter:'blur(5px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999 }}>
+      <div style={{ background:'var(--surface)', border:'1px solid var(--border2)', borderRadius:14, padding:28, width:380, boxShadow:'0 28px 72px rgba(0,0,0,.7)' }}>
+        <div style={{ fontSize:17, fontWeight:800, marginBottom:4 }}>{title}</div>
+        <div style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:20 }}>{sub}</div>
+        <div className="field">
+          <label>Your password</label>
+          <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} placeholder="••••••••" autoFocus
+            onKeyDown={e => { if (e.key === 'Enter' && pwd) onConfirm(pwd) }} />
+        </div>
+        <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:8 }}>
+          <button className="btn-cancel" onClick={onCancel}>Cancel</button>
+          <button className="btn-primary" style={{ width:'auto' }} disabled={!pwd} onClick={() => onConfirm(pwd)}>Continue →</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPage() {
-  const { accessToken, user, sync } = useAuth()
+  const { accessToken, user } = useAuth()
   const navigate = useNavigate()
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [saving, setSaving] = useState(false)
   const [restoring, setRestoring] = useState(null)
+  const [pwdModal, setPwdModal] = useState(null) // {action, backupId}
 
   useEffect(() => {
+    if (!accessToken) return
     fetch('/api/settings/backups', { headers: { Authorization: `Bearer ${accessToken}` } })
       .then(r => r.json())
       .then(d => { setBackups(d.backups || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [accessToken])
 
-  // ── Save current settings to cloud ───────────────────────────────────────────
-  async function handleSaveToCloud() {
-    if (!sync || !accessToken) { setStatus('✗ Not connected — please log in again'); return }
+  // ── Save current settings to cloud (asks for password, derives key independently) ──
+  async function doSaveToCloud(pwd) {
+    setPwdModal(null)
+    if (!user?.id) { setStatus('✗ Not logged in — please log in again'); return }
     setSaving(true); setStatus('')
     try {
-      await sync(accessToken)
+      const key = await deriveKey(pwd, user.id)
+      const blob = await encryptSettings(key)
+      const res = await fetch('/api/settings/sync', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(blob),
+      })
+      if (!res.ok) { setStatus('✗ Failed to save — server error'); return }
       // Refresh backup list
-      const res = await fetch('/api/settings/backups', { headers: { Authorization: `Bearer ${accessToken}` } })
-      const d = await res.json()
-      setBackups(d.backups || [])
+      const br = await fetch('/api/settings/backups', { headers: { Authorization: `Bearer ${accessToken}` } })
+      const bd = await br.json()
+      setBackups(bd.backups || [])
       setStatus('✓ Settings saved to cloud successfully')
     } catch {
-      setStatus('✗ Failed to save — check your connection')
+      setStatus('✗ Wrong password or connection error')
     } finally {
       setSaving(false)
-      setTimeout(() => setStatus(''), 4000)
+      setTimeout(() => setStatus(''), 5000)
     }
   }
 
@@ -76,29 +108,25 @@ export default function SettingsPage() {
   }
 
   // ── Restore from server backup ────────────────────────────────────────────────
-  async function handleRestore(backupId) {
-    const pwd = prompt('Enter your password to restore this backup:')
-    if (!pwd) return
-    setRestoring(backupId)
-    setStatus('')
+  async function doRestore(backupId, pwd) {
+    setPwdModal(null)
+    if (!user?.id) { setStatus('✗ Not logged in — please log in again'); return }
+    setRestoring(backupId); setStatus('')
     try {
       const res = await fetch(`/api/settings/backups/${backupId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
-      if (!res.ok) { setStatus('✗ Could not fetch backup'); return }
+      if (!res.ok) { setStatus('✗ Could not fetch backup from server'); setRestoring(null); return }
       const { encrypted_blob, iv } = await res.json()
-
-      // Re-derive key from password
-      const { deriveKey } = await import('../lib/crypto')
       const key = await deriveKey(pwd, user.id)
       const settings = await decryptSettings(key, encrypted_blob, iv)
       hydrateLocalStorage(settings)
       setStatus('✓ Backup restored — reloading…')
       sessionStorage.removeItem('cw_synced')
-      setTimeout(() => window.location.reload(), 800)
-    } catch (err) {
-      setStatus('✗ Wrong password or corrupted backup')
-      setTimeout(() => setStatus(''), 4000)
+      setTimeout(() => window.location.reload(), 900)
+    } catch {
+      setStatus('✗ Wrong password or corrupted backup — try again')
+      setTimeout(() => setStatus(''), 5000)
     } finally {
       setRestoring(null)
     }
@@ -123,7 +151,7 @@ export default function SettingsPage() {
             Manually save your current workspace (apps, groups, news sources, notes, tabs) to the server so you can restore it on any device.
           </div>
         </div>
-        <button onClick={handleSaveToCloud} disabled={saving}
+        <button onClick={() => setPwdModal({ action:'save' })} disabled={saving}
           style={{ background:'var(--accent)', border:'none', borderRadius:10, color:'#fff', fontSize:14, fontWeight:700, padding:'12px 24px', cursor:'pointer', opacity:saving?.6:1, whiteSpace:'nowrap', flexShrink:0 }}>
           {saving ? 'Saving…' : '💾 Save to Cloud Now'}
         </button>
@@ -156,8 +184,8 @@ export default function SettingsPage() {
           {!loading && backups.length > 0 && (
             <>
               {/* Quick restore latest */}
-              <button onClick={() => handleRestore(backups[0].id)} disabled={restoring === backups[0].id}
-                style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:10, color:'var(--green)', fontSize:14, fontWeight:700, padding:'12px 20px', cursor:'pointer', width:'100%', marginBottom:16, opacity: restoring === backups[0].id ? .5 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              <button onClick={() => setPwdModal({ action:'restore', backupId: backups[0].id })} disabled={!!restoring}
+                style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:10, color:'var(--green)', fontSize:14, fontWeight:700, padding:'12px 20px', cursor:'pointer', width:'100%', marginBottom:16, opacity: restoring ? .5 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
                 {restoring === backups[0].id ? 'Restoring…' : '↩ Restore Latest Backup'}
                 <span style={{ fontSize:11, fontWeight:400, fontFamily:"'DM Mono',monospace", opacity:.7 }}>{formatDate(backups[0].created_at)}</span>
               </button>
@@ -176,7 +204,7 @@ export default function SettingsPage() {
                       </div>
                       <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>{formatDate(b.created_at)}</div>
                     </div>
-                    <button onClick={() => handleRestore(b.id)} disabled={!!restoring}
+                    <button onClick={() => setPwdModal({ action:'restore', backupId: b.id })} disabled={!!restoring}
                       style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, fontFamily:"'DM Mono',monospace", padding:'5px 12px', cursor:'pointer', opacity: restoring ? .5 : 1, whiteSpace:'nowrap' }}>
                       {restoring === b.id ? '…' : '↩ Restore'}
                     </button>
@@ -210,6 +238,21 @@ export default function SettingsPage() {
           ⚠ Server backups are encrypted with your password. The server cannot read your data. Restoring requires you to enter your password to decrypt.
         </div>
       </div>
+
+      {/* Password modal */}
+      {pwdModal && (
+        <PasswordModal
+          title={pwdModal.action === 'save' ? '💾 Save to Cloud' : '↩ Restore Backup'}
+          sub={pwdModal.action === 'save'
+            ? 'Enter your password to encrypt and save your current settings to the server.'
+            : 'Enter your password to decrypt and restore this backup to your device.'}
+          onConfirm={pwd => {
+            if (pwdModal.action === 'save') doSaveToCloud(pwd)
+            else doRestore(pwdModal.backupId, pwd)
+          }}
+          onCancel={() => setPwdModal(null)}
+        />
+      )}
     </div>
   )
 }
