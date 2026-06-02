@@ -7,9 +7,16 @@ const DEFAULT_TABS = [
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem('wsh_custom_tabs'))
-    if (saved && saved.length > 0) return saved
-    // New user — seed a default empty Widgets tab
-    return JSON.parse(JSON.stringify(DEFAULT_TABS))
+    if (!saved || saved.length === 0) {
+      // New user — seed a default empty Widgets tab
+      return JSON.parse(JSON.stringify(DEFAULT_TABS))
+    }
+    // Existing user — add Widgets tab if they don't have one yet
+    const hasWidgets = saved.some(t => t.type === 'widgets')
+    if (!hasWidgets) {
+      return [...saved, JSON.parse(JSON.stringify(DEFAULT_TABS[0]))]
+    }
+    return saved
   }
   catch { return JSON.parse(JSON.stringify(DEFAULT_TABS)) }
 }
