@@ -2,6 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 
+// Apply saved theme before first render to avoid flash
+const savedTheme = localStorage.getItem('wsh_theme')
+if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light')
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

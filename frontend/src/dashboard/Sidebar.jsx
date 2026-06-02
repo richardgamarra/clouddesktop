@@ -1,4 +1,18 @@
+import { useState } from 'react'
+
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('wsh_theme') || 'dark')
+  function toggle() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    localStorage.setItem('wsh_theme', next)
+    if (next === 'light') document.documentElement.setAttribute('data-theme', 'light')
+    else document.documentElement.removeAttribute('data-theme')
+  }
+  return [theme, toggle]
+}
 
 // Read icon overrides (supports both new wsh_apps.emoji and old hub_icon_overrides system)
 function getIconOverrides() {
@@ -23,6 +37,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onContextMenu, sidebarOpen, onClose }) {
+  const [theme, toggleTheme] = useTheme()
   const navigate = useNavigate()
   const { user } = useAuth()
   const sidebarApps = apps.filter(a => a.showInSidebar !== false)
@@ -89,6 +104,8 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
       )}
       <button className="sb-add-btn" title="Settings & Backups" onClick={() => navigate('/settings')}
         style={{ fontSize: 16, marginBottom: 4 }}>🗄</button>
+      <button className="sb-add-btn" title={theme === 'dark' ? 'Switch to Light mode' : 'Switch to Dark mode'} onClick={toggleTheme}
+        style={{ fontSize: 16, marginBottom: 4 }}>{theme === 'dark' ? '☀️' : '🌙'}</button>
       <button className="sb-add-btn" title="Add App (Ctrl+K)" onClick={onAddApp}>+</button>
     </nav>
     </>

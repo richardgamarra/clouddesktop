@@ -24,6 +24,21 @@
   --t: .17s cubic-bezier(.4,0,.2,1);
 }
 
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg:      #f0f2f7;
+  --surface: #ffffff;
+  --s2:      #f5f6fa;
+  --s3:      #eaecf4;
+  --s4:      #dde0ed;
+  --border:  #d4d7e8;
+  --border2: #bcc0d6;
+  --text:    #1a1d2e;
+  --text2:   #4a4f6a;
+  --text3:   #8b90a8;
+  --aglow:   rgba(91,127,255,.18);
+}
+
 html, body {
   background: var(--bg);
   color: var(--text);
