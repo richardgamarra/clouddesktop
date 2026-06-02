@@ -20,6 +20,22 @@ export default function TabEditModal({ tab, onSave, onClose, isDefault, onSetDef
         <div className="modal-title">✎ Edit Tab</div>
         <div className="modal-sub">Change the tab name and icon</div>
 
+        {/* Default tab toggle — prominent at top */}
+        <div onClick={() => setMakeDefault(v => !v)}
+          style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background: makeDefault ? 'rgba(245,166,35,.08)' : 'var(--s2)', border:`1px solid ${makeDefault ? 'rgba(245,166,35,.4)' : 'var(--border2)'}`, borderRadius:10, padding:'12px 16px', marginBottom:16, cursor:'pointer', transition:'all .15s' }}>
+          <div>
+            <div style={{ fontSize:13, fontWeight:700, color: makeDefault ? 'var(--yellow)' : 'var(--text)' }}>
+              {makeDefault ? '★ Default opening tab' : '☆ Set as default opening tab'}
+            </div>
+            <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:3 }}>
+              {makeDefault ? 'Opens automatically when you log in' : 'Click to make this tab open on login'}
+            </div>
+          </div>
+          <div style={{ width:42, height:24, borderRadius:12, background: makeDefault ? 'var(--yellow)' : 'var(--s4)', position:'relative', transition:'background .2s', flexShrink:0 }}>
+            <span style={{ position:'absolute', top:3, left: makeDefault ? 21 : 3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
+          </div>
+        </div>
+
         {/* Preview */}
         <div style={{ display:'flex', alignItems:'center', gap:10, background:'var(--s2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 14px', marginBottom:16 }}>
           <div style={{ fontSize:20 }}>{icon || tab.icon}</div>
@@ -38,20 +54,6 @@ export default function TabEditModal({ tab, onSave, onClose, isDefault, onSetDef
           <label>Icon (emoji or leave blank for default)</label>
           <input type="text" value={icon} onChange={e => setIcon(e.target.value)}
             placeholder="e.g. 🚀" maxLength={4} />
-        </div>
-
-        {/* Default tab toggle */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'var(--s2)', border:`1px solid ${makeDefault ? 'rgba(245,166,35,.4)' : 'var(--border2)'}`, borderRadius:8, padding:'10px 14px', marginBottom:14 }}>
-          <div>
-            <div style={{ fontSize:13, fontWeight:600 }}>★ Default opening tab</div>
-            <div style={{ fontSize:11, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>
-              {makeDefault ? 'This tab opens when you log in' : 'Not the default — click to make it the default'}
-            </div>
-          </div>
-          <button type="button" onClick={() => setMakeDefault(v => !v)}
-            style={{ width:42, height:24, borderRadius:12, border:'none', cursor:'pointer', background: makeDefault ? 'var(--yellow)' : 'var(--s4)', position:'relative', transition:'background .2s', flexShrink:0 }}>
-            <span style={{ position:'absolute', top:3, left: makeDefault ? 21 : 3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
-          </button>
         </div>
 
         <div className="emoji-section-title">Quick pick</div>
