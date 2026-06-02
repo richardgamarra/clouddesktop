@@ -181,6 +181,7 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   }
 
   return (
+    <>
     <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-box">
         <div className="modal-title">{isNew ? 'Add App' : 'Edit App'}</div>
@@ -260,5 +261,6 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
         onCancel={() => setConfirmDelete(false)}
       />
     )}
+    </>
   )
 }
