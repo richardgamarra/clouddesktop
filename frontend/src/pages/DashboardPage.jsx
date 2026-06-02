@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PasswordModal from '../components/PasswordModal'
+import ConfirmModal from '../components/ConfirmModal'
 import TabEditModal from '../dashboard/TabEditModal'
 import DesktopView from '../dashboard/DesktopView'
 import { deriveKey, encryptSettings } from '../lib/crypto'
@@ -57,6 +58,7 @@ export default function DashboardPage() {
   const [showManage, setShowManage] = useState(false)
   const [showSourceModal, setShowSourceModal] = useState(false)
   const [showAddTab, setShowAddTab] = useState(false)
+  const [confirmCloseTab, setConfirmCloseTab] = useState(null) // tab id to close
 
   const dragTabId = useRef(null)
 
@@ -194,8 +196,7 @@ export default function DashboardPage() {
 
   function handleCloseCustomTab(e, id) {
     e.stopPropagation()
-    if (activeTab === id) setActiveTab('news')
-    customTabs.removeTab(id)
+    setConfirmCloseTab(id)
   }
 
   function handleTabDragStart(e, id) { dragTabId.current = id; e.dataTransfer.effectAllowed = 'move' }
@@ -425,6 +426,7 @@ export default function DashboardPage() {
               onContextMenu={handleContextMenu} onAddApp={openAddApp}
               onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
               onReorder={hub.reorderApps}
+              onNewGroup={() => setGroupModal({})}
             />
           </div>
         )}
@@ -470,6 +472,21 @@ export default function DashboardPage() {
       )}
       {showAddTab && (
         <AddTabModal onAdd={handleAddCustomTab} onClose={() => setShowAddTab(false)} />
+      )}
+
+      {confirmCloseTab && (
+        <ConfirmModal
+          title="Close Tab"
+          message={`Close "${customTabs.tabs.find(t => t.id === confirmCloseTab)?.name || 'this tab'}"? Its content will be saved and can be re-added later.`}
+          confirmLabel="Close Tab"
+          confirmStyle="accent"
+          onConfirm={() => {
+            if (activeTab === confirmCloseTab) setActiveTab('news')
+            customTabs.removeTab(confirmCloseTab)
+            setConfirmCloseTab(null)
+          }}
+          onCancel={() => setConfirmCloseTab(null)}
+        />
       )}
 
       {editingTab && (

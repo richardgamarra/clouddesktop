@@ -111,7 +111,7 @@ function GroupSection({ group, apps, isOpen, onOpen, onContextMenu, onAddApp, on
   )
 }
 
-export default function AppsTab({ groups, apps, isOpen, openApp, onContextMenu, onAddApp, onEditGroup, onReorder }) {
+export default function AppsTab({ groups, apps, isOpen, openApp, onContextMenu, onAddApp, onEditGroup, onReorder, onNewGroup }) {
   function appsInGroup(gid) { return apps.filter(a => a.groupId === gid) }
   function ungrouped() { return apps.filter(a => !a.groupId || !groups.find(g => g.id === a.groupId)) }
   const ung = ungrouped()
@@ -150,6 +150,18 @@ export default function AppsTab({ groups, apps, isOpen, openApp, onContextMenu, 
           </div>
         </div>
       )}
+
+      {/* New Group card */}
+      <div onClick={onNewGroup}
+        style={{ margin:'8px 0 24px', border:'2px dashed var(--border2)', borderRadius:'var(--r)', padding:'16px 20px', cursor:'pointer', display:'flex', alignItems:'center', gap:12, color:'var(--text3)', transition:'all .15s' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text3)' }}>
+        <span style={{ fontSize:22 }}>＋</span>
+        <div>
+          <div style={{ fontSize:13, fontWeight:700 }}>New Group</div>
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", marginTop:2 }}>Create a new group to organize your apps</div>
+        </div>
+      </div>
     </div>
   )
 }

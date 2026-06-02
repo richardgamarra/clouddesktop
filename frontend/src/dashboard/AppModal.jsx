@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { EMOJI_LIST } from './constants'
+import ConfirmModal from '../components/ConfirmModal'
 
 // 30+ popular app icons — name + Google favicon CDN URL
 const POPULAR_APPS = [
@@ -134,6 +135,7 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   const [shortcut, setShortcut] = useState(app?.shortcut || '')
   const [showInSidebar, setShowInSidebar] = useState(app?.showInSidebar !== false) // default true
   const [listening, setListening] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const nameRef = useRef(null)
 
   useEffect(() => {
@@ -242,11 +244,21 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
               <span style={{ position:'absolute', top:3, left: showInSidebar ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left .2s', display:'block' }} />
             </button>
           </div>
-          {!isNew && <button className="btn-danger" onClick={() => { if (window.confirm('Delete this app?')) onDelete(app.id) }}>Delete</button>}
+          {!isNew && <button className="btn-danger" onClick={() => setConfirmDelete(true)}>Delete</button>}
           <button className="btn-cancel" onClick={onClose}>Cancel</button>
           <button className="btn-primary" style={{ width:'auto' }} onClick={handleSave}>Save</button>
         </div>
       </div>
     </div>
+
+    {confirmDelete && (
+      <ConfirmModal
+        title="Delete App"
+        message={`Are you sure you want to delete "${name || app?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => { setConfirmDelete(false); onDelete(app.id) }}
+        onCancel={() => setConfirmDelete(false)}
+      />
+    )}
   )
 }
