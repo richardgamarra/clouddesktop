@@ -42,10 +42,28 @@ function BookmarkCard({ item, onRemove }) {
 const RESIZE_HANDLES = ['n','s','e','w','nw','ne','sw','se']
 const MIN_W = 180, MIN_H = 140
 
-function FolderPanel({ title, items, layout, onLayoutChange, onOpen, onRemove }) {
+function FolderPanel({ title, items, layout, onLayoutChange, onOpen, onRemove, onReorder }) {
   const { x=20, y=20, w=260, h=220 } = layout || {}
   const panelRef  = useRef(null)
   const [confirmId, setConfirmId] = useState(null)
+  const [dragOver, setDragOver]   = useState(null)
+  const dragId = useRef(null)
+
+  function onItemDragStart(e, id) { dragId.current = id; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation() }
+  function onItemDragOver(e, id)  { e.preventDefault(); e.stopPropagation(); if (id !== dragId.current) setDragOver(id) }
+  function onItemDrop(e, targetId) {
+    e.preventDefault(); e.stopPropagation()
+    const srcId = dragId.current
+    if (!srcId || srcId === targetId) { setDragOver(null); return }
+    const arr = [...items]
+    const si = arr.findIndex(i => i.id === srcId)
+    const ti = arr.findIndex(i => i.id === targetId)
+    const [moved] = arr.splice(si, 1)
+    arr.splice(ti, 0, moved)
+    onReorder(arr)
+    dragId.current = null; setDragOver(null)
+  }
+  function onItemDragEnd() { dragId.current = null; setDragOver(null) }
 
   // ── Drag ──
   function onDragStart(e) {
@@ -118,10 +136,16 @@ function FolderPanel({ title, items, layout, onLayoutChange, onOpen, onRemove })
       {/* Icon grid */}
       <div style={{ flex:1, overflowY:'auto', padding:'10px 8px', display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(64px, 1fr))', gap:4, alignContent:'start' }}>
         {items.map(item => (
-          <div key={item.id} style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:3, padding:'6px 4px', borderRadius:8, cursor:'pointer', transition:'background .12s' }}
+          <div key={item.id}
+            draggable
+            onDragStart={e => onItemDragStart(e, item.id)}
+            onDragOver={e => onItemDragOver(e, item.id)}
+            onDrop={e => onItemDrop(e, item.id)}
+            onDragEnd={onItemDragEnd}
+            style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:3, padding:'6px 4px', borderRadius:8, cursor:'grab', transition:'background .12s, box-shadow .12s', background: dragOver === item.id ? 'rgba(91,127,255,.18)' : 'transparent', boxShadow: dragOver === item.id ? '0 0 0 2px var(--accent)' : 'none' }}
             onClick={() => onOpen(item.url)}
-            onMouseEnter={e => e.currentTarget.style.background='var(--s4)'}
-            onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+            onMouseEnter={e => { if (dragOver !== item.id) e.currentTarget.style.background='var(--s4)' }}
+            onMouseLeave={e => { if (dragOver !== item.id) e.currentTarget.style.background='transparent' }}>
             <img src={faviconUrl(item.url)} alt="" width={24} height={24}
               style={{ borderRadius:5, flexShrink:0 }}
               onError={e => { e.target.outerHTML = '<span style="font-size:22px">🔖</span>' }} />
@@ -181,6 +205,15 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
   function updatePanelLayout(key, patch) {
     const newLayout = { ...layout, [key]: { ...(layout[key] || {}), ...patch } }
     onUpdateTab(tab.id, { config: { ...tab.config, bmLayout: newLayout } })
+  }
+
+  function reorderPanel(key, reorderedPanelItems) {
+    // Replace the items belonging to this group with the reordered list, preserving other groups
+    const otherItems = items.filter(i => (i.group || '') !== (key === '__other__' ? '' : key))
+    const updated = key === '__other__'
+      ? [...otherItems, ...reorderedPanelItems]
+      : [...reorderedPanelItems, ...otherItems]
+    onUpdateTab(tab.id, { config: { ...tab.config, items: updated } })
   }
 
   // Auto-position panels that have no saved position
@@ -266,6 +299,7 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
               onLayoutChange={patch => updatePanelLayout(panel.key, patch)}
               onOpen={url => window.open(url, '_blank')}
               onRemove={removeItem}
+              onReorder={reordered => reorderPanel(panel.key, reordered)}
             />
           ))}
         </div>
