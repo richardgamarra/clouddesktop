@@ -49,7 +49,8 @@ export default function DashboardPage() {
   const { openApp, isOpen } = useOpenWindows()
   const customTabs = useCustomTabs()
 
-  const [activeTab, setActiveTab] = useState('news')
+  const [activeTab, setActiveTabRaw] = useState(() => localStorage.getItem('wsh_active_tab') || 'news')
+  function setActiveTab(id) { setActiveTabRaw(id); localStorage.setItem('wsh_active_tab', id) }
   const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
   const [ctx, setCtx] = useState(null)
