@@ -53,7 +53,7 @@
 .sb-add-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(91,127,255,.13); }
 
 /* ═══ MAIN ═══ */
-#db-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+#db-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: var(--bg); }
 
 /* ═══ TABS BAR ═══ */
 #tabs-bar {
@@ -89,7 +89,7 @@
 .tab-panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
 /* ═══ NEWS TAB ═══ */
-#news-panel { flex: 1; overflow-y: auto; padding: 28px 32px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+#news-panel { flex: 1; overflow-y: auto; padding: 28px 32px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; background: var(--bg); }
 .news-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
 .news-header h1 { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
 .news-header p { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; margin-top: 2px; }
@@ -186,7 +186,7 @@
 }
 
 /* ═══ HUB TAB ═══ */
-#hub-panel { flex: 1; overflow-y: auto; padding: 28px 32px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+#hub-panel { flex: 1; overflow-y: auto; padding: 28px 32px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; background: var(--bg); }
 .dash-hero { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
 .dash-logo {
   width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent), var(--purple));
@@ -340,6 +340,7 @@
 .custom-tab-panel {
   flex: 1; overflow-y: auto; padding: 28px 32px;
   scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  background: var(--bg);
 }
 
 /* ═══ WEBPAGE TAB ═══ */

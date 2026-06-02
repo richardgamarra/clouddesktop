@@ -119,13 +119,13 @@ function CompactSource({ src, items }) {
   const [hero, ...rest] = items
   const showImg = src.showImages !== false
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:0, background:'var(--bg)' }}>
       {/* Hero: first article with image */}
       {hero && (
         <a href={hero.link} target="_blank" rel="noopener noreferrer"
           style={{ display:'flex', gap:10, padding:'8px 0', borderBottom:'1px solid var(--border)', textDecoration:'none', alignItems:'flex-start' }}
           onMouseEnter={e => e.currentTarget.style.background='var(--s3)'}
-          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+          onMouseLeave={e => e.currentTarget.style.background='var(--bg)'}>
           {showImg && hero.image && (
             <img src={hero.image} alt="" loading="lazy"
               style={{ width:80, height:54, objectFit:'cover', borderRadius:6, flexShrink:0 }}
@@ -146,7 +146,7 @@ function CompactSource({ src, items }) {
         <a key={item.link + i} href={item.link} target="_blank" rel="noopener noreferrer"
           style={{ display:'flex', alignItems:'baseline', gap:8, padding:'6px 0', borderBottom: i < rest.length-1 ? '1px solid var(--border)' : 'none', textDecoration:'none' }}
           onMouseEnter={e => e.currentTarget.style.background='var(--s3)'}
-          onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+          onMouseLeave={e => e.currentTarget.style.background='var(--bg)'}>
           <span style={{ fontSize:10, color:'var(--accent)', flexShrink:0 }}>›</span>
           <span style={{ fontSize:12, color:'var(--text)', lineHeight:1.4, flex:1, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{item.title}</span>
           <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", flexShrink:0, whiteSpace:'nowrap' }}>{formatAge(item.pubDate)}</span>

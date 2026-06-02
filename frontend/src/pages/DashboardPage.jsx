@@ -352,7 +352,7 @@ export default function DashboardPage() {
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
     } : {}}>
-      {bgImage && <div style={{ position:'fixed', inset:0, background:`rgba(0,0,0,${bgOpacity})`, zIndex:0, pointerEvents:'none' }} />}
+      {bgImage && <div style={{ position:'fixed', inset:0, background:`rgba(0,0,0,${bgOpacity})`, zIndex:-1, pointerEvents:'none' }} />}
       <Sidebar
         groups={hub.groups} apps={hub.apps} openApp={openApp} isOpen={isOpen}
         onAddApp={() => openAddApp()} onContextMenu={handleContextMenu}
