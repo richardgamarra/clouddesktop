@@ -62,16 +62,16 @@ export default function SettingsPage() {
     const M = 'https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/png/'
     const ICON_MAP = {
       // Google — gstatic official
-      'mail.google.com':     G + 'gmail_2020q4_48dp.png',
-      'docs.google.com':     G + 'docs_2020q4_48dp.png',
-      'sheets.google.com':   G + 'sheets_2020q4_48dp.png',
-      'slides.google.com':   G + 'slides_2020q4_48dp.png',
-      'drive.google.com':    G + 'drive_2020q4_48dp.png',
-      'calendar.google.com': G + 'calendar_2020q4_48dp.png',
-      'keep.google.com':     G + 'keep_2020q4_48dp.png',
-      'meet.google.com':     G + 'meet_2020q4_48dp.png',
-      'maps.google.com':     G + 'maps_2020q4_48dp.png',
-      'youtube.com':         G + 'youtube_2020q4_48dp.png',
+      'mail.google.com':     G + 'gmail_48dp.png',
+      'docs.google.com':     G + 'docs_48dp.png',
+      'sheets.google.com':   G + 'sheets_48dp.png',
+      'slides.google.com':   G + 'slides_48dp.png',
+      'drive.google.com':    G + 'drive_48dp.png',
+      'calendar.google.com': G + 'calendar_48dp.png',
+      'keep.google.com':     G + 'keep_48dp.png',
+      'meet.google.com':     G + 'meet_48dp.png',
+      'maps.google.com':     G + 'maps_48dp.png',
+      'youtube.com':         G + 'youtube_48dp.png',
       // Microsoft — Fluent UI CDN
       'outlook.live.com':    M + 'outlook_96x1.png',
       'outlook.office.com':  M + 'outlook_96x1.png',

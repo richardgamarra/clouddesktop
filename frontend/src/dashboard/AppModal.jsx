@@ -4,17 +4,17 @@ import { EMOJI_LIST } from './constants'
 // 30+ popular app icons — name + Google favicon CDN URL
 const POPULAR_APPS = [
   // Google — using official gstatic.com product branding icons
-  { name:'Gmail',            url:'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_48dp.png' },
-  { name:'Google Docs',      url:'https://www.gstatic.com/images/branding/product/2x/docs_2020q4_48dp.png' },
-  { name:'Google Sheets',    url:'https://www.gstatic.com/images/branding/product/2x/sheets_2020q4_48dp.png' },
-  { name:'Google Slides',    url:'https://www.gstatic.com/images/branding/product/2x/slides_2020q4_48dp.png' },
-  { name:'Google Drive',     url:'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png' },
-  { name:'Google Calendar',  url:'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_48dp.png' },
-  { name:'Google Keep',      url:'https://www.gstatic.com/images/branding/product/2x/keep_2020q4_48dp.png' },
-  { name:'Google Meet',      url:'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_48dp.png' },
-  { name:'Google Maps',      url:'https://www.gstatic.com/images/branding/product/2x/maps_2020q4_48dp.png' },
-  { name:'YouTube',          url:'https://www.gstatic.com/images/branding/product/2x/youtube_2020q4_48dp.png' },
-  { name:'Google Analytics', url:'https://www.gstatic.com/images/branding/product/2x/analytics_2020q4_48dp.png' },
+  { name:'Gmail',            url:'https://www.gstatic.com/images/branding/product/2x/gmail_48dp.png' },
+  { name:'Google Docs',      url:'https://www.gstatic.com/images/branding/product/2x/docs_48dp.png' },
+  { name:'Google Sheets',    url:'https://www.gstatic.com/images/branding/product/2x/sheets_48dp.png' },
+  { name:'Google Slides',    url:'https://www.gstatic.com/images/branding/product/2x/slides_48dp.png' },
+  { name:'Google Drive',     url:'https://www.gstatic.com/images/branding/product/2x/drive_48dp.png' },
+  { name:'Google Calendar',  url:'https://www.gstatic.com/images/branding/product/2x/calendar_48dp.png' },
+  { name:'Google Keep',      url:'https://www.gstatic.com/images/branding/product/2x/keep_48dp.png' },
+  { name:'Google Meet',      url:'https://www.gstatic.com/images/branding/product/2x/meet_48dp.png' },
+  { name:'Google Maps',      url:'https://www.gstatic.com/images/branding/product/2x/maps_48dp.png' },
+  { name:'YouTube',          url:'https://www.gstatic.com/images/branding/product/2x/youtube_48dp.png' },
+  { name:'Google Analytics', url:'https://www.gstatic.com/images/branding/product/2x/analytics_48dp.png' },
   // Microsoft Office — confirmed Fluent UI CDN (res-1.cdn.office.net via redirect)
   { name:'Outlook',          url:'https://res-1.cdn.office.net/files/fabric/assets/brand-icons/product/png/outlook_96x1.png' },
   { name:'Word',             url:'https://res-1.cdn.office.net/files/fabric/assets/brand-icons/product/png/word_96x1.png' },
