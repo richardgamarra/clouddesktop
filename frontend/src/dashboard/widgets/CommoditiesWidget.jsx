@@ -97,26 +97,41 @@ export default function CommoditiesWidget({ config, onUpdate }) {
         </>
       ) : (
         <>
-          <div style={{ fontSize:12, fontWeight:700, marginBottom:10 }}>Select commodities to show</div>
-          <div style={{ maxHeight:260, overflowY:'auto', display:'flex', flexDirection:'column', gap:10 }}>
+          {/* My list — reorderable */}
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:6 }}>My List</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:3, marginBottom:12 }}>
+            {symbols.map((sym, i) => {
+              const meta = ALL_COMMODITIES.find(c => c.symbol === sym) || { icon:'📦', name: sym, symbol: sym }
+              return (
+                <div key={sym} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', borderRadius:8, background:'rgba(91,127,255,.1)', border:'1px solid var(--accent)' }}>
+                  <span style={{ fontSize:14 }}>{meta.icon}</span>
+                  <span style={{ fontSize:12, flex:1 }}>{meta.name} <span style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:10 }}>{sym}</span></span>
+                  <button onClick={() => { if(i===0) return; const a=[...symbols]; [a[i-1],a[i]]=[a[i],a[i-1]]; onUpdate({symbols:a}) }}
+                    style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:4, color: i===0?'var(--text3)':'var(--text2)', cursor: i===0?'default':'pointer', fontSize:10, padding:'1px 6px', opacity: i===0?0.3:1 }}>▲</button>
+                  <button onClick={() => { if(i===symbols.length-1) return; const a=[...symbols]; [a[i],a[i+1]]=[a[i+1],a[i]]; onUpdate({symbols:a}) }}
+                    style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:4, color: i===symbols.length-1?'var(--text3)':'var(--text2)', cursor: i===symbols.length-1?'default':'pointer', fontSize:10, padding:'1px 6px', opacity: i===symbols.length-1?0.3:1 }}>▼</button>
+                  <button onClick={() => toggle(sym)} style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:12, padding:'0 2px' }}>×</button>
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:6 }}>Add Commodities</div>
+          <div style={{ maxHeight:200, overflowY:'auto', display:'flex', flexDirection:'column', gap:10 }}>
             {groups.map(group => (
               <div key={group}>
                 <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>{group}</div>
                 <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-                  {ALL_COMMODITIES.filter(c => c.group === group).map(c => {
-                    const on = symbols.includes(c.symbol)
-                    return (
+                  {ALL_COMMODITIES.filter(c => c.group === group && !symbols.includes(c.symbol)).map(c => (
                       <div key={c.symbol} onClick={() => toggle(c.symbol)}
-                        style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:8, background: on ? 'rgba(91,127,255,.1)' : 'var(--s3)', border:`1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, cursor:'pointer' }}>
+                        style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:8, background:'var(--s3)', border:'1px solid var(--border)', cursor:'pointer' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                           <span>{c.icon}</span>
                           <span style={{ fontSize:12 }}>{c.name}</span>
                           <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{c.symbol}</span>
                         </div>
-                        <div style={{ width:14, height:14, borderRadius:'50%', background: on ? 'var(--accent)' : 'var(--s4)', border:`2px solid ${on ? 'var(--accent)' : 'var(--border2)'}`, flexShrink:0 }} />
+                        <div style={{ fontSize:11, color:'var(--accent)' }}>+ Add</div>
                       </div>
-                    )
-                  })}
+                  ))}
                 </div>
               </div>
             ))}

@@ -106,38 +106,46 @@ export default function StocksWidget({ config, onUpdate }) {
         </>
       ) : (
         <>
-          <div style={{ fontSize:12, fontWeight:700, marginBottom:8 }}>Select stocks to show</div>
-
-          {/* Custom symbol input */}
-          <div style={{ display:'flex', gap:6, marginBottom:10 }}>
-            <input
-              type="text" value={customInput} onChange={e => setCustomInput(e.target.value.toUpperCase())}
-              onKeyDown={e => { if (e.key === 'Enter') addCustom() }}
-              placeholder="Add ticker (e.g. COIN)"
-              maxLength={6}
-              style={{ flex:1, background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:7, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 10px', outline:'none' }}
-            />
-            <button onClick={addCustom}
-              style={{ padding:'6px 12px', borderRadius:7, border:'none', background:'var(--accent)', color:'#fff', fontSize:12, cursor:'pointer', fontFamily:"'DM Mono',monospace" }}>
-              Add
-            </button>
+          {/* My list — reorderable */}
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:6 }}>My List</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:3, marginBottom:12 }}>
+            {symbols.map((sym, i) => {
+              const info = POPULAR.find(p => p.symbol === sym) || { symbol: sym, name: 'Custom' }
+              return (
+                <div key={sym} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', borderRadius:8, background:'rgba(91,127,255,.1)', border:'1px solid var(--accent)' }}>
+                  <span style={{ fontSize:12, fontWeight:700, fontFamily:"'DM Mono',monospace", flex:1 }}>{sym} <span style={{ color:'var(--text3)', fontSize:10, fontWeight:400 }}>{info.name}</span></span>
+                  <button onClick={() => { if(i===0) return; const a=[...symbols]; [a[i-1],a[i]]=[a[i],a[i-1]]; onUpdate({symbols:a}) }}
+                    style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:4, color: i===0?'var(--text3)':'var(--text2)', cursor: i===0?'default':'pointer', fontSize:10, padding:'1px 6px', opacity: i===0?0.3:1 }}>▲</button>
+                  <button onClick={() => { if(i===symbols.length-1) return; const a=[...symbols]; [a[i],a[i+1]]=[a[i+1],a[i]]; onUpdate({symbols:a}) }}
+                    style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:4, color: i===symbols.length-1?'var(--text3)':'var(--text2)', cursor: i===symbols.length-1?'default':'pointer', fontSize:10, padding:'1px 6px', opacity: i===symbols.length-1?0.3:1 }}>▼</button>
+                  <button onClick={() => toggle(sym)} style={{ background:'none', border:'none', color:'var(--red)', cursor:'pointer', fontSize:12, padding:'0 2px' }}>×</button>
+                </div>
+              )
+            })}
           </div>
 
-          <div style={{ display:'flex', flexDirection:'column', gap:4, maxHeight:220, overflowY:'auto' }}>
-            {/* Show all popular + any custom symbols not in the popular list */}
-            {[...POPULAR, ...symbols.filter(s => !POPULAR.find(p => p.symbol === s)).map(s => ({ symbol:s, name:'Custom' }))].map(s => {
-              const on = symbols.includes(s.symbol)
-              return (
+          {/* Custom symbol input */}
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:6 }}>Add Custom Ticker</div>
+          <div style={{ display:'flex', gap:6, marginBottom:10 }}>
+            <input type="text" value={customInput} onChange={e => setCustomInput(e.target.value.toUpperCase())}
+              onKeyDown={e => { if (e.key === 'Enter') addCustom() }}
+              placeholder="e.g. COIN" maxLength={6}
+              style={{ flex:1, background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:7, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 10px', outline:'none' }} />
+            <button onClick={addCustom} style={{ padding:'6px 12px', borderRadius:7, border:'none', background:'var(--accent)', color:'#fff', fontSize:12, cursor:'pointer', fontFamily:"'DM Mono',monospace" }}>Add</button>
+          </div>
+
+          <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:6 }}>Add Popular</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:4, maxHeight:180, overflowY:'auto' }}>
+            {[...POPULAR.filter(s => !symbols.includes(s.symbol))].map(s => (
                 <div key={s.symbol} onClick={() => toggle(s.symbol)}
-                  style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:8, background: on ? 'rgba(91,127,255,.1)' : 'var(--s3)', border:`1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, cursor:'pointer' }}>
+                  style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:8, background:'var(--s3)', border:'1px solid var(--border)', cursor:'pointer' }}>
                   <div>
                     <span style={{ fontSize:12, fontWeight:700, fontFamily:"'DM Mono',monospace" }}>{s.symbol}</span>
                     <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginLeft:8 }}>{s.name}</span>
                   </div>
-                  <div style={{ width:14, height:14, borderRadius:'50%', background: on ? 'var(--accent)' : 'var(--s4)', border:`2px solid ${on ? 'var(--accent)' : 'var(--border2)'}`, flexShrink:0 }} />
+                  <div style={{ fontSize:11, color:'var(--accent)' }}>+ Add</div>
                 </div>
-              )
-            })}
+            ))}
           </div>
 
           <button onClick={() => setShowSettings(false)}
