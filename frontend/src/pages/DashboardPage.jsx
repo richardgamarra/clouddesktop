@@ -170,21 +170,15 @@ export default function DashboardPage() {
     e.preventDefault()
     const sourceId = dragTabId.current
     if (!sourceId || sourceId === targetId) return
-    const ids = customTabs.tabs.map(t => t.id)
-    const si = ids.indexOf(sourceId), ti = ids.indexOf(targetId)
-    if (si < 0 || ti < 0) return
-    const newOrder = [...ids]; newOrder.splice(si, 1); newOrder.splice(ti, 0, sourceId)
-    customTabs.reorderTabs(newOrder)
+    setTabOrder(prev => {
+      const si = prev.indexOf(sourceId), ti = prev.indexOf(targetId)
+      if (si < 0 || ti < 0) return prev
+      const next = [...prev]; next.splice(si, 1); next.splice(ti, 0, sourceId)
+      return next
+    })
   }
 
-  function moveTab(id, dir) {
-    const ids = customTabs.tabs.map(t => t.id)
-    const i = ids.indexOf(id)
-    const j = i + dir
-    if (j < 0 || j >= ids.length) return
-    const next = [...ids]; [next[i], next[j]] = [next[j], next[i]]
-    customTabs.reorderTabs(next)
-  }
+  function moveTab(id, dir) { moveTabOrder(id, dir) }
 
   function renameTab(id) {
     const tab = customTabs.tabs.find(t => t.id === id)
@@ -233,6 +227,56 @@ export default function DashboardPage() {
 
   const activeCustomTab = customTabs.tabs.find(t => t.id === activeTab)
 
+  // ── Unified tab order (includes news + hub + custom) ─────────────────────────
+  const FIXED_TABS = [
+    { id: 'news', icon: '📰', name: 'News' },
+    { id: 'hub',  icon: '⚡', name: 'Apps' },
+  ]
+
+  function loadTabOrder(customIds) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('wsh_tab_order') || 'null')
+      if (!Array.isArray(saved)) return null
+      // Merge: keep saved order, add any new custom tabs at end, remove deleted ones
+      const allIds = ['news', 'hub', ...customIds]
+      const filtered = saved.filter(id => allIds.includes(id))
+      const missing  = allIds.filter(id => !filtered.includes(id))
+      return [...filtered, ...missing]
+    } catch { return null }
+  }
+
+  const allTabIds = ['news', 'hub', ...customTabs.tabs.map(t => t.id)]
+  const [tabOrder, setTabOrder] = useState(() => loadTabOrder(customTabs.tabs.map(t => t.id)) || allTabIds)
+
+  // Keep order in sync when custom tabs change
+  useEffect(() => {
+    setTabOrder(prev => {
+      const allIds = ['news', 'hub', ...customTabs.tabs.map(t => t.id)]
+      const filtered = prev.filter(id => allIds.includes(id))
+      const missing  = allIds.filter(id => !filtered.includes(id))
+      return [...filtered, ...missing]
+    })
+  }, [customTabs.tabs])
+
+  useEffect(() => {
+    localStorage.setItem('wsh_tab_order', JSON.stringify(tabOrder))
+  }, [tabOrder])
+
+  function moveTabOrder(id, dir) {
+    setTabOrder(prev => {
+      const i = prev.indexOf(id), j = i + dir
+      if (i < 0 || j < 0 || j >= prev.length) return prev
+      const next = [...prev]; [next[i], next[j]] = [next[j], next[i]]; return next
+    })
+  }
+
+  function getTabDef(id) {
+    const fixed = FIXED_TABS.find(t => t.id === id)
+    if (fixed) return fixed
+    const custom = customTabs.tabs.find(t => t.id === id)
+    return custom ? { id: custom.id, icon: custom.icon, name: custom.name, isCustom: true } : null
+  }
+
   return (
     <div id="dashboard-root">
       <Sidebar
@@ -243,45 +287,58 @@ export default function DashboardPage() {
       <div id="db-main">
         <AnnouncementBanner />
 
-        {/* TAB BAR */}
+        {/* TAB BAR — unified reorderable */}
         <div id="tabs-bar">
-          <button className={`tab-btn${activeTab === 'news' ? ' active' : ''}`} onClick={() => setActiveTab('news')}>
-            <span>📰</span>News
-          </button>
-          <div className="tab-divider" />
-          <button className={`tab-btn${activeTab === 'hub' ? ' active' : ''}`} onClick={() => setActiveTab('hub')}>
-            <span>⚡</span>Apps
-          </button>
-          <div className="tab-divider" />
+          {tabOrder.map((id, idx) => {
+            const def = getTabDef(id)
+            if (!def) return null
+            const isActive = activeTab === id
+            const isFirst = idx === 0
+            const isLast = idx === tabOrder.length - 1
 
-          {customTabs.tabs.map((tab, idx) => (
-            <div
-              key={tab.id}
-              style={{ position: 'relative', display: 'flex', flexShrink: 0 }}
-              className="tab-custom-wrap"
-            >
+            if (!def.isCustom) {
+              // Fixed tab (News / Apps) — now also movable
+              return (
+                <button
+                  key={id}
+                  className={`tab-btn-custom${isActive ? ' active' : ''}`}
+                  style={{ fontWeight: 800 }}
+                  draggable
+                  onDragStart={e => handleTabDragStart(e, id)}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => handleTabDrop(e, id)}
+                  onClick={() => setActiveTab(id)}
+                  title="Drag to reorder"
+                >
+                  {!isFirst && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, -1) }} title="Move left">◀</span>}
+                  <span>{def.icon}</span>
+                  {def.name}
+                  {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
+                </button>
+              )
+            }
+
+            // Custom tab
+            return (
               <button
-                className={`tab-btn-custom${activeTab === tab.id ? ' active' : ''}`}
+                key={id}
+                className={`tab-btn-custom${isActive ? ' active' : ''}`}
                 draggable
-                onDragStart={e => handleTabDragStart(e, tab.id)}
+                onDragStart={e => handleTabDragStart(e, id)}
                 onDragOver={e => e.preventDefault()}
-                onDrop={e => handleTabDrop(e, tab.id)}
-                onClick={() => setActiveTab(tab.id)}
-                onDoubleClick={() => renameTab(tab.id)}
+                onDrop={e => handleTabDrop(e, id)}
+                onClick={() => setActiveTab(id)}
+                onDoubleClick={() => renameTab(id)}
                 title="Double-click to rename · Drag to reorder"
               >
-                {idx > 0 && (
-                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTab(tab.id, -1) }} title="Move left">◀</span>
-                )}
-                <span>{tab.icon}</span>
-                {tab.name}
-                {idx < customTabs.tabs.length - 1 && (
-                  <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTab(tab.id, 1) }} title="Move right">▶</span>
-                )}
-                <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, tab.id)} title="Close tab">×</button>
+                {!isFirst && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, -1) }} title="Move left">◀</span>}
+                <span>{def.icon}</span>
+                {def.name}
+                {!isLast && <span className="tab-move-btn" onClick={e => { e.stopPropagation(); moveTabOrder(id, 1) }} title="Move right">▶</span>}
+                <button className="tab-close-btn" onClick={e => handleCloseCustomTab(e, id)} title="Close tab">×</button>
               </button>
-            </div>
-          ))}
+            )
+          })}
 
           <button className="tab-add-btn" onClick={() => setShowAddTab(true)} title="Add new tab">+</button>
           <div className="tab-spacer" />
