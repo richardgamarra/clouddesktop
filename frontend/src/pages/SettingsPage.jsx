@@ -135,59 +135,80 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, maxWidth:900 }}>
-        {/* Export / Import */}
+      <div style={{ maxWidth:900, display:'flex', flexDirection:'column', gap:20 }}>
+
+        {/* ── Cloud Restore ────────────────────────────────────── */}
         <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
-          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>📦 Export / Import</h2>
+          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>☁ Restore from Cloud</h2>
           <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:20, lineHeight:1.6 }}>
-            Export your settings as plain JSON for backup or migration. Import to restore.
+            Restore your workspace from a saved backup. Requires your password to decrypt.
+            Restoring will replace your current local settings.
           </p>
-          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+
+          {loading && <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>Loading backups…</div>}
+
+          {!loading && backups.length === 0 && (
+            <div style={{ background:'var(--s2)', border:'1px solid var(--border)', borderRadius:8, padding:'14px 16px', fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>
+              No server backups yet. Click <strong style={{ color:'var(--text2)' }}>💾 Save to Cloud Now</strong> above to create your first backup.
+            </div>
+          )}
+
+          {!loading && backups.length > 0 && (
+            <>
+              {/* Quick restore latest */}
+              <button onClick={() => handleRestore(backups[0].id)} disabled={restoring === backups[0].id}
+                style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:10, color:'var(--green)', fontSize:14, fontWeight:700, padding:'12px 20px', cursor:'pointer', width:'100%', marginBottom:16, opacity: restoring === backups[0].id ? .5 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                {restoring === backups[0].id ? 'Restoring…' : '↩ Restore Latest Backup'}
+                <span style={{ fontSize:11, fontWeight:400, fontFamily:"'DM Mono',monospace", opacity:.7 }}>{formatDate(backups[0].created_at)}</span>
+              </button>
+
+              {/* All 5 backups */}
+              <div style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:8 }}>
+                All saved backups ({backups.length})
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {backups.map((b, i) => (
+                  <div key={b.id} style={{ display:'flex', alignItems:'center', gap:10, background:'var(--s2)', border:`1px solid ${i === 0 ? 'rgba(61,220,170,.2)' : 'var(--border)'}`, borderRadius:8, padding:'10px 14px' }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
+                        {b.label || `Backup ${backups.length - i}`}
+                        {i === 0 && <span style={{ fontSize:9, background:'rgba(61,220,170,.13)', color:'var(--green)', borderRadius:20, padding:'1px 8px', fontFamily:"'DM Mono',monospace" }}>Latest</span>}
+                      </div>
+                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>{formatDate(b.created_at)}</div>
+                    </div>
+                    <button onClick={() => handleRestore(b.id)} disabled={!!restoring}
+                      style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, fontFamily:"'DM Mono',monospace", padding:'5px 12px', cursor:'pointer', opacity: restoring ? .5 : 1, whiteSpace:'nowrap' }}>
+                      {restoring === b.id ? '…' : '↩ Restore'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* ── Export / Import (local JSON) ──────────────────────── */}
+        <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
+          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>📦 Local Export / Import</h2>
+          <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:16, lineHeight:1.6 }}>
+            Export as a plain JSON file to your device, or import from a previously exported file.
+            No password required — the file is unencrypted.
+          </p>
+          <div style={{ display:'flex', gap:10 }}>
             <button onClick={handleExport}
-              style={{ background:'var(--accent)', border:'none', borderRadius:8, color:'#fff', fontSize:13, fontWeight:700, padding:'10px 16px', cursor:'pointer', textAlign:'left' }}>
-              ↓ Export settings as JSON
+              style={{ background:'var(--accent)', border:'none', borderRadius:8, color:'#fff', fontSize:13, fontWeight:700, padding:'10px 18px', cursor:'pointer' }}>
+              ↓ Export JSON
             </button>
-            <label style={{ background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, color:'var(--text2)', fontSize:13, fontWeight:600, padding:'10px 16px', cursor:'pointer', display:'block' }}>
-              ↑ Import settings from JSON
+            <label style={{ background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, color:'var(--text2)', fontSize:13, fontWeight:600, padding:'10px 18px', cursor:'pointer' }}>
+              ↑ Import JSON
               <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
             </label>
           </div>
         </div>
 
-        {/* Server Backups */}
-        <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:14, padding:24 }}>
-          <h2 style={{ fontSize:15, fontWeight:700, marginBottom:6 }}>☁ Server Backups</h2>
-          <p style={{ fontSize:12, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginBottom:20, lineHeight:1.6 }}>
-            Last 5 encrypted backups saved automatically when you sync. Restoring requires your password.
-          </p>
-          {loading && <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>Loading…</div>}
-          {!loading && backups.length === 0 && (
-            <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>
-              No backups yet. Backups are created automatically when your settings sync.
-            </div>
-          )}
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {backups.map((b, i) => (
-              <div key={b.id} style={{ display:'flex', alignItems:'center', gap:10, background:'var(--s2)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 14px' }}>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12, fontWeight:700 }}>
-                    {b.label || `Backup ${backups.length - i}`}
-                    {i === 0 && <span style={{ marginLeft:8, fontSize:9, background:'rgba(61,220,170,.13)', color:'var(--green)', borderRadius:20, padding:'1px 8px', fontFamily:"'DM Mono',monospace" }}>Latest</span>}
-                  </div>
-                  <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>{formatDate(b.created_at)}</div>
-                </div>
-                <button onClick={() => handleRestore(b.id)} disabled={restoring === b.id}
-                  style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, fontFamily:"'DM Mono',monospace", padding:'4px 10px', cursor:'pointer', opacity: restoring === b.id ? .5 : 1 }}>
-                  {restoring === b.id ? '…' : '↩ Restore'}
-                </button>
-              </div>
-            ))}
-          </div>
+        <div style={{ padding:14, background:'rgba(245,166,35,.08)', border:'1px solid rgba(245,166,35,.3)', borderRadius:10, fontSize:12, color:'var(--yellow)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
+          ⚠ Server backups are encrypted with your password. The server cannot read your data. Restoring requires you to enter your password to decrypt.
         </div>
-      </div>
-
-      <div style={{ marginTop:24, padding:16, background:'rgba(245,166,35,.08)', border:'1px solid rgba(245,166,35,.3)', borderRadius:10, maxWidth:900, fontSize:12, color:'var(--yellow)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
-        ⚠ Your settings are encrypted with your password before being stored on the server. The server cannot read them. Restoring a backup requires your current password.
       </div>
     </div>
   )
