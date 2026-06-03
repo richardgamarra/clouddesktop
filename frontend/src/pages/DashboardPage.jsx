@@ -146,15 +146,7 @@ export default function DashboardPage() {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
     if (sessionStorage.getItem(SYNC_DONE)) return
-    // Only clear workspace if a DIFFERENT user logged in (not a page refresh of the same user)
-    const lastUserId = localStorage.getItem('wsh_last_user_id')
-    if (lastUserId && lastUserId !== user?.id) {
-      // Different user — clear previous user's workspace
-      Object.keys(localStorage)
-        .filter(k => k.startsWith('wsh_') || k.startsWith('hub_'))
-        .forEach(k => localStorage.removeItem(k))
-    }
-    // Store current user ID so next login/refresh can compare
+    // Store current user ID (used to detect user switches on logout)
     if (user?.id) localStorage.setItem('wsh_last_user_id', user.id)
     initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
