@@ -63,11 +63,17 @@ export default function RadioWidget({ config, onUpdate }) {
   const playing = playerState.playing
   const volume  = playerState.volume !== undefined ? playerState.volume : (config.volume ?? 0.8)
 
-  const [error, setError]       = useState('')
-  const [newName, setNewName]   = useState('')
-  const [newUrl, setNewUrl]     = useState('')
-  const [newGenre, setNewGenre] = useState('General')
-  const [showAdd, setShowAdd]   = useState(false)
+  const [error, setError]           = useState('')
+  const [newName, setNewName]       = useState('')
+  const [newUrl, setNewUrl]         = useState('')
+  const [newGenre, setNewGenre]     = useState(GENRES[0])
+  const [newCatInput, setNewCatInput] = useState('')
+  const [showAdd, setShowAdd]       = useState(false)
+  const [showCatMgr, setShowCatMgr] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  // Custom categories stored in config
+  const customCats = config.customCats || []
+  const allCats = [...new Set([...GENRES, ...customCats, ...stations.map(s => s.genre)])]
 
   // Subscribe to singleton player state changes
   useEffect(() => {
@@ -102,26 +108,49 @@ export default function RadioWidget({ config, onUpdate }) {
 
   function addStation() {
     if (!newName.trim() || !newUrl.trim()) return
-    const s = { name: newName.trim(), url: newUrl.trim(), genre: newGenre }
+    const genre = newCatInput.trim() || newGenre
+    const s = { name: newName.trim(), url: newUrl.trim(), genre }
     const updated = [...stations, s]
-    onUpdate({ stations: updated })
-    setNewName('')
-    setNewUrl('')
-    setShowAdd(false)
+    // Save new custom cat if needed
+    const cats = [...customCats]
+    if (!allCats.includes(genre)) cats.push(genre)
+    onUpdate({ stations: updated, customCats: cats })
+    setNewName(''); setNewUrl(''); setNewCatInput(''); setShowAdd(false)
   }
 
   function removeStation(idx) {
-    const updated = stations.filter((_, i) => i !== idx)
-    onUpdate({ stations: updated })
+    onUpdate({ stations: stations.filter((_, i) => i !== idx) })
   }
 
-  const grouped = GENRES.reduce((acc, g) => {
+  function moveStation(idx, dir) {
+    const arr = [...stations]
+    const target = idx + dir
+    if (target < 0 || target >= arr.length) return
+    // Only swap within same genre
+    if (arr[idx].genre !== arr[target].genre) return
+    ;[arr[idx], arr[target]] = [arr[target], arr[idx]]
+    onUpdate({ stations: arr })
+  }
+
+  function addCategory() {
+    if (!newCatName.trim()) return
+    if (allCats.includes(newCatName.trim())) return
+    onUpdate({ customCats: [...customCats, newCatName.trim()] })
+    setNewCatName('')
+  }
+
+  function removeCategory(cat) {
+    // Remove category and reassign its stations to first available cat
+    const updated = stations.map(s => s.genre === cat ? { ...s, genre: GENRES[0] } : s)
+    onUpdate({ stations: updated, customCats: customCats.filter(c => c !== cat) })
+  }
+
+  // Build grouped list in order
+  const grouped = {}
+  allCats.forEach(g => {
     const list = stations.filter(s => s.genre === g)
-    if (list.length) acc[g] = list
-    return acc
-  }, {})
-  const otherStations = stations.filter(s => !GENRES.includes(s.genre))
-  if (otherStations.length) grouped['Other'] = otherStations
+    if (list.length) grouped[g] = list
+  })
 
   return (
     <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12 }}>
@@ -160,28 +189,38 @@ export default function RadioWidget({ config, onUpdate }) {
         {error && <div style={{ color:'var(--red)', fontSize:11, marginTop:8 }}>{error}</div>}
       </div>
 
-      {/* Station list */}
-      <div style={{ maxHeight:280, overflowY:'auto', marginBottom:10, scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
+      {/* Station list with ▲▼ reorder */}
+      <div style={{ maxHeight:280, overflowY:'auto', marginBottom:8, scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
         {Object.entries(grouped).map(([genre, list]) => (
           <div key={genre} style={{ marginBottom:8 }}>
-            <div style={{ fontSize:10, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:4 }}>{genre}</div>
+            <div style={{ fontSize:10, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:3, display:'flex', alignItems:'center' }}>
+              <span style={{ flex:1 }}>{genre}</span>
+              <span style={{ opacity:.5 }}>({list.length})</span>
+            </div>
             {list.map((s, i) => {
               const idx = stations.indexOf(s)
               const isActive = current?.url === s.url
+              const genreList = stations.filter(x => x.genre === genre)
+              const pos = genreList.indexOf(s)
               return (
-                <div key={s.url + i}
-                  style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', borderRadius:8, background: isActive ? 'rgba(91,127,255,.1)' : 'transparent', marginBottom:2 }}>
+                <div key={s.url + i} style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 6px', borderRadius:7,
+                  background: isActive ? 'rgba(91,127,255,.12)' : 'transparent',
+                  border: isActive ? '1px solid rgba(91,127,255,.2)' : '1px solid transparent', marginBottom:2 }}>
                   <button onClick={() => playStation(s)}
-                    style={{ background:'none', border:'none', color: isActive ? 'var(--accent)' : 'var(--text3)', cursor:'pointer', fontSize:14, lineHeight:1, padding:0, minWidth:18 }}>
+                    style={{ background:'none', border:'none', color: isActive ? 'var(--accent)' : 'var(--text3)', cursor:'pointer', fontSize:13, lineHeight:1, padding:0, minWidth:16 }}>
                     {isActive && playing ? '■' : '▶'}
                   </button>
-                  <span onClick={() => playStation(s)} style={{ flex:1, cursor:'pointer', color: isActive ? 'var(--accent2)' : 'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  <span onClick={() => playStation(s)} style={{ flex:1, cursor:'pointer', color: isActive ? 'var(--accent2)' : 'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:12 }}>
                     {s.name}
                   </span>
+                  <button onClick={() => moveStation(idx, -1)} disabled={pos===0}
+                    style={{ background:'none', border:'none', color: pos===0 ? 'var(--border2)' : 'var(--text3)', cursor: pos===0 ? 'default' : 'pointer', fontSize:9, padding:'0 1px', lineHeight:1 }}>▲</button>
+                  <button onClick={() => moveStation(idx, 1)} disabled={pos===genreList.length-1}
+                    style={{ background:'none', border:'none', color: pos===genreList.length-1 ? 'var(--border2)' : 'var(--text3)', cursor: pos===genreList.length-1 ? 'default' : 'pointer', fontSize:9, padding:'0 1px', lineHeight:1 }}>▼</button>
                   <button onClick={() => removeStation(idx)}
-                    style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:13, lineHeight:1, padding:'0 2px', opacity:.5 }}
+                    style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:12, lineHeight:1, padding:'0 1px', opacity:.4 }}
                     onMouseEnter={e => { e.target.style.opacity=1; e.target.style.color='var(--red)' }}
-                    onMouseLeave={e => { e.target.style.opacity=.5; e.target.style.color='var(--text3)' }}>×</button>
+                    onMouseLeave={e => { e.target.style.opacity=.4; e.target.style.color='var(--text3)' }}>×</button>
                 </div>
               )
             })}
@@ -189,17 +228,53 @@ export default function RadioWidget({ config, onUpdate }) {
         ))}
       </div>
 
-      {/* Add station */}
+      {/* Category manager */}
+      {showCatMgr && (
+        <div style={{ background:'var(--s3)', border:'1px solid var(--border)', borderRadius:8, padding:'10px', marginBottom:8 }}>
+          <div style={{ fontSize:11, fontWeight:700, marginBottom:8 }}>📂 Manage Categories</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:8 }}>
+            {allCats.map(cat => (
+              <div key={cat} style={{ display:'flex', alignItems:'center', gap:4, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:20, padding:'3px 8px 3px 10px', fontSize:11 }}>
+                <span>{cat}</span>
+                {customCats.includes(cat) && (
+                  <button onClick={() => removeCategory(cat)}
+                    style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:11, lineHeight:1, padding:0 }}
+                    onMouseEnter={e => e.target.style.color='var(--red)'}
+                    onMouseLeave={e => e.target.style.color='var(--text3)'}>×</button>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
+            <input value={newCatName} onChange={e => setNewCatName(e.target.value)}
+              onKeyDown={e => e.key==='Enter' && addCategory()}
+              placeholder="New category name…"
+              style={{ flex:1, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:11, padding:'5px 8px', outline:'none' }} />
+            <button onClick={addCategory}
+              style={{ background:'var(--accent)', border:'none', borderRadius:6, color:'#fff', fontSize:11, padding:'5px 10px', cursor:'pointer' }}>Add</button>
+            <button onClick={() => setShowCatMgr(false)}
+              style={{ background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, padding:'5px 8px', cursor:'pointer' }}>Done</button>
+          </div>
+        </div>
+      )}
+
+      {/* Add station / category buttons */}
       {showAdd ? (
         <div style={{ background:'var(--s3)', border:'1px solid var(--border)', borderRadius:8, padding:'10px 10px 8px' }}>
           <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Station name"
             style={{ width:'100%', background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 8px', outline:'none', marginBottom:6, boxSizing:'border-box' }} />
           <input value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="Stream URL (mp3/aac)"
             style={{ width:'100%', background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 8px', outline:'none', marginBottom:6, boxSizing:'border-box' }} />
-          <select value={newGenre} onChange={e => setNewGenre(e.target.value)}
-            style={{ width:'100%', background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 8px', outline:'none', marginBottom:8, boxSizing:'border-box' }}>
-            {[...GENRES,'Other','General'].filter((g,i,a)=>a.indexOf(g)===i).map(g => <option key={g} value={g}>{g}</option>)}
+          <select value={newGenre} onChange={e => { setNewGenre(e.target.value); setNewCatInput('') }}
+            style={{ width:'100%', background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 8px', outline:'none', marginBottom: newGenre==='__new__' ? 4 : 8, boxSizing:'border-box' }}>
+            {allCats.map(g => <option key={g} value={g}>{g}</option>)}
+            <option value="__new__">+ New category…</option>
           </select>
+          {newGenre === '__new__' && (
+            <input value={newCatInput} onChange={e => setNewCatInput(e.target.value)}
+              placeholder="Category name"
+              style={{ width:'100%', background:'var(--s2)', border:'1px solid var(--accent)', borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontSize:12, padding:'6px 8px', outline:'none', marginBottom:8, boxSizing:'border-box' }} />
+          )}
           <div style={{ display:'flex', gap:6 }}>
             <button onClick={addStation} disabled={!newName.trim()||!newUrl.trim()}
               style={{ flex:1, background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'6px', cursor:'pointer', fontSize:12 }}>Add</button>
@@ -208,10 +283,17 @@ export default function RadioWidget({ config, onUpdate }) {
           </div>
         </div>
       ) : (
-        <button onClick={() => setShowAdd(true)}
-          style={{ width:'100%', background:'var(--s2)', color:'var(--text2)', border:'1px dashed var(--border2)', borderRadius:8, padding:'7px', cursor:'pointer', fontSize:12, fontFamily:"'DM Mono',monospace" }}>
-          + Add station
-        </button>
+        <div style={{ display:'flex', gap:6 }}>
+          <button onClick={() => { setShowAdd(true); setShowCatMgr(false) }}
+            style={{ flex:1, background:'var(--s2)', color:'var(--text2)', border:'1px dashed var(--border2)', borderRadius:8, padding:'7px', cursor:'pointer', fontSize:12, fontFamily:"'DM Mono',monospace" }}>
+            + Add station
+          </button>
+          <button onClick={() => { setShowCatMgr(v => !v); setShowAdd(false) }}
+            title="Manage categories"
+            style={{ background: showCatMgr ? 'var(--accent)' : 'var(--s2)', color: showCatMgr ? '#fff' : 'var(--text3)', border:`1px solid ${showCatMgr ? 'var(--accent)' : 'var(--border2)'}`, borderRadius:8, padding:'7px 11px', cursor:'pointer', fontSize:13 }}>
+            📂
+          </button>
+        </div>
       )}
     </div>
   )
