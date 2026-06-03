@@ -124,7 +124,7 @@ export default function RadioWidget({ config, onUpdate }) {
   if (otherStations.length) grouped['Other'] = otherStations
 
   return (
-    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12, display:'flex', flexDirection:'column', height:'100%' }}>
+    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12 }}>
       <style>{pulseKeyframes}</style>
 
       {/* Now playing — hero */}
@@ -161,7 +161,7 @@ export default function RadioWidget({ config, onUpdate }) {
       </div>
 
       {/* Station list */}
-      <div style={{ flex:1, overflowY:'auto', marginBottom:10, scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent', minHeight:0 }}>
+      <div style={{ maxHeight:280, overflowY:'auto', marginBottom:10, scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
         {Object.entries(grouped).map(([genre, list]) => (
           <div key={genre} style={{ marginBottom:8 }}>
             <div style={{ fontSize:10, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:4 }}>{genre}</div>

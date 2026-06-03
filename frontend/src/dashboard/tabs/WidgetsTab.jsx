@@ -149,7 +149,7 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
       )}
 
       {/* Widget grid — equal height rows */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gridAutoRows:'520px', gap:16 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16 }}>
         {widgets.map(widget => {
           const def = WIDGET_TYPES.find(t => t.type === widget.type)
           const isDragTarget = dragOver === widget.id
@@ -169,12 +169,9 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
                 transition:'border-color .15s, box-shadow .15s',
                 boxShadow: isDragTarget ? '0 0 0 2px rgba(91,127,255,.25)' : 'none',
                 gridColumn: widget.wide ? 'span 2' : 'span 1',
-                display:'flex',
-                flexDirection:'column',
-                overflow:'hidden',
               }}>
               {/* Card header */}
-              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12, paddingBottom:8, borderBottom:'1px solid var(--border)', flexShrink:0 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12, paddingBottom:8, borderBottom:'1px solid var(--border)' }}>
                 <span title="Drag to reorder" style={{ cursor:'grab', color:'var(--text3)', fontSize:14, lineHeight:1, userSelect:'none', marginRight:2 }}>⠿</span>
                 <span style={{ fontSize:16 }}>{def?.icon}</span>
                 <span style={{ fontSize:13, fontWeight:700, flex:1 }}>{def?.name}</span>
@@ -187,10 +184,7 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
                   onMouseEnter={e => e.target.style.color='var(--red)'}
                   onMouseLeave={e => e.target.style.color='var(--text3)'}>×</button>
               </div>
-              {/* Widget content fills remaining card height */}
-              <div style={{ flex:1, overflow:'auto', scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
-                <WidgetComponent widget={widget} onUpdate={patch => updateWidget(widget.id, patch)} />
-              </div>
+              <WidgetComponent widget={widget} onUpdate={patch => updateWidget(widget.id, patch)} />
             </div>
           )
         })}
