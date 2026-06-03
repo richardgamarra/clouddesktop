@@ -169,9 +169,9 @@ export default function WeatherWidget({ config, onUpdate }) {
               const label = h.hour === 0 ? '12am' : h.hour === 12 ? '12pm' : h.hour > 12 ? `${h.hour-12}pm` : `${h.hour}am`
               return (
                 <div key={i} style={{ flex:'0 0 auto', textAlign:'center', background:'var(--s3)', borderRadius:6, padding:'4px 6px', minWidth:38 }}>
-                  <div style={{ fontSize:9, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{label}</div>
+                  <div style={{ fontSize:9, color:'var(--text)', fontFamily:"'DM Mono',monospace" }}>{label}</div>
                   <div style={{ fontSize:13, margin:'2px 0' }}>{he}</div>
-                  <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)', fontWeight:700 }}>{fmtT(h.temp, unit)}</div>
+                  <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text)', fontWeight:700 }}>{fmtT(h.temp, unit)}</div>
                   {h.precip > 0 && <div style={{ fontSize:8, color:'#60a5fa', fontFamily:"'DM Mono',monospace" }}>{h.precip}%</div>}
                 </div>
               )
@@ -188,12 +188,12 @@ export default function WeatherWidget({ config, onUpdate }) {
             const d = new Date(date)
             return (
               <div key={date} style={{ flex:1, minWidth:36, textAlign:'center', background:'var(--s3)', borderRadius:6, padding:'4px 2px' }}>
-                <div style={{ fontSize:9, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{DAYS[d.getDay()]}</div>
+                <div style={{ fontSize:9, color:'var(--text)', fontFamily:"'DM Mono',monospace", fontWeight:600 }}>{DAYS[d.getDay()]}</div>
                 <div style={{ fontSize:13 }}>{de}</div>
-                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)', fontWeight:700 }}>
+                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text)', fontWeight:700 }}>
                   {fmtT(daily.temperature_2m_max[i], unit)}
                 </div>
-                <div style={{ fontSize:8, fontFamily:"'DM Mono',monospace", color:'var(--text3)' }}>
+                <div style={{ fontSize:8, fontFamily:"'DM Mono',monospace", color:'var(--text2)' }}>
                   {fmtT(daily.temperature_2m_min[i], unit)}
                 </div>
               </div>
