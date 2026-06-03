@@ -97,6 +97,17 @@ function BgSettings() {
         return (
           <div key={pi}>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:10, marginBottom:16 }}>
+              {/* Uploaded/custom image — show first if set and not a preset */}
+              {current && !presets.find(p => p.url === current) && (
+                <div onClick={() => pickPreset(current, isDark)}
+                  style={{ borderRadius:10, overflow:'hidden', cursor:'pointer', border:'2px solid var(--accent)', position:'relative', aspectRatio:'16/9' }}>
+                  <img src={current} alt="My image" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                  <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,.65)', padding:'4px 8px', fontSize:10, color:'#fff', fontFamily:"'DM Mono',monospace", display:'flex', alignItems:'center', gap:4 }}>
+                    <span>📁</span> My image
+                  </div>
+                  <div style={{ position:'absolute', top:6, right:6, background:'var(--accent)', borderRadius:'50%', width:18, height:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#fff' }}>✓</div>
+                </div>
+              )}
               {presets.map(p => (
                 <div key={p.url} onClick={() => pickPreset(p.url, isDark)}
                   style={{ borderRadius:10, overflow:'hidden', cursor:'pointer', border:`2px solid ${current===p.url ? 'var(--accent)' : 'transparent'}`, position:'relative', aspectRatio:'16/9' }}>
