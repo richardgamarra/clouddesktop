@@ -10,13 +10,11 @@ const DEFAULT_STATIONS = [
   { name:'SomaFM Indie Pop', url:'https://ice2.somafm.com/indiepop-128-mp3',                 genre:'Indie'     },
   { name:'Jazz 24',          url:'https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1',   genre:'Jazz'      },
   { name:'France Inter',     url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',     genre:'General'   },
-  // Peru ✅ verified
-  { name:'RPP Noticias',     url:'https://15443.live.streamtheworld.com/RPPRR_SC',           genre:'Peru' },
-  { name:'Studio 92',        url:'https://15443.live.streamtheworld.com/STUDIO92_SC',        genre:'Peru' },
-  { name:'Oxígeno',          url:'https://15443.live.streamtheworld.com/RADIOOXIGENO_SC',    genre:'Peru' },
-  { name:'CPN Radio',        url:'https://15443.live.streamtheworld.com/CPN_RADIO_SC',       genre:'Peru' },
-  { name:'Planeta Peru',     url:'https://15443.live.streamtheworld.com/PLANETA_SC',         genre:'Peru' },
-  { name:'La Zona',          url:'https://15443.live.streamtheworld.com/LAZONA_SC',          genre:'Peru' },
+  // Peru ✅ verified ICY streams
+  { name:'RPP Noticias',     url:'https://rpp-ice.streamguys1.com/rpp.mp3',                  genre:'Peru' },
+  { name:'Studio 92',        url:'https://streaming.studio92.pe/studio92',                   genre:'Peru' },
+  { name:'Oxígeno',          url:'https://streaming.oxigenoradio.com/oxigeno',               genre:'Peru' },
+  { name:'CPN Radio',        url:'https://streaming.cpnradio.pe/cpnradio',                   genre:'Peru' },
   // Beatles ✅ verified (ICY protocol)
   { name:'Beatles Radio',    url:'https://www.beatlesradio.com:8000/stream/1/',              genre:'Beatles' },
   { name:'Abbey Road Radio', url:'https://abbeyroadradio.com/stream',                        genre:'Beatles' },
