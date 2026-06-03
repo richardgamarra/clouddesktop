@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import * as player from './radioPlayer'
 
 const DEFAULT_STATIONS = [
   // News ✅
@@ -50,71 +51,46 @@ const pulseKeyframes = `
 
 export default function RadioWidget({ config, onUpdate }) {
   const stations = config.stations?.length ? config.stations : DEFAULT_STATIONS
-  const volume    = config.volume ?? 0.8
-  const [current, setCurrent]   = useState(config.currentStation || null)
-  const [playing, setPlaying]   = useState(false)
+  // Sync state from singleton player (so UI reflects what's playing even after re-mount)
+  const [playerState, setPlayerState] = useState(player.getState)
+  const current = playerState.station
+  const playing = playerState.playing
+  const volume  = playerState.volume !== undefined ? playerState.volume : (config.volume ?? 0.8)
+
   const [error, setError]       = useState('')
   const [newName, setNewName]   = useState('')
   const [newUrl, setNewUrl]     = useState('')
   const [newGenre, setNewGenre] = useState('General')
   const [showAdd, setShowAdd]   = useState(false)
-  const audioRef = useRef(null)
 
+  // Subscribe to singleton player state changes
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio()
-      audioRef.current.volume = volume
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
-      }
-    }
+    player.setVolume(config.volume ?? 0.8)
+    const unsub = player.subscribe(setPlayerState)
+    return unsub // no audio pause on unmount — keeps playing!
   }, [])
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume
-  }, [volume])
 
   function playStation(station) {
     setError('')
-    const audio = audioRef.current
-    if (!audio) return
-    audio.pause()
-    audio.src = station.url
-    audio.load()
-    const playPromise = audio.play()
-    if (playPromise) {
-      playPromise.then(() => {
-        setCurrent(station)
-        setPlaying(true)
-        onUpdate({ currentStation: station })
-      }).catch(() => {
-        setError(`Could not play: ${station.name}`)
-        setPlaying(false)
-      })
-    }
-    audio.onerror = () => {
-      setError(`Stream unavailable: ${station.name}`)
-      setPlaying(false)
+    try {
+      player.play(station)
+      onUpdate({ currentStation: station })
+    } catch {
+      setError(`Could not play: ${station.name}`)
     }
   }
 
   function togglePlay() {
-    const audio = audioRef.current
-    if (!audio) return
-    if (playing) {
-      audio.pause()
-      setPlaying(false)
+    if (playing && current) {
+      player.pause()
     } else if (current) {
-      audio.play().then(() => setPlaying(true)).catch(() => setError('Playback failed'))
+      player.play(current)
     }
   }
 
   function handleVolume(e) {
     const v = Number(e.target.value) / 100
-    if (audioRef.current) audioRef.current.volume = v
+    player.setVolume(v)
     onUpdate({ volume: v })
   }
 
