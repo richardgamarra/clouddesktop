@@ -2,14 +2,15 @@ import { useRef, useState, useEffect } from 'react'
 
 export default function JukeboxWidget() {
   const containerRef = useRef(null)
-  const [height, setHeight] = useState(560)
+  const [iframeH, setIframeH] = useState(580)
 
-  // Auto-height: match the container width * aspect ratio
   useEffect(() => {
     function update() {
       if (!containerRef.current) return
-      // Sidebar(180) + video(200) + controls(~160) + upnext(~130) + header(0 hidden)
-      setHeight(560)
+      const w = containerRef.current.offsetWidth
+      // Video height = clamp(220, 38% of width, 520) + controls ~170px + nav ~50px
+      const videoH = Math.min(Math.max(Math.round(w * 0.38), 220), 520)
+      setIframeH(videoH + 230) // video + controls + upnext
     }
     update()
     const ro = new ResizeObserver(update)
@@ -19,11 +20,11 @@ export default function JukeboxWidget() {
 
   return (
     <div ref={containerRef}
-      style={{ overflow:'hidden', borderRadius:8, height }}>
+      style={{ overflow:'hidden', borderRadius:8, height: iframeH }}>
       <iframe
         src="https://jukebox.richardgamarra.com?embed=1"
         width="100%"
-        height={height}
+        height={iframeH}
         frameBorder="0"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         style={{ display:'block', border:'none' }}
