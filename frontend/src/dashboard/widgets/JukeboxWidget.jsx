@@ -1,14 +1,16 @@
 export default function JukeboxWidget() {
-  // Fills 100% of card height (card is 520px - 48px header = 472px content area)
+  // video(150) + nowplaying+title(28) + progress(18) + controls(34) + volume(22) + bottomnav(40) + padding = ~370
+  const HEIGHT = 370
+
   return (
-    <div style={{ height:'100%', overflow:'hidden', borderRadius:8 }}>
+    <div style={{ overflow:'hidden', borderRadius:8, height: HEIGHT }}>
       <iframe
         src="https://jukebox.richardgamarra.com?embed=1"
         width="100%"
-        height="100%"
+        height={HEIGHT}
         frameBorder="0"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-        style={{ display:'block', border:'none', height:'100%' }}
+        style={{ display:'block', border:'none' }}
         title="Jukebox"
       />
     </div>
