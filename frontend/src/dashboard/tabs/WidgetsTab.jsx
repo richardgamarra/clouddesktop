@@ -26,7 +26,7 @@ const WIDGET_TYPES = [
   { type:'todo',        icon:'✅', name:'Quick To-Do',    desc:'Checkbox list, auto-saves',   defaultConfig:{ items:[] } },
   { type:'commodities', icon:'🥇', name:'Commodities',   desc:'Gold, oil, grains & more',    defaultConfig:{ symbols:['GC=F','SI=F','CL=F','NG=F','ZC=F'] } },
   { type:'radio',       icon:'📻', name:'Radio',          desc:'Internet radio player',        defaultConfig:{ stations:[], volume:0.8 } },
-  { type:'music',       icon:'🎵', name:'Music Player',   desc:'Spotify & YouTube embed',      defaultConfig:{ embedUrl:'', sourceUrl:'' } },
+  { type:'music',       icon:'🎵', name:'Music Player',   desc:'Spotify, SoundCloud, Mixcloud & Drive', defaultConfig:{ playlists:[], current:null, wide:true } },
 ]
 
 function WidgetComponent({ widget, onUpdate }) {
@@ -71,6 +71,11 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
 
   function removeWidget(id) {
     onUpdateTab(tab.id, { config: { ...tab.config, widgets: widgets.filter(w => w.id !== id) } })
+  }
+
+  function toggleWide(id) {
+    const updated = widgets.map(w => w.id === id ? { ...w, wide: !w.wide } : w)
+    onUpdateTab(tab.id, { config: { ...tab.config, widgets: updated } })
   }
 
   // Drag handlers
@@ -160,6 +165,7 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
                 position:'relative',
                 transition:'border-color .15s, box-shadow .15s',
                 boxShadow: isDragTarget ? '0 0 0 2px rgba(91,127,255,.25)' : 'none',
+                gridColumn: widget.wide ? 'span 2' : 'span 1',
               }}>
               {/* Card header */}
               <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12, paddingBottom:8, borderBottom:'1px solid var(--border)' }}>
@@ -171,6 +177,11 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
                 </span>
                 <span style={{ fontSize:16 }}>{def?.icon}</span>
                 <span style={{ fontSize:13, fontWeight:700, flex:1 }}>{def?.name}</span>
+                <button onClick={() => toggleWide(widget.id)}
+                  title={widget.wide ? 'Normal width' : 'Double width'}
+                  style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:12, padding:'2px 4px' }}>
+                  {widget.wide ? '⊡' : '⊞'}
+                </button>
                 <button onClick={() => removeWidget(widget.id)}
                   style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:16, lineHeight:1, padding:'2px 4px' }}
                   onMouseEnter={e => e.target.style.color='var(--red)'}

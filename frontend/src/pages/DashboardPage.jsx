@@ -499,11 +499,12 @@ export default function DashboardPage() {
             />
           </div>
         )}
-        {activeCustomTab && (
-          <div className="tab-panel">
-            <CustomTabPanel tab={activeCustomTab} onUpdateTab={customTabs.updateTab} />
+        {customTabs.tabs.map(t => (
+          <div key={t.id} className="tab-panel"
+            style={{ display: activeTab === t.id ? 'flex' : 'none' }}>
+            <CustomTabPanel tab={t} onUpdateTab={customTabs.updateTab} />
           </div>
-        )}
+        ))}
       </div>
 
       {ctx && (
