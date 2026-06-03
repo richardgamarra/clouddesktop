@@ -13,6 +13,26 @@ const DEFAULT_STATIONS = [
   { name:'France Inter',     url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',     genre:'General'   },
   { name:'Radio Swiss Jazz', url:'https://stream.srg-ssr.ch/rj/mp3_128.m3u',                genre:'Jazz'      },
   { name:'1.FM Salsa',       url:'https://strm112.1.fm/salsa_mobile_mp3',                   genre:'Latin'     },
+  // Peru
+  { name:'RPP Noticias',     url:'https://playerservices.streamtheworld.com/api/livestream-redirect/RPPRR_SC',         genre:'Peru' },
+  { name:'Studio 92',        url:'https://playerservices.streamtheworld.com/api/livestream-redirect/STUDIO92_SC',      genre:'Peru' },
+  { name:'Oxígeno',          url:'https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOOXIGENO_SC',  genre:'Peru' },
+  { name:'CPN Radio',        url:'https://playerservices.streamtheworld.com/api/livestream-redirect/CPN_RADIO_SC',     genre:'Peru' },
+  { name:'Planeta Peru',     url:'https://playerservices.streamtheworld.com/api/livestream-redirect/PLANETA_SC',       genre:'Peru' },
+  { name:'La Zona',          url:'https://playerservices.streamtheworld.com/api/livestream-redirect/LAZONA_SC',        genre:'Peru' },
+  // Beatles
+  { name:'Beatles Radio',    url:'https://www.beatlesradio.com:8000/stream/1/',                                        genre:'Beatles' },
+  { name:'Abbey Road Radio', url:'https://abbeyroadradio.com/stream',                                                  genre:'Beatles' },
+  // Soft Jazz
+  { name:'1.FM Smooth Jazz', url:'https://strm112.1.fm/smoothjazz_mobile_mp3',                                        genre:'Soft Jazz' },
+  { name:'SomaFM Jazz Blues',url:'https://ice1.somafm.com/jazzandblues-256-mp3',                                      genre:'Soft Jazz' },
+  { name:'SomaFM Lush',      url:'https://ice1.somafm.com/lush-256-mp3',                                              genre:'Soft Jazz' },
+  { name:'SomaFM BAGeL',     url:'https://ice1.somafm.com/bagel-256-mp3',                                             genre:'Soft Jazz' },
+  // Classical
+  { name:'Radio Swiss Classic',url:'https://stream.srg-ssr.ch/rsc/mp3_128.m3u',                                       genre:'Classical' },
+  { name:'WFMT Classical',   url:'https://stream.wfmt.com/wfmt-mid',                                                  genre:'Classical' },
+  { name:'Classical MPR',    url:'https://nis.stream.publicradio.org/nis.mp3',                                         genre:'Classical' },
+  { name:'Beethoven.fm',     url:'https://streaming.radio.co/s7c4d3cc28/listen',                                      genre:'Classical' },
 ]
 
 const GENRES = [...new Set(DEFAULT_STATIONS.map(s => s.genre))]
