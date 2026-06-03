@@ -39,6 +39,9 @@ app.use('/api/stocks', stocksRouter)
 const uploadRouter = require('./routes/upload')
 app.use('/api/upload', uploadRouter)
 
+const radioRouter = require('./routes/radio')
+app.use('/api/radio', radioRouter)
+
 // Serve uploaded background images as static files
 const uploadsDir = require('path').join(__dirname, '../uploads')
 app.use('/uploads', require('express').static(uploadsDir))
