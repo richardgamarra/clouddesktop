@@ -48,7 +48,7 @@ export default function WeatherWidget({ config, onUpdate }) {
     if (!lat || !lon) return
     setLoading(true)
     // Include hourly forecast for today
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto&forecast_days=2`)
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&hourly=temperature_2m,weathercode,precipitation_probability&timezone=auto&forecast_days=7`)
       .then(r => r.json())
       .then(d => { setWeather(d); setLoading(false) })
       .catch(() => { setError('Failed to load weather.'); setLoading(false) })
@@ -183,15 +183,18 @@ export default function WeatherWidget({ config, onUpdate }) {
       {/* 5-day forecast */}
       {daily && (
         <div style={{ display:'flex', gap:5, marginBottom:8 }}>
-          {daily.time.slice(0,5).map((date, i) => {
+          {daily.time.slice(0,7).map((date, i) => {
             const { emoji: de } = wmoInfo(daily.weathercode[i])
             const d = new Date(date)
             return (
               <div key={date} style={{ flex:1, minWidth:36, textAlign:'center', background:'var(--s3)', borderRadius:6, padding:'4px 2px' }}>
                 <div style={{ fontSize:9, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{DAYS[d.getDay()]}</div>
                 <div style={{ fontSize:13 }}>{de}</div>
-                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)' }}>
+                <div style={{ fontSize:9, fontFamily:"'DM Mono',monospace", color:'var(--text2)', fontWeight:700 }}>
                   {fmtT(daily.temperature_2m_max[i], unit)}
+                </div>
+                <div style={{ fontSize:8, fontFamily:"'DM Mono',monospace", color:'var(--text3)' }}>
+                  {fmtT(daily.temperature_2m_min[i], unit)}
                 </div>
               </div>
             )
