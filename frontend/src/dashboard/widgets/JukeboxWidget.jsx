@@ -1,7 +1,5 @@
 export default function JukeboxWidget() {
-  // embed mode: no sidebar, no bottom nav, compact controls
-  // video(180) + nowplaying(~20) + title(~24) + progress(~20) + controls(~36) + volume(~24) = ~310px
-  const HEIGHT = 310
+  const HEIGHT = 330  // video(175) + nowplaying+title(30) + progress(20) + controls(38) + volume(24) + padding
 
   return (
     <div style={{ overflow:'hidden', borderRadius:8, height: HEIGHT }}>
