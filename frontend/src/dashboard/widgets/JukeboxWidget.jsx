@@ -1,30 +1,14 @@
-import { useRef, useState, useEffect } from 'react'
-
 export default function JukeboxWidget() {
-  const containerRef = useRef(null)
-  const [iframeH, setIframeH] = useState(580)
-
-  useEffect(() => {
-    function update() {
-      if (!containerRef.current) return
-      const w = containerRef.current.offsetWidth
-      // Video height = clamp(220, 38% of width, 520) + controls ~170px + nav ~50px
-      const videoH = Math.min(Math.max(Math.round(w * 0.38), 220), 520)
-      setIframeH(videoH + 230) // video + controls + upnext
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    if (containerRef.current) ro.observe(containerRef.current)
-    return () => ro.disconnect()
-  }, [])
+  // embed mode: no sidebar, no bottom nav, compact controls
+  // video(180) + nowplaying(~20) + title(~24) + progress(~20) + controls(~36) + volume(~24) = ~310px
+  const HEIGHT = 310
 
   return (
-    <div ref={containerRef}
-      style={{ overflow:'hidden', borderRadius:8, height: iframeH }}>
+    <div style={{ overflow:'hidden', borderRadius:8, height: HEIGHT }}>
       <iframe
         src="https://jukebox.richardgamarra.com?embed=1"
         width="100%"
-        height={iframeH}
+        height={HEIGHT}
         frameBorder="0"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         style={{ display:'block', border:'none' }}
