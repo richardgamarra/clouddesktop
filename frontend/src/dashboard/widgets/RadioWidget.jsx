@@ -71,9 +71,21 @@ export default function RadioWidget({ config, onUpdate }) {
   const [showAdd, setShowAdd]       = useState(false)
   const [showCatMgr, setShowCatMgr] = useState(false)
   const [newCatName, setNewCatName] = useState('')
-  // Custom categories stored in config
+  // Custom categories + ordering stored in config
   const customCats = config.customCats || []
-  const allCats = [...new Set([...GENRES, ...customCats, ...stations.map(s => s.genre)])]
+  const rawCats = [...new Set([...GENRES, ...customCats, ...stations.map(s => s.genre)])]
+  // Respect saved order; append any new cats at the end
+  const savedOrder = config.catOrder || []
+  const allCats = [...savedOrder.filter(c => rawCats.includes(c)), ...rawCats.filter(c => !savedOrder.includes(c))]
+
+  function moveCat(cat, dir) {
+    const arr = [...allCats]
+    const i = arr.indexOf(cat)
+    const j = i + dir
+    if (j < 0 || j >= arr.length) return
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    onUpdate({ catOrder: arr })
+  }
 
   // Subscribe to singleton player state changes
   useEffect(() => {
@@ -135,7 +147,8 @@ export default function RadioWidget({ config, onUpdate }) {
   function addCategory() {
     if (!newCatName.trim()) return
     if (allCats.includes(newCatName.trim())) return
-    onUpdate({ customCats: [...customCats, newCatName.trim()] })
+    const newCats = [...customCats, newCatName.trim()]
+    onUpdate({ customCats: newCats, catOrder: [...allCats, newCatName.trim()] })
     setNewCatName('')
   }
 
@@ -232,15 +245,21 @@ export default function RadioWidget({ config, onUpdate }) {
       {showCatMgr && (
         <div style={{ background:'var(--s3)', border:'1px solid var(--border)', borderRadius:8, padding:'10px', marginBottom:8 }}>
           <div style={{ fontSize:11, fontWeight:700, marginBottom:8 }}>📂 Manage Categories</div>
-          <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:8 }}>
-            {allCats.map(cat => (
-              <div key={cat} style={{ display:'flex', alignItems:'center', gap:4, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:20, padding:'3px 8px 3px 10px', fontSize:11 }}>
-                <span>{cat}</span>
+          <div style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:8 }}>
+            {allCats.map((cat, i) => (
+              <div key={cat} style={{ display:'flex', alignItems:'center', gap:6, background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, padding:'5px 8px 5px 10px', fontSize:11 }}>
+                <span style={{ flex:1 }}>{cat}
+                  <span style={{ color:'var(--text3)', marginLeft:6, fontSize:9 }}>({stations.filter(s => s.genre===cat).length})</span>
+                </span>
+                <button onClick={() => moveCat(cat, -1)} disabled={i===0}
+                  style={{ background:'none', border:'none', color: i===0 ? 'var(--border2)' : 'var(--text3)', cursor: i===0 ? 'default' : 'pointer', fontSize:9, padding:'0 2px', lineHeight:1 }}>▲</button>
+                <button onClick={() => moveCat(cat, 1)} disabled={i===allCats.length-1}
+                  style={{ background:'none', border:'none', color: i===allCats.length-1 ? 'var(--border2)' : 'var(--text3)', cursor: i===allCats.length-1 ? 'default' : 'pointer', fontSize:9, padding:'0 2px', lineHeight:1 }}>▼</button>
                 {customCats.includes(cat) && (
                   <button onClick={() => removeCategory(cat)}
-                    style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:11, lineHeight:1, padding:0 }}
-                    onMouseEnter={e => e.target.style.color='var(--red)'}
-                    onMouseLeave={e => e.target.style.color='var(--text3)'}>×</button>
+                    style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:12, lineHeight:1, padding:'0 2px', opacity:.5 }}
+                    onMouseEnter={e => { e.target.style.opacity=1; e.target.style.color='var(--red)' }}
+                    onMouseLeave={e => { e.target.style.opacity=.5; e.target.style.color='var(--text3)' }}>×</button>
                 )}
               </div>
             ))}
