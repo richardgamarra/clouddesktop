@@ -114,4 +114,49 @@ export const RSS_PRESETS = [
   { group:'Entertainment',  name:'Variety',          url:'https://variety.com/feed/',                                                  category:'entertainment'},
   { group:'Entertainment',  name:'Hollywood Reporter',url:'https://www.hollywoodreporter.com/feed/',                                  category:'entertainment'},
   { group:'Entertainment',  name:'Rolling Stone',    url:'https://www.rollingstone.com/feed/',                                        category:'entertainment'},
+
+  // ── AI & Machine Learning ─────────────────────────────────────────────────
+  { group:'AI News',        name:'Anthropic Blog',   url:'https://www.anthropic.com/rss.xml',                                         category:'tech'    },
+  { group:'AI News',        name:'OpenAI Blog',      url:'https://openai.com/blog/rss/',                                              category:'tech'    },
+  { group:'AI News',        name:'AI News',          url:'https://artificialintelligence-news.com/feed/',                             category:'tech'    },
+  { group:'AI News',        name:'VentureBeat AI',   url:'https://venturebeat.com/ai/feed/',                                          category:'tech'    },
+  { group:'AI News',        name:'MIT AI News',      url:'https://news.mit.edu/topic/artificial-intelligence2/feed',                  category:'tech'    },
+  { group:'AI News',        name:'The Gradient',     url:'https://thegradient.pub/rss/',                                              category:'tech'    },
+  { group:'AI News',        name:'Import AI',        url:'https://jack-clark.net/feed/',                                              category:'tech'    },
+  { group:'AI News',        name:'Towards Data Sci', url:'https://towardsdatascience.com/feed',                                       category:'tech'    },
+  { group:'AI News',        name:'Hugging Face Blog',url:'https://huggingface.co/blog/feed.xml',                                      category:'tech'    },
+  { group:'AI News',        name:'Google AI Blog',   url:'https://blog.research.google/feeds/posts/default',                          category:'tech'    },
+
+  // ── More Tech Magazines ───────────────────────────────────────────────────
+  { group:'Tech Magazines', name:'PC Magazine',      url:'https://www.pcmag.com/feeds/rss',                                           category:'tech'    },
+  { group:'Tech Magazines', name:'PC World',         url:'https://www.pcworld.com/feed',                                              category:'tech'    },
+  { group:'Tech Magazines', name:"Tom's Hardware",   url:'https://www.tomshardware.com/feeds/all',                                    category:'tech'    },
+  { group:'Tech Magazines', name:'Digital Trends',   url:'https://www.digitaltrends.com/feed/',                                       category:'tech'    },
+  { group:'Tech Magazines', name:'TechRadar',        url:'https://www.techradar.com/feeds/articletype/news',                          category:'tech'    },
+  { group:'Tech Magazines', name:'How-To Geek',      url:'https://www.howtogeek.com/feed/',                                           category:'tech'    },
+  { group:'Tech Magazines', name:'MakeUseOf',        url:'https://www.makeuseof.com/feed/',                                           category:'tech'    },
+  { group:'Tech Magazines', name:'Lifehacker',       url:'https://lifehacker.com/rss',                                                category:'tech'    },
+
+  // ── Peru ─────────────────────────────────────────────────────────────────
+  { group:'Peru',           name:'El Comercio',      url:'https://elcomercio.pe/arc/outboundfeeds/rss/',                              category:'general' },
+  { group:'Peru',           name:'La República',     url:'https://larepublica.pe/arc/outboundfeeds/rss/',                             category:'general' },
+  { group:'Peru',           name:'RPP Noticias',     url:'https://rpp.pe/feed',                                                       category:'general' },
+  { group:'Peru',           name:'Gestión',          url:'https://gestion.pe/arc/outboundfeeds/rss/',                                 category:'business'},
+  { group:'Peru',           name:'Peru21',           url:'https://peru21.pe/arc/outboundfeeds/rss/',                                  category:'general' },
+  { group:'Peru',           name:'Correo',           url:'https://diariocorreo.pe/arc/outboundfeeds/rss/',                            category:'general' },
+  { group:'Peru',           name:'Trome',            url:'https://trome.pe/arc/outboundfeeds/rss/',                                   category:'general' },
+  { group:'Peru',           name:'Andina',           url:'https://andina.pe/agencia/rss.aspx',                                        category:'general' },
+
+  // ── International ─────────────────────────────────────────────────────────
+  { group:'International',  name:'South China Morning Post', url:'https://www.scmp.com/rss/91/feed',                                  category:'general' },
+  { group:'International',  name:'Times of India',   url:'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',                category:'general' },
+  { group:'International',  name:'The Hindu',        url:'https://www.thehindu.com/feeder/default.rss',                              category:'general' },
+  { group:'International',  name:'CBC News',         url:'https://www.cbc.ca/cmlink/rss-topstories',                                  category:'general' },
+  { group:'International',  name:'Globe and Mail',   url:'https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/',     category:'general' },
+  { group:'International',  name:'Sydney Morning Herald', url:'https://www.smh.com.au/rss/feed.xml',                                 category:'general' },
+  { group:'International',  name:'Jerusalem Post',   url:'https://www.jpost.com/Rss/RssFeedsHeadlines.aspx',                         category:'general' },
+  { group:'International',  name:'Arab News',        url:'https://www.arabnews.com/rss.xml',                                         category:'general' },
+  { group:'International',  name:'Straits Times',    url:'https://www.straitstimes.com/news/world/rss.xml',                           category:'general' },
+  { group:'International',  name:'Buenos Aires Herald', url:'https://www.batimes.com.ar/feed',                                       category:'general' },
+  { group:'International',  name:'El País (Español)',url:'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada',          category:'general' },
 ]
