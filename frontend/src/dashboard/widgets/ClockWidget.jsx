@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 const COMMON_TIMEZONES = [
+  { name: 'Fairfax, VA', tz: 'America/New_York' },
   { name: 'New York',    tz: 'America/New_York' },
   { name: 'Los Angeles', tz: 'America/Los_Angeles' },
   { name: 'Chicago',     tz: 'America/Chicago' },
