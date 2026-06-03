@@ -39,11 +39,13 @@ export default function JukeboxWidget() {
     ? `${current.embed_src}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`
     : null
 
+  const WIDGET_H = 500
+
   return (
-    <div style={{ display:'flex', height:'100%', gap:0, minHeight:400 }}>
+    <div style={{ display:'flex', height:WIDGET_H, gap:0, overflow:'hidden', margin:'-16px', borderRadius:'0 0 12px 12px' }}>
 
       {/* LEFT — Playlist */}
-      <div style={{ width:'45%', display:'flex', flexDirection:'column', borderRight:'1px solid var(--border)', minWidth:0 }}>
+      <div style={{ width:'42%', display:'flex', flexDirection:'column', borderRight:'1px solid var(--border)', minWidth:0, height:WIDGET_H }}>
         {/* Search */}
         <div style={{ padding:'8px 10px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
           <input value={search} onChange={e => setSearch(e.target.value)}
@@ -53,8 +55,8 @@ export default function JukeboxWidget() {
               fontSize:11, padding:'5px 8px', outline:'none', boxSizing:'border-box' }} />
         </div>
 
-        {/* Song list */}
-        <div style={{ flex:1, overflowY:'auto', scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
+        {/* Song list — scrollable */}
+        <div style={{ flex:1, overflowY:'auto', scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent', height:0 }}>
           {loading && <div style={{ padding:16, color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:11 }}>Loading…</div>}
           {error   && <div style={{ padding:16, color:'var(--red)', fontFamily:"'DM Mono',monospace", fontSize:11 }}>{error}</div>}
           {filteredSongs.map((song, i) => {
@@ -101,11 +103,11 @@ export default function JukeboxWidget() {
       </div>
 
       {/* RIGHT — Player */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, height:WIDGET_H }}>
         {current ? (
           <>
             {/* Video */}
-            <div style={{ flex:1, background:'#000', position:'relative' }}>
+            <div style={{ flex:1, background:'#000', position:'relative', overflow:'hidden', height:0 }}>
               <iframe
                 ref={iframeRef}
                 key={current.id}
@@ -114,12 +116,12 @@ export default function JukeboxWidget() {
                 frameBorder="0"
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen
-                style={{ display:'block', border:'none' }}
+                style={{ display:'block', border:'none', position:'absolute', inset:0 }}
               />
             </div>
 
             {/* Controls */}
-            <div style={{ padding:'8px 12px', background:'var(--s2)', borderTop:'1px solid var(--border)', flexShrink:0 }}>
+            <div style={{ padding:'10px 14px', background:'var(--s2)', borderTop:'1px solid var(--border)', flexShrink:0 }}>
               <div style={{ fontSize:12, fontWeight:700, color:'var(--text)',
                 overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginBottom:6 }}>
                 {current.name}
@@ -150,10 +152,10 @@ export default function JukeboxWidget() {
           </>
         ) : (
           <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center',
-            justifyContent:'center', gap:12, color:'var(--text3)' }}>
-            <div style={{ fontSize:40 }}>🎵</div>
-            <div style={{ fontSize:12, fontFamily:"'DM Mono',monospace" }}>
-              {loading ? 'Loading jukebox…' : 'Select a song to play'}
+            justifyContent:'center', gap:12, color:'var(--text3)', height:0 }}>
+            <div style={{ fontSize:48 }}>🎬</div>
+            <div style={{ fontSize:13, fontFamily:"'DM Mono',monospace" }}>
+              {loading ? 'Loading jukebox…' : '← Select a song to play'}
             </div>
           </div>
         )}
