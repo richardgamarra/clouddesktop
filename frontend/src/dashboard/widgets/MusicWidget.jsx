@@ -39,8 +39,12 @@ function toEmbedUrl(url) {
       return `https://www.mixcloud.com/widget/iframe/?hide_cover=1&mini=1&autoplay=1&feed=${encodeURIComponent(path)}`
     }
     if (url.includes('drive.google.com')) {
-      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
-      if (match) return `https://drive.google.com/file/d/${match[1]}/preview`
+      // Folder: https://drive.google.com/drive/folders/FOLDER_ID
+      const folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/)
+      if (folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`
+      // Single file: https://drive.google.com/file/d/FILE_ID/view
+      const fileMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
+      if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`
     }
     return null
   } catch { return null }
@@ -50,6 +54,7 @@ function getSource(url) {
   if (url.includes('spotify.com'))    return { label: 'Spotify',      icon: '🟢' }
   if (url.includes('soundcloud.com')) return { label: 'SoundCloud',   icon: '🟠' }
   if (url.includes('mixcloud.com'))   return { label: 'Mixcloud',     icon: '🟣' }
+  if (url.includes('drive.google') && url.includes('/folders/')) return { label: 'Google Drive Folder', icon: '📁' }
   if (url.includes('drive.google'))   return { label: 'Google Drive', icon: '🔵' }
   return { label: 'Music', icon: '🎵' }
 }
@@ -60,6 +65,7 @@ function iframeHeight(source) {
   if (l === 'Spotify')      return 380
   if (l === 'SoundCloud')   return 300
   if (l === 'Mixcloud')     return 180
+  if (l === 'Google Drive Folder') return 420
   if (l === 'Google Drive') return 200
   return 380
 }
