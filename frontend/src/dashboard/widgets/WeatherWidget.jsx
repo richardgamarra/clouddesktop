@@ -114,7 +114,7 @@ export default function WeatherWidget({ config, onUpdate }) {
   const tempMain = unit === 'F' ? `${toF(cw.temperature)}°F` : `${Math.round(cw.temperature)}°C`
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:0, height:'100%' }}>
 
       {/* ── Hero current conditions ── */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
