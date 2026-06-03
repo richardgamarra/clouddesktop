@@ -6,33 +6,36 @@ const DEFAULT_STATIONS = [
   { name:'BBC Radio 1',      url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',      genre:'Pop'       },
   { name:'SomaFM Groove',    url:'https://ice1.somafm.com/groovesalad-256-mp3',              genre:'Ambient'   },
   { name:'SomaFM Drone',     url:'https://ice1.somafm.com/dronezone-256-mp3',                genre:'Ambient'   },
-  { name:'SomaFM Deep Space', url:'https://ice1.somafm.com/deepspaceone-256-mp3',            genre:'Ambient'   },
-  { name:'SomaFM Indie Pop', url:'https://ice1.somafm.com/indiepop-256-mp3',                 genre:'Indie'     },
+  { name:'SomaFM Deep Space', url:'https://ice2.somafm.com/deepspaceone-128-mp3',            genre:'Ambient'   },
+  { name:'SomaFM Indie Pop', url:'https://ice2.somafm.com/indiepop-128-mp3',                 genre:'Indie'     },
   { name:'Jazz 24',          url:'https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1',   genre:'Jazz'      },
-  { name:'WQXR Classical',   url:'https://stream.wqxr.org/wqxr',                             genre:'Classical' },
   { name:'France Inter',     url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',     genre:'General'   },
-  { name:'Radio Swiss Jazz', url:'https://stream.srg-ssr.ch/rj/mp3_128.m3u',                genre:'Jazz'      },
-  { name:'1.FM Salsa',       url:'https://strm112.1.fm/salsa_mobile_mp3',                   genre:'Latin'     },
-  // Peru
-  { name:'RPP Noticias',     url:'https://playerservices.streamtheworld.com/api/livestream-redirect/RPPRR_SC',         genre:'Peru' },
-  { name:'Studio 92',        url:'https://playerservices.streamtheworld.com/api/livestream-redirect/STUDIO92_SC',      genre:'Peru' },
-  { name:'Oxígeno',          url:'https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOOXIGENO_SC',  genre:'Peru' },
-  { name:'CPN Radio',        url:'https://playerservices.streamtheworld.com/api/livestream-redirect/CPN_RADIO_SC',     genre:'Peru' },
-  { name:'Planeta Peru',     url:'https://playerservices.streamtheworld.com/api/livestream-redirect/PLANETA_SC',       genre:'Peru' },
-  { name:'La Zona',          url:'https://playerservices.streamtheworld.com/api/livestream-redirect/LAZONA_SC',        genre:'Peru' },
-  // Beatles
-  { name:'Beatles Radio',    url:'https://www.beatlesradio.com:8000/stream/1/',                                        genre:'Beatles' },
-  { name:'Abbey Road Radio', url:'https://abbeyroadradio.com/stream',                                                  genre:'Beatles' },
-  // Soft Jazz
-  { name:'1.FM Smooth Jazz', url:'https://strm112.1.fm/smoothjazz_mobile_mp3',                                        genre:'Soft Jazz' },
-  { name:'SomaFM Jazz Blues',url:'https://ice1.somafm.com/jazzandblues-256-mp3',                                      genre:'Soft Jazz' },
-  { name:'SomaFM Lush',      url:'https://ice1.somafm.com/lush-256-mp3',                                              genre:'Soft Jazz' },
-  { name:'SomaFM BAGeL',     url:'https://ice1.somafm.com/bagel-256-mp3',                                             genre:'Soft Jazz' },
-  // Classical
-  { name:'Radio Swiss Classic',url:'https://stream.srg-ssr.ch/rsc/mp3_128.m3u',                                       genre:'Classical' },
-  { name:'WFMT Classical',   url:'https://stream.wfmt.com/wfmt-mid',                                                  genre:'Classical' },
-  { name:'Classical MPR',    url:'https://nis.stream.publicradio.org/nis.mp3',                                         genre:'Classical' },
-  { name:'Beethoven.fm',     url:'https://streaming.radio.co/s7c4d3cc28/listen',                                      genre:'Classical' },
+  // Peru ✅ verified
+  { name:'RPP Noticias',     url:'https://15443.live.streamtheworld.com/RPPRR_SC',           genre:'Peru' },
+  { name:'Studio 92',        url:'https://15443.live.streamtheworld.com/STUDIO92_SC',        genre:'Peru' },
+  { name:'Oxígeno',          url:'https://15443.live.streamtheworld.com/RADIOOXIGENO_SC',    genre:'Peru' },
+  { name:'CPN Radio',        url:'https://15443.live.streamtheworld.com/CPN_RADIO_SC',       genre:'Peru' },
+  { name:'Planeta Peru',     url:'https://15443.live.streamtheworld.com/PLANETA_SC',         genre:'Peru' },
+  { name:'La Zona',          url:'https://15443.live.streamtheworld.com/LAZONA_SC',          genre:'Peru' },
+  // Beatles ✅ verified (ICY protocol)
+  { name:'Beatles Radio',    url:'https://www.beatlesradio.com:8000/stream/1/',              genre:'Beatles' },
+  { name:'Abbey Road Radio', url:'https://abbeyroadradio.com/stream',                        genre:'Beatles' },
+  // Soft Jazz ✅ verified
+  { name:'1.FM Smooth Jazz', url:'https://strm112.1.fm/smoothjazz_mobile_mp3',              genre:'Soft Jazz' },
+  { name:'SomaFM Lush',      url:'https://ice2.somafm.com/lush-128-mp3',                    genre:'Soft Jazz' },
+  { name:'SomaFM BAGeL',     url:'https://ice2.somafm.com/bagel-128-mp3',                   genre:'Soft Jazz' },
+  { name:'Jazz 24',          url:'https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1',  genre:'Soft Jazz' },
+  // Classical ✅ verified
+  { name:'Classic FM UK',    url:'https://media-ice.musicradio.com/ClassicFMMP3',            genre:'Classical' },
+  { name:'WQXR Classical',   url:'https://stream.wqxr.org/wqxr',                             genre:'Classical' },
+  { name:'Classical MPR',    url:'https://nis.stream.publicradio.org/nis.mp3',               genre:'Classical' },
+  { name:'WFMT Classical',   url:'https://stream.wfmt.com/wfmt-mid',                         genre:'Classical' },
+  { name:'ABC Classic FM',   url:'https://live-radio01.mediahubaustralia.com/2ABCr/mp3/',    genre:'Classical' },
+  // SomaFM extras ✅ verified
+  { name:'SomaFM Deep Space',url:'https://ice2.somafm.com/deepspaceone-128-mp3',             genre:'Ambient' },
+  { name:'SomaFM Indie Pop', url:'https://ice2.somafm.com/indiepop-128-mp3',                 genre:'Indie' },
+  { name:'SomaFM Lush',      url:'https://ice2.somafm.com/lush-128-mp3',                     genre:'Ambient' },
+  { name:'Underground 80s',  url:'https://ice2.somafm.com/u80s-128-mp3',                     genre:'Pop' },
 ]
 
 const GENRES = [...new Set(DEFAULT_STATIONS.map(s => s.genre))]
