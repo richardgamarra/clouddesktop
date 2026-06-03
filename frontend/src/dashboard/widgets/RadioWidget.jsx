@@ -12,16 +12,12 @@ const DEFAULT_STATIONS = [
   { name:'SomaFM Indie Pop', url:'https://ice2.somafm.com/indiepop-128-mp3',                 genre:'Indie'     },
   { name:'Jazz 24',          url:'https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1',   genre:'Jazz'      },
   { name:'France Inter',     url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',     genre:'General'   },
-  // Peru — proxied for ICY/CORS support
+  // Peru — proxied (verified working)
   { name:'RPP Noticias',     url:'/api/radio/stream?url=https%3A%2F%2Frpp-ice.streamguys1.com%2Frpp.mp3',              genre:'Peru' },
-  { name:'Studio 92',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.studio92.pe%2Fstudio92',               genre:'Peru' },
-  { name:'Oxígeno',          url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.oxigenoradio.com%2Foxigeno',           genre:'Peru' },
-  { name:'CPN Radio',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.cpnradio.pe%2Fcpnradio',              genre:'Peru' },
-  { name:'Moda 106.5',       url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.moda.pe%2Fmoda',                      genre:'Peru' },
-  { name:'Capital 96.7',     url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.capital.pe%2Fcapital',                genre:'Peru' },
+  { name:'CPN Radio',        url:'/api/radio/stream?url=http%3A%2F%2Fstreaming.cpnradio.pe%2Fcpnradio',               genre:'Peru' },
   // Beatles — proxied for ICY support
-  { name:'Beatles Radio',    url:'/api/radio/stream?url=https%3A%2F%2Fwww.beatlesradio.com%3A8000%2Fstream%2F1%2F', genre:'Beatles' },
-  { name:'Abbey Road Radio', url:'/api/radio/stream?url=https%3A%2F%2Fabbeyroadradio.com%2Fstream',                  genre:'Beatles' },
+  { name:'Beatles Radio',    url:'/api/radio/stream?url=http%3A%2F%2Fwww.beatlesradio.com%3A8000%2Fstream%2F1%2F',  genre:'Beatles' },
+  { name:'Abbey Road Radio', url:'/api/radio/stream?url=http%3A%2F%2Fabbeyroadradio.com%2Fstream',                   genre:'Beatles' },
   // Soft Jazz ✅ verified
   { name:'1.FM Smooth Jazz', url:'https://strm112.1.fm/smoothjazz_mobile_mp3',              genre:'Soft Jazz' },
   { name:'SomaFM Lush',      url:'https://ice2.somafm.com/lush-128-mp3',                    genre:'Soft Jazz' },
