@@ -2,11 +2,17 @@ import { useState, useEffect } from 'react'
 import * as player from './radioPlayer'
 
 const DEFAULT_STATIONS = [
-  // News ✅
-  { name:'NPR News',          url:'https://npr-ice.streamguys1.com/live.mp3',                  genre:'News'      },
-  { name:'BBC World Service',  url:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service',   genre:'News'      },
-  { name:'BBC Radio 4',        url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_four_fm',   genre:'News'      },
-  { name:'France Inter',       url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',      genre:'News'      },
+  // US News ✅
+  { name:'NPR News',           url:'https://npr-ice.streamguys1.com/live.mp3',                                                        genre:'US News'   },
+  { name:'Fox News Radio',     url:'/api/radio/stream?url=https%3A%2F%2Ffoxnewsradio.streamguys1.com%2Flive.mp3',                    genre:'US News'   },
+  { name:'ABC News Radio',     url:'/api/radio/stream?url=https%3A%2F%2Fabcnewsradio.streamguys1.com%2Flive.mp3',                    genre:'US News'   },
+  { name:'KQED (SF)',          url:'https://streams.kqed.org/kqedradio',                                                              genre:'US News'   },
+  // Europe News ✅
+  { name:'BBC World Service',  url:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service',                                         genre:'EU News'   },
+  { name:'BBC Radio 4',        url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_four_fm',                                         genre:'EU News'   },
+  { name:'France Info',        url:'https://icecast.radiofrance.fr/franceinfo-midfi.mp3',                                             genre:'EU News'   },
+  { name:'France Inter',       url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',                                            genre:'EU News'   },
+  { name:'RFI English',        url:'/api/radio/stream?url=https%3A%2F%2Frfienglish.ice.infomaniak.ch%2Frfienglish-midfi.mp3',        genre:'EU News'   },
   // Pop ✅
   { name:'BBC Radio 1',        url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',       genre:'Pop'       },
   { name:'BBC Radio 2',        url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_two',       genre:'Pop'       },
