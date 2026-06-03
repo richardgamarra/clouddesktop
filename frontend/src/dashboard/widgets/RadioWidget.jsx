@@ -121,37 +121,41 @@ export default function RadioWidget({ config, onUpdate }) {
     <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12 }}>
       <style>{pulseKeyframes}</style>
 
-      {/* Now playing */}
-      <div style={{ background:'var(--s3)', border:'1px solid var(--border)', borderRadius:10, padding:'10px 12px', marginBottom:12 }}>
+      {/* Now playing — hero */}
+      <div style={{ background:'linear-gradient(135deg, var(--s2), var(--s3))', border:'1px solid var(--border)', borderRadius:12, padding:'14px 16px', marginBottom:12 }}>
         {current ? (
-          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
-            {playing && (
-              <span style={{ animation:'rw-pulse 1s ease-in-out infinite', display:'inline-block', color:'var(--accent)', fontSize:16 }}>♪</span>
-            )}
+          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+            <span style={{ display:'inline-block', color:'var(--accent)', fontSize:32, lineHeight:1,
+              animation: playing ? 'rw-pulse 1s ease-in-out infinite' : 'none' }}>♪</span>
             <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontWeight:700, fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{current.name}</div>
-              <div style={{ fontSize:10, color:'var(--text3)', marginTop:2 }}>
-                <span style={{ background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:10, padding:'1px 7px' }}>{current.genre}</span>
+              <div style={{ fontSize:10, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:2 }}>
+                {playing ? '▶ Now Playing' : 'Selected'}
+              </div>
+              <div style={{ fontWeight:800, fontSize:16, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{current.name}</div>
+              <div style={{ marginTop:5 }}>
+                <span style={{ background:'rgba(91,127,255,.15)', border:'1px solid rgba(91,127,255,.3)', borderRadius:10, padding:'2px 10px', fontSize:10, color:'var(--accent2)' }}>{current.genre}</span>
               </div>
             </div>
           </div>
         ) : (
-          <div style={{ color:'var(--text3)', marginBottom:8 }}>No station selected</div>
+          <div style={{ color:'var(--text3)', marginBottom:12, textAlign:'center', padding:'8px 0', fontSize:13 }}>← Select a station to play</div>
         )}
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <button onClick={togglePlay} disabled={!current}
-            style={{ background: playing ? 'var(--accent)' : 'var(--s2)', color: playing ? '#fff' : 'var(--text)', border:'1px solid var(--border2)', borderRadius:8, padding:'5px 14px', cursor: current ? 'pointer' : 'default', fontSize:13, fontWeight:700 }}>
+            style={{ background: playing ? 'var(--accent)' : 'var(--s4)', color: playing ? '#fff' : 'var(--text)',
+              border:`1px solid ${playing ? 'var(--accent)' : 'var(--border2)'}`,
+              borderRadius:8, padding:'8px 20px', cursor: current ? 'pointer' : 'default', fontSize:14, fontWeight:800, flexShrink:0 }}>
             {playing ? '⏸ Pause' : '▶ Play'}
           </button>
           <input type="range" min={0} max={100} value={Math.round(volume * 100)} onChange={handleVolume}
             style={{ flex:1, accentColor:'var(--accent)', cursor:'pointer' }} title="Volume" />
-          <span style={{ color:'var(--text3)', fontSize:10, minWidth:28, textAlign:'right' }}>{Math.round(volume * 100)}%</span>
+          <span style={{ color:'var(--text3)', fontSize:11, minWidth:32, textAlign:'right' }}>{Math.round(volume * 100)}%</span>
         </div>
         {error && <div style={{ color:'var(--red)', fontSize:11, marginTop:8 }}>{error}</div>}
       </div>
 
       {/* Station list */}
-      <div style={{ maxHeight:220, overflowY:'auto', marginBottom:10 }}>
+      <div style={{ maxHeight:340, overflowY:'auto', marginBottom:10, scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
         {Object.entries(grouped).map(([genre, list]) => (
           <div key={genre} style={{ marginBottom:8 }}>
             <div style={{ fontSize:10, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:4 }}>{genre}</div>
