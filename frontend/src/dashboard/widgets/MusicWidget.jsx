@@ -39,9 +39,9 @@ function toEmbedUrl(url) {
       return `https://www.mixcloud.com/widget/iframe/?hide_cover=1&mini=1&autoplay=1&feed=${encodeURIComponent(path)}`
     }
     if (url.includes('drive.google.com')) {
-      // Folder: use full Drive URL so subfolder navigation works inside iframe
+      // Folder: embeddedfolderview is the only embeddable Drive option
       const folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/)
-      if (folderMatch) return `https://drive.google.com/drive/folders/${folderMatch[1]}`
+      if (folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`
       // Single file: https://drive.google.com/file/d/FILE_ID/view
       const fileMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
       if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`
@@ -141,9 +141,43 @@ export default function MusicWidget({ config, onUpdate }) {
   }
 
   const height = iframeHeight(current?.source)
+  const isFolder = current?.source?.label === 'Google Drive Folder'
+  const [folderNav, setFolderNav] = useState('')
+
+  function navigateFolder(url) {
+    const m = url.match(/\/folders\/([a-zA-Z0-9_-]+)/)
+    if (!m) return
+    const newEmbed = `https://drive.google.com/embeddedfolderview?id=${m[1]}#list`
+    const updated = { ...current, embedUrl: newEmbed, url }
+    setPlaying(updated)
+    onUpdate({ current: updated })
+    setFolderNav('')
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+      {/* Drive folder navigation bar */}
+      {isFolder && (
+        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+          <button onClick={() => navigateFolder(current.url)}
+            style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6,
+              color:'var(--text3)', fontSize:11, padding:'4px 8px', cursor:'pointer',
+              fontFamily:"'DM Mono',monospace", whiteSpace:'nowrap' }}
+            title="Go to root folder">🏠 Root</button>
+          <input value={folderNav} onChange={e => setFolderNav(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && navigateFolder(folderNav)}
+            placeholder="Paste subfolder URL to navigate…"
+            style={{ flex:1, background:'var(--s3)', border:'1px solid var(--border2)',
+              borderRadius:6, color:'var(--text)', fontFamily:"'DM Mono',monospace",
+              fontSize:11, padding:'4px 8px', outline:'none' }} />
+          {folderNav && (
+            <button onClick={() => navigateFolder(folderNav)}
+              style={{ background:'var(--accent)', border:'none', borderRadius:6,
+                color:'#fff', fontSize:11, padding:'4px 10px', cursor:'pointer' }}>Go</button>
+          )}
+        </div>
+      )}
 
       {/* Player */}
       {current?.embedUrl ? (
@@ -153,7 +187,6 @@ export default function MusicWidget({ config, onUpdate }) {
           height={height}
           frameBorder="0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-top-navigation-by-user-activation"
           loading="lazy"
           style={{ borderRadius: 12, border: 'none', display: 'block' }}
         />
