@@ -444,11 +444,19 @@ export default function SettingsPage() {
                 {backups.map((b, i) => (
                   <div key={b.id} style={{ display:'flex', alignItems:'center', gap:10, background:'var(--s2)', border:`1px solid ${i === 0 ? 'rgba(61,220,170,.2)' : 'var(--border)'}`, borderRadius:8, padding:'10px 14px' }}>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
-                        {b.label || `Backup ${backups.length - i}`}
+                      <div style={{ fontSize:12, fontWeight:700, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+                        {b.label ? (
+                          b.label.startsWith('daily-')
+                            ? <span>📅 {b.label.replace('daily-', 'Daily ')}</span>
+                            : b.label
+                        ) : `Backup ${backups.length - i}`}
                         {i === 0 && <span style={{ fontSize:9, background:'rgba(61,220,170,.13)', color:'var(--green)', borderRadius:20, padding:'1px 8px', fontFamily:"'DM Mono',monospace" }}>Latest</span>}
+                        {b.label?.startsWith('daily-') && <span style={{ fontSize:9, background:'rgba(245,166,35,.13)', color:'var(--yellow)', borderRadius:20, padding:'1px 8px', fontFamily:"'DM Mono',monospace" }}>Auto</span>}
                       </div>
-                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>{formatDate(b.created_at)}</div>
+                      <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace", marginTop:2 }}>
+                        {formatDate(b.created_at)}
+                        {b.bytes && <span style={{ marginLeft:8, color:'var(--text3)' }}>· {Math.round(b.bytes/1024*10)/10}KB</span>}
+                      </div>
                     </div>
                     <button onClick={() => setPwdModal({ action:'restore', backupId: b.id })} disabled={!!restoring}
                       style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, fontFamily:"'DM Mono',monospace", padding:'5px 12px', cursor:'pointer', opacity: restoring ? .5 : 1, whiteSpace:'nowrap' }}>
