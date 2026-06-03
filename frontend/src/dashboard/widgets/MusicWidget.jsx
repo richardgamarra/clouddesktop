@@ -1,14 +1,20 @@
 import { useState } from 'react'
 
 const PRESETS = [
-  { name:'Top 50 Global',   url:'https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF' },
-  { name:'Peaceful Piano',  url:'https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO' },
-  { name:'Jazz Vibes',      url:'https://open.spotify.com/playlist/37i9dQZF1DX0SM0LYsmbMT' },
-  { name:'80s Hits',        url:'https://open.spotify.com/playlist/37i9dQZF1DX4UtSsGT1Sbe' },
-  { name:'Rock Classics',   url:'https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U' },
-  { name:'Deep Focus',      url:'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ' },
-  { name:'Chill Hits',      url:'https://open.spotify.com/playlist/37i9dQZF1DX4WYpdgoIcn6' },
-  { name:'Pop Rising',      url:'https://open.spotify.com/playlist/37i9dQZF1DWUa8ZRTfalHk' },
+  // Spotify
+  { name:'🟢 Top 50 Global',   url:'https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF' },
+  { name:'🟢 Peaceful Piano',  url:'https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO' },
+  { name:'🟢 Jazz Vibes',      url:'https://open.spotify.com/playlist/37i9dQZF1DX0SM0LYsmbMT' },
+  { name:'🟢 80s Hits',        url:'https://open.spotify.com/playlist/37i9dQZF1DX4UtSsGT1Sbe' },
+  { name:'🟢 Rock Classics',   url:'https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U' },
+  { name:'🟢 Deep Focus',      url:'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ' },
+  { name:'🟢 Chill Hits',      url:'https://open.spotify.com/playlist/37i9dQZF1DX4WYpdgoIcn6' },
+  // YouTube (embedding allowed)
+  { name:'🔴 Lofi Hip Hop',    url:'https://www.youtube.com/watch?v=jfKfPfyJRdk' },
+  { name:'🔴 Jazz BGM',        url:'https://www.youtube.com/watch?v=Dx5qFachd3A' },
+  { name:'🔴 Classical Study', url:'https://www.youtube.com/watch?v=4To8-GW_Gvk' },
+  { name:'🔴 80s Pop Mix',     url:'https://www.youtube.com/watch?v=oDPxhDQgOAs' },
+  { name:'🔴 70s Hits',        url:'https://www.youtube.com/watch?v=wiyS6BFYTV8' },
 ]
 
 function toEmbedUrl(url) {
@@ -91,9 +97,18 @@ export default function MusicWidget({ config, onUpdate }) {
 
       {/* Player */}
       {current?.embedUrl ? (
-        <iframe src={current.embedUrl} width="100%" height="352" frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy" style={{ borderRadius:12, border:'none', display:'block' }} />
+        <>
+          <iframe src={current.embedUrl} width="100%" height="352" frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy" style={{ borderRadius:12, border:'none', display:'block' }} />
+          {current.source?.includes('YouTube') && (
+            <div style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace",
+              padding:'4px 8px', background:'rgba(255,91,110,.08)', borderRadius:6,
+              border:'1px solid rgba(255,91,110,.2)', lineHeight:1.5 }}>
+              ⚠ If you see Error 153, this video has embedding disabled. Try a preset below or paste a different YouTube URL.
+            </div>
+          )}
+        </>
       ) : (
         <div style={{ height:120, display:'flex', flexDirection:'column', alignItems:'center',
           justifyContent:'center', background:'var(--s2)', borderRadius:12,
