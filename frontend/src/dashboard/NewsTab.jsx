@@ -397,6 +397,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
           groupLayout={groupLayout}
           onLayoutChange={handleGroupLayoutChange}
           onSourceMove={handleSourceMove}
+          onSourceReorder={moveSource}
         />
       ) : (
       <div className={newsView === 'compact' ? 'news-compact-grid' : ''}>

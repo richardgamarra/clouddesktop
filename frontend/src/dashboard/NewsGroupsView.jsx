@@ -15,7 +15,7 @@ const DEFAULT_PANEL_H = 280
 const MIN_W = 280
 const MIN_H = 200
 
-function NewsGroupPanel({ group, sources, cache, allGroups, layout, onLayoutChange, onSourceMove }) {
+function NewsGroupPanel({ group, sources, cache, allGroups, layout, onLayoutChange, onSourceMove, onSourceReorder }) {
   const panelRef = useRef(null)
   const dragRef  = useRef(null)
   const [moveOpen, setMoveOpen] = useState(null) // source id with open move menu
@@ -116,6 +116,11 @@ function NewsGroupPanel({ group, sources, cache, allGroups, layout, onLayoutChan
                 {/* Source sub-header */}
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, borderBottom:'1px solid var(--border)', paddingBottom:4 }}>
                   <span style={{ fontSize:10, fontWeight:700, color: src.color, fontFamily:"'DM Mono',monospace", flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{src.name}</span>
+                  {/* ▲▼ reorder within group */}
+                  <button onClick={() => onSourceReorder(src.id, -1)} disabled={sources.indexOf(src)===0}
+                    style={{ background:'none', border:'none', color: sources.indexOf(src)===0 ? 'var(--border2)' : 'var(--text3)', cursor: sources.indexOf(src)===0 ? 'default' : 'pointer', fontSize:9, padding:'0 2px', lineHeight:1 }}>▲</button>
+                  <button onClick={() => onSourceReorder(src.id, 1)} disabled={sources.indexOf(src)===sources.length-1}
+                    style={{ background:'none', border:'none', color: sources.indexOf(src)===sources.length-1 ? 'var(--border2)' : 'var(--text3)', cursor: sources.indexOf(src)===sources.length-1 ? 'default' : 'pointer', fontSize:9, padding:'0 2px', lineHeight:1 }}>▼</button>
                   {otherGroups.length > 0 && (
                     <div style={{ position:'relative', flexShrink:0 }}>
                       <button
@@ -177,7 +182,7 @@ function NewsGroupPanel({ group, sources, cache, allGroups, layout, onLayoutChan
   )
 }
 
-export default function NewsGroupsView({ sources, cache, newsGroups, groupLayout, onLayoutChange, onSourceMove }) {
+export default function NewsGroupsView({ sources, cache, newsGroups, groupLayout, onLayoutChange, onSourceMove, onSourceReorder }) {
   const GAP = 24
   const START_X = 20
   const START_Y = 20
@@ -217,6 +222,7 @@ export default function NewsGroupsView({ sources, cache, newsGroups, groupLayout
               layout={layout}
               onLayoutChange={patch => onLayoutChange(group.id, patch)}
               onSourceMove={onSourceMove}
+              onSourceReorder={onSourceReorder}
             />
           )
         })}
@@ -231,6 +237,7 @@ export default function NewsGroupsView({ sources, cache, newsGroups, groupLayout
             layout={groupLayout['__ungrouped__'] || defaultPanelLayout(newsGroups.length)}
             onLayoutChange={patch => onLayoutChange('__ungrouped__', patch)}
             onSourceMove={onSourceMove}
+            onSourceReorder={onSourceReorder}
           />
         )}
       </div>
