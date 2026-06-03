@@ -4,8 +4,9 @@ export default function JukeboxWidget() {
   const [songs, setSongs]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
-  const [current, setCurrent]   = useState(null)  // current song object
+  const [current, setCurrent]   = useState(null)
   const [playing, setPlaying]   = useState(false)
+  const [embedBlocked, setEmbedBlocked] = useState(false)
   const [search, setSearch]     = useState('')
   const iframeRef = useRef(null)
   const currentIdx = songs.findIndex(s => s.id === current?.id)
@@ -20,6 +21,7 @@ export default function JukeboxWidget() {
   function play(song) {
     setCurrent(song)
     setPlaying(true)
+    setEmbedBlocked(false)
   }
 
   function playNext() {
@@ -108,16 +110,65 @@ export default function JukeboxWidget() {
           <>
             {/* Video */}
             <div style={{ flex:1, background:'#000', position:'relative', overflow:'hidden', height:0 }}>
-              <iframe
-                ref={iframeRef}
-                key={current.id}
-                src={embedUrl}
-                width="100%" height="100%"
-                frameBorder="0"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                style={{ display:'block', border:'none', position:'absolute', inset:0 }}
-              />
+              {!embedBlocked ? (
+                <iframe
+                  ref={iframeRef}
+                  key={current.id}
+                  src={embedUrl}
+                  width="100%" height="100%"
+                  frameBorder="0"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                  style={{ display:'block', border:'none', position:'absolute', inset:0 }}
+                  onLoad={() => {
+                    // Detect Error 153 by checking if iframe content changed after 2s
+                    setTimeout(() => {
+                      try {
+                        const doc = iframeRef.current?.contentDocument
+                        if (!doc || doc.title?.includes('Error') || doc.body?.innerText?.includes('153')) {
+                          setEmbedBlocked(true)
+                        }
+                      } catch {} // cross-origin, can't read — assume ok
+                    }, 2500)
+                  }}
+                />
+              ) : null}
+
+              {/* Fallback overlay — shown when embedding blocked OR as default */}
+              {(embedBlocked) && (
+                <div style={{ position:'absolute', inset:0, background:'#111',
+                  display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, padding:24 }}>
+                  {current.thumb && (
+                    <img src={current.thumb} alt="" style={{ width:200, borderRadius:8, opacity:.9 }} />
+                  )}
+                  <div style={{ fontSize:13, fontWeight:700, color:'#fff', textAlign:'center' }}>{current.name}</div>
+                  <div style={{ fontSize:11, color:'#aaa', fontFamily:"'DM Mono',monospace", textAlign:'center' }}>
+                    ⚠ YouTube blocks embedding for this video
+                  </div>
+                  <div style={{ display:'flex', gap:10 }}>
+                    <button onClick={() => window.open(current.url, '_blank')}
+                      style={{ background:'#ff0000', border:'none', borderRadius:8, color:'#fff',
+                        fontSize:13, fontWeight:700, padding:'10px 20px', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                      ▶ Watch on YouTube
+                    </button>
+                    <button onClick={() => setEmbedBlocked(false)}
+                      style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:8,
+                        color:'var(--text2)', fontSize:11, padding:'10px 14px', cursor:'pointer' }}>
+                      Try embed
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Auto-detect button for first try */}
+              {!embedBlocked && (
+                <button onClick={() => setEmbedBlocked(true)}
+                  style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,.6)',
+                    border:'none', borderRadius:4, color:'#aaa', fontSize:9, padding:'3px 7px',
+                    cursor:'pointer', fontFamily:"'DM Mono',monospace", zIndex:10 }}>
+                  Error 153? Click here
+                </button>
+              )}
             </div>
 
             {/* Controls */}
