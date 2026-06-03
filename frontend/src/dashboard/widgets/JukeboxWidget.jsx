@@ -2,19 +2,14 @@ import { useRef, useState, useEffect } from 'react'
 
 export default function JukeboxWidget() {
   const containerRef = useRef(null)
-  const [scale, setScale]   = useState(1)
-  const [contW, setContW]   = useState(560)
+  const [height, setHeight] = useState(560)
 
-  // Native jukebox dimensions (from actual app)
-  const NATIVE_W = 1280
-  const NATIVE_H = 900
-
+  // Auto-height: match the container width * aspect ratio
   useEffect(() => {
     function update() {
       if (!containerRef.current) return
-      const w = containerRef.current.offsetWidth
-      setContW(w)
-      setScale(w / NATIVE_W)
+      // Sidebar(180) + video(200) + controls(~160) + upnext(~130) + header(0 hidden)
+      setHeight(560)
     }
     update()
     const ro = new ResizeObserver(update)
@@ -22,25 +17,16 @@ export default function JukeboxWidget() {
     return () => ro.disconnect()
   }, [])
 
-  const scaledH = Math.round(NATIVE_H * scale)
-
   return (
     <div ref={containerRef}
-      style={{ overflow:'hidden', borderRadius:8, height: scaledH, position:'relative' }}>
+      style={{ overflow:'hidden', borderRadius:8, height }}>
       <iframe
-        src="https://jukebox.richardgamarra.com"
-        width={NATIVE_W}
-        height={NATIVE_H}
+        src="https://jukebox.richardgamarra.com?embed=1"
+        width="100%"
+        height={height}
         frameBorder="0"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-        style={{
-          display:'block',
-          border:'none',
-          transformOrigin:'top left',
-          transform:`scale(${scale})`,
-          position:'absolute',
-          top:0, left:0,
-        }}
+        style={{ display:'block', border:'none' }}
         title="Jukebox"
       />
     </div>
