@@ -1,5 +1,6 @@
 export default function JukeboxWidget() {
-  const HEIGHT = 330  // video(175) + nowplaying+title(30) + progress(20) + controls(38) + volume(24) + padding
+  // video(175) + nowplaying+title+progress+controls+volume(~115) + upnext(80) + bottomnav(40) = 410
+  const HEIGHT = 410
 
   return (
     <div style={{ overflow:'hidden', borderRadius:8, height: HEIGHT }}>
