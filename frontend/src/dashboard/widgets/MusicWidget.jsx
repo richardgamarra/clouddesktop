@@ -15,11 +15,14 @@ const PRESETS = [
   { name:'Classical Essentials',url:'https://open.spotify.com/playlist/37i9dQZF1DWWEJlAGA9gs0', src:'Spotify' },
   { name:'Latin Pop',           url:'https://open.spotify.com/playlist/37i9dQZF1DX10zKzsJ2jva', src:'Spotify' },
   { name:'Chill Hits',          url:'https://open.spotify.com/playlist/37i9dQZF1DX4WYpdgoIcn6', src:'Spotify' },
-  // SoundCloud
-  { name:'Lofi Hip Hop',        url:'https://soundcloud.com/lo-fi-hip-hop-music/sets/lofi-chill', src:'SoundCloud' },
-  { name:'Jazz Mix',            url:'https://soundcloud.com/jazzvibes/sets/jazz-playlist',         src:'SoundCloud' },
-  // Mixcloud
-  { name:'80s Mix (Mixcloud)',  url:'https://www.mixcloud.com/NRJHitsMusicOnly/80s-hits-mix/',    src:'Mixcloud' },
+  // SoundCloud — verified ✅
+  { name:'80s Greatest Hits',   url:'https://soundcloud.com/80s-hits-music/sets/80s-hits-music',           src:'SoundCloud' },
+  { name:'80s Pop Hits',        url:'https://soundcloud.com/80shitsmusic/sets/80s-pop-hits',               src:'SoundCloud' },
+  { name:'Best of 80s',         url:'https://soundcloud.com/bestof80s/sets/80s-greatest-hits',             src:'SoundCloud' },
+  { name:'70s Greatest Hits',   url:'https://soundcloud.com/70shits/sets/70s-greatest-hits',               src:'SoundCloud' },
+  { name:'Beatles Greatest',    url:'https://soundcloud.com/beatles-songs/sets/beatles-greatest-hits',     src:'SoundCloud' },
+  { name:'Classic Rock',        url:'https://soundcloud.com/alternativerock4ever/sets/classic-rock',       src:'SoundCloud' },
+  // Mixcloud — paste any URL from mixcloud.com to add your own
 ]
 
 function toEmbedUrl(url) {
