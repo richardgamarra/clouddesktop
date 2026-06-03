@@ -109,7 +109,7 @@ export default function WidgetsTab({ tab, onUpdateTab }) {
   function onDragEnd() { dragId.current = null; setDragOver(null) }
 
   return (
-    <div style={{ padding:'20px 24px' }}>
+    <div style={{ padding:'20px 24px', overflowY:'auto', flex:1 }}>
       {/* Top bar */}
       <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
         <button onClick={() => setShowPicker(v => !v)}
