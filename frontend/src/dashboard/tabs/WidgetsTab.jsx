@@ -10,6 +10,7 @@ import CountdownWidget from '../widgets/CountdownWidget'
 import CalculatorWidget from '../widgets/CalculatorWidget'
 import TodoWidget        from '../widgets/TodoWidget'
 import CommoditiesWidget from '../widgets/CommoditiesWidget'
+import RadioWidget        from '../widgets/RadioWidget'
 
 const WIDGET_TYPES = [
   { type:'clock',      icon:'🕐', name:'World Clock',  desc:'Multiple timezone clocks',   defaultConfig:{ cities:[] } },
@@ -23,6 +24,7 @@ const WIDGET_TYPES = [
   { type:'calculator', icon:'🧮', name:'Calculator',    desc:'Standard calculator',        defaultConfig:{} },
   { type:'todo',        icon:'✅', name:'Quick To-Do',    desc:'Checkbox list, auto-saves',   defaultConfig:{ items:[] } },
   { type:'commodities', icon:'🥇', name:'Commodities',   desc:'Gold, oil, grains & more',    defaultConfig:{ symbols:['GC=F','SI=F','CL=F','NG=F','ZC=F'] } },
+  { type:'radio',       icon:'📻', name:'Radio',          desc:'Internet radio player',        defaultConfig:{ stations:[], volume:0.8 } },
 ]
 
 function WidgetComponent({ widget, onUpdate }) {
@@ -39,6 +41,7 @@ function WidgetComponent({ widget, onUpdate }) {
     case 'calculator': return <CalculatorWidget />
     case 'todo':        return <TodoWidget {...props} />
     case 'commodities': return <CommoditiesWidget {...props} />
+    case 'radio':       return <RadioWidget {...props} />
     default:            return null
   }
 }

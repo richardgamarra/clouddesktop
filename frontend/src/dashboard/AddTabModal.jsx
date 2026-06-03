@@ -1,5 +1,13 @@
 import { useState } from 'react'
 
+const WEBPAGE_PRESETS = [
+  { label:'Radio Garden 🌍', url:'https://radio.garden', desc:'World radio on a globe' },
+  { label:'TuneIn 📻', url:'https://tunein.com', desc:'Radio stations & podcasts' },
+  { label:'SomaFM 🎵', url:'https://somafm.com', desc:'Curated internet radio' },
+  { label:'Spotify 🎧', url:'https://open.spotify.com', desc:'Music streaming' },
+  { label:'YouTube Music 🎶', url:'https://music.youtube.com', desc:'Music & videos' },
+]
+
 const TAB_TYPES = [
   { type: 'webpage',    icon: '🌐', name: 'Web Page',    desc: 'Embed any public URL in a panel' },
   { type: 'bookmarks', icon: '🔖', name: 'Bookmarks',   desc: 'Quick-launch link grid' },
@@ -127,10 +135,24 @@ export default function AddTabModal({ onAdd, onClose }) {
             </div>
 
             {chosen.type === 'webpage' && (
-              <div className="field">
-                <label>URL</label>
-                <input type="url" value={webUrl} onChange={e => setWebUrl(e.target.value)} placeholder="https://example.com" />
-              </div>
+              <>
+                <div style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.07em', marginBottom:8 }}>Quick pick</div>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                    {WEBPAGE_PRESETS.map(p => (
+                      <div key={p.url} onClick={() => { setWebUrl(p.url); setTabName(p.label.split(' ')[0]) }}
+                        style={{ background: webUrl===p.url ? 'rgba(91,127,255,.13)' : 'var(--s2)', border:`1px solid ${webUrl===p.url ? 'var(--accent)' : 'var(--border2)'}`, borderRadius:20, padding:'4px 12px', fontSize:11, fontFamily:"'DM Mono',monospace", color: webUrl===p.url ? 'var(--accent2)' : 'var(--text2)', cursor:'pointer' }}
+                        title={p.desc}>
+                        {p.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="field">
+                  <label>URL</label>
+                  <input type="url" value={webUrl} onChange={e => setWebUrl(e.target.value)} placeholder="https://example.com" />
+                </div>
+              </>
             )}
 
             {chosen.type === 'weather' && (
