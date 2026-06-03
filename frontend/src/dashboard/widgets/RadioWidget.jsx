@@ -37,7 +37,7 @@ const DEFAULT_STATIONS = [
   // Indie ✅
   { name:'SomaFM Indie Pop',   url:'https://ice2.somafm.com/indiepop-128-mp3',                  genre:'Indie'     },
   // Peru ✅ proxied
-  { name:'RPP Noticias',       url:'/api/radio/stream?url=https%3A%2F%2Frpp-ice.streamguys1.com%2Frpp.mp3', genre:'Peru' },
+  { name:'Onda Cero Peru',     url:'/api/radio/stream?url=http%3A%2F%2F198.154.106.100%3A8040%2Fstream',    genre:'Peru' },
 ]
 
 const GENRES = [...new Set(DEFAULT_STATIONS.map(s => s.genre))]
