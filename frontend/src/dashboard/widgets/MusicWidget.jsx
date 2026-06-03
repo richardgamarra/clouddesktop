@@ -39,9 +39,9 @@ function toEmbedUrl(url) {
       return `https://www.mixcloud.com/widget/iframe/?hide_cover=1&mini=1&autoplay=1&feed=${encodeURIComponent(path)}`
     }
     if (url.includes('drive.google.com')) {
-      // Folder: https://drive.google.com/drive/folders/FOLDER_ID
+      // Folder: use full Drive URL so subfolder navigation works inside iframe
       const folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/)
-      if (folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`
+      if (folderMatch) return `https://drive.google.com/drive/folders/${folderMatch[1]}`
       // Single file: https://drive.google.com/file/d/FILE_ID/view
       const fileMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/)
       if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`
@@ -153,6 +153,7 @@ export default function MusicWidget({ config, onUpdate }) {
           height={height}
           frameBorder="0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-top-navigation-by-user-activation"
           loading="lazy"
           style={{ borderRadius: 12, border: 'none', display: 'block' }}
         />
