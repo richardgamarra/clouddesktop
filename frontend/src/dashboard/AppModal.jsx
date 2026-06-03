@@ -127,7 +127,7 @@ function renderShortcutText(sc) {
 }
 
 export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
-  const isNew = !app?.id || app.id === '__new__'
+  const isNew = !app?.id
   const [name, setName]         = useState(app?.name || '')
   const [url, setUrl]           = useState(app?.url || '')
   const [groupId, setGroupId]   = useState(app?.groupId || groups[0]?.id || '')
@@ -177,7 +177,7 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
     if (iconVal.startsWith('http')) favicon = iconVal
     else if (iconVal) emoji = iconVal
     else { try { favicon = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(new URL(url).hostname)}` } catch {} }
-    onSave({ id: app?.id || '__new__', name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, shortcut, showInSidebar })
+    onSave({ id: app?.id || null, name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, shortcut, showInSidebar })
   }
 
   return (

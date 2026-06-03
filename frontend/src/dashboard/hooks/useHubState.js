@@ -44,6 +44,8 @@ export function useHubState() {
 
   const saveApp = useCallback((appData) => {
     setApps(prev => {
+      // null id = always a new app
+      if (!appData.id) return [...prev, { ...appData, id: 'app_' + Date.now() }]
       const exists = prev.find(a => a.id === appData.id)
       if (exists) return prev.map(a => a.id === appData.id ? { ...a, ...appData } : a)
       return [...prev, { id: 'app_' + Date.now(), ...appData }]

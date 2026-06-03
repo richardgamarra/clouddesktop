@@ -205,7 +205,7 @@ export default function DashboardPage() {
   function handleCtxNewGroup(appId) { setGroupModal({ id: null, _pendingAppId: appId }) }
 
   function openAddApp(defaultGroupId) {
-    setAppModal({ app: { id: '__new__', name: '', url: '', groupId: defaultGroupId || hub.groups[0]?.id || '', emoji: null, favicon: '', shortcut: '' } })
+    setAppModal({ app: { id: null, name: '', url: '', groupId: defaultGroupId || hub.groups[0]?.id || '', emoji: null, favicon: '', shortcut: '' } })
   }
   function openEditApp(appId, focusField) {
     const app = hub.getApp(appId)
