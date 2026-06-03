@@ -45,7 +45,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 }
 
 export default function DashboardPage() {
-  const { accessToken, logout, sync, syncReady, initSync } = useAuth()
+  const { accessToken, user, logout, sync, syncReady, initSync } = useAuth()
   const navigate = useNavigate()
   const hub = useHubState()
   const { openApp, isOpen } = useOpenWindows()
