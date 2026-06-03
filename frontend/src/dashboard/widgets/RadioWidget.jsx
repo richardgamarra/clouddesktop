@@ -2,22 +2,26 @@ import { useState, useRef, useEffect } from 'react'
 
 const DEFAULT_STATIONS = [
   { name:'NPR News',         url:'https://npr-ice.streamguys1.com/live.mp3',                 genre:'News'      },
-  { name:'BBC World Service', url:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service', genre:'News'      },
-  { name:'BBC Radio 1',      url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',      genre:'Pop'       },
+  { name:'BBC World Service', url:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service',  genre:'News'      },
+  { name:'BBC Radio 1',      url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',       genre:'Pop'       },
+  { name:'BBC Radio 2',      url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_two',       genre:'Pop'       },
+  { name:'BBC Radio 4',      url:'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_four_fm',   genre:'General'   },
   { name:'SomaFM Groove',    url:'https://ice1.somafm.com/groovesalad-256-mp3',              genre:'Ambient'   },
   { name:'SomaFM Drone',     url:'https://ice1.somafm.com/dronezone-256-mp3',                genre:'Ambient'   },
   { name:'SomaFM Deep Space', url:'https://ice2.somafm.com/deepspaceone-128-mp3',            genre:'Ambient'   },
   { name:'SomaFM Indie Pop', url:'https://ice2.somafm.com/indiepop-128-mp3',                 genre:'Indie'     },
   { name:'Jazz 24',          url:'https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1',   genre:'Jazz'      },
   { name:'France Inter',     url:'https://icecast.radiofrance.fr/franceinter-midfi.mp3',     genre:'General'   },
-  // Peru — proxied through server to bypass CORS
-  { name:'RPP Noticias',     url:'/api/radio/stream?url=https%3A%2F%2Frpp-ice.streamguys1.com%2Frpp.mp3',                genre:'Peru' },
-  { name:'Studio 92',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.studio92.pe%2Fstudio92',                 genre:'Peru' },
-  { name:'Oxígeno',          url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.oxigenoradio.com%2Foxigeno',             genre:'Peru' },
-  { name:'CPN Radio',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.cpnradio.pe%2Fcpnradio',                genre:'Peru' },
-  // Beatles ✅ verified (ICY protocol)
-  { name:'Beatles Radio',    url:'https://www.beatlesradio.com:8000/stream/1/',              genre:'Beatles' },
-  { name:'Abbey Road Radio', url:'https://abbeyroadradio.com/stream',                        genre:'Beatles' },
+  // Peru — proxied for ICY/CORS support
+  { name:'RPP Noticias',     url:'/api/radio/stream?url=https%3A%2F%2Frpp-ice.streamguys1.com%2Frpp.mp3',              genre:'Peru' },
+  { name:'Studio 92',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.studio92.pe%2Fstudio92',               genre:'Peru' },
+  { name:'Oxígeno',          url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.oxigenoradio.com%2Foxigeno',           genre:'Peru' },
+  { name:'CPN Radio',        url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.cpnradio.pe%2Fcpnradio',              genre:'Peru' },
+  { name:'Moda 106.5',       url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.moda.pe%2Fmoda',                      genre:'Peru' },
+  { name:'Capital 96.7',     url:'/api/radio/stream?url=https%3A%2F%2Fstreaming.capital.pe%2Fcapital',                genre:'Peru' },
+  // Beatles — proxied for ICY support
+  { name:'Beatles Radio',    url:'/api/radio/stream?url=https%3A%2F%2Fwww.beatlesradio.com%3A8000%2Fstream%2F1%2F', genre:'Beatles' },
+  { name:'Abbey Road Radio', url:'/api/radio/stream?url=https%3A%2F%2Fabbeyroadradio.com%2Fstream',                  genre:'Beatles' },
   // Soft Jazz ✅ verified
   { name:'1.FM Smooth Jazz', url:'https://strm112.1.fm/smoothjazz_mobile_mp3',              genre:'Soft Jazz' },
   { name:'SomaFM Lush',      url:'https://ice2.somafm.com/lush-128-mp3',                    genre:'Soft Jazz' },

@@ -1,10 +1,11 @@
 const express = require('express')
+const net     = require('net')
+const tls     = require('tls')
 const http    = require('http')
 const https   = require('https')
 const router  = express.Router()
 
-// GET /api/radio/stream?url=ENCODED_URL
-// Proxies an audio stream through the server to bypass CORS
+// Proxy radio stream — handles both standard HTTP and ICY (SHOUTcast) protocol
 router.get('/stream', (req, res) => {
   const targetUrl = req.query.url
   if (!targetUrl) return res.status(400).json({ error: 'Missing url parameter' })
@@ -12,54 +13,98 @@ router.get('/stream', (req, res) => {
   let url
   try { url = new URL(targetUrl) } catch { return res.status(400).json({ error: 'Invalid URL' }) }
 
-  const protocol = url.protocol === 'https:' ? https : http
-  const options = {
-    hostname: url.hostname,
-    port:     url.port || (url.protocol === 'https:' ? 443 : 80),
-    path:     url.pathname + url.search,
-    method:   'GET',
-    headers: {
-      'User-Agent':    'Mozilla/5.0 (compatible; RadioProxy/1.0)',
-      'Icy-MetaData':  '0',
-      'Accept':        '*/*',
-      'Connection':    'keep-alive',
-    },
-    timeout: 10000,
-  }
+  const isHttps = url.protocol === 'https:'
+  const port    = url.port ? parseInt(url.port) : (isHttps ? 443 : 80)
+  const host    = url.hostname
+  const path    = (url.pathname || '/') + (url.search || '')
 
-  const proxyReq = protocol.request(options, (proxyRes) => {
-    // Forward audio headers
-    const contentType = proxyRes.headers['content-type'] || 'audio/mpeg'
-    res.setHeader('Content-Type', contentType)
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Cache-Control', 'no-cache')
-    res.setHeader('Transfer-Encoding', 'chunked')
+  // Set response headers immediately
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Content-Type', 'audio/mpeg')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Transfer-Encoding', 'chunked')
 
-    // Handle redirects manually
-    if (proxyRes.statusCode === 301 || proxyRes.statusCode === 302 || proxyRes.statusCode === 303) {
-      const location = proxyRes.headers.location
-      if (location) {
-        return res.redirect(`/api/radio/stream?url=${encodeURIComponent(location)}`)
-      }
+  // Use raw TCP/TLS socket to support ICY protocol (SHOUTcast)
+  // ICY servers respond with "ICY 200 OK" which Node's http module rejects
+  const createSocket = () => isHttps
+    ? tls.connect({ host, port, rejectUnauthorized: false })
+    : net.connect({ host, port })
+
+  const socket = createSocket()
+  let headerDone = false
+  let buffer = Buffer.alloc(0)
+
+  socket.setTimeout(10000)
+
+  socket.on('connect', () => {
+    const req_headers = [
+      `GET ${path} HTTP/1.0`,
+      `Host: ${host}`,
+      'User-Agent: Mozilla/5.0 (compatible; RadioProxy/1.0)',
+      'Accept: */*',
+      'Icy-MetaData: 0',
+      'Connection: close',
+      '',
+      '',
+    ].join('\r\n')
+    socket.write(req_headers)
+  })
+
+  socket.on('data', (chunk) => {
+    if (headerDone) {
+      if (!res.writableEnded) res.write(chunk)
+      return
     }
 
-    res.status(proxyRes.statusCode || 200)
-    proxyRes.pipe(res)
+    buffer = Buffer.concat([buffer, chunk])
+    const str = buffer.toString('binary')
+    // Find end of headers (supports both HTTP and ICY)
+    const headerEnd = str.indexOf('\r\n\r\n')
+    if (headerEnd === -1) return // still receiving headers
+
+    headerDone = true
+    const headerStr = str.substring(0, headerEnd)
+
+    // Check for redirect
+    const locationMatch = headerStr.match(/[Ll]ocation:\s*(.+)/i)
+    if (locationMatch && (headerStr.includes('301') || headerStr.includes('302'))) {
+      socket.destroy()
+      const newUrl = locationMatch[1].trim()
+      return res.redirect(`/api/radio/stream?url=${encodeURIComponent(newUrl)}`)
+    }
+
+    // Extract content-type if present
+    const ctMatch = headerStr.match(/[Cc]ontent-[Tt]ype:\s*([^\r\n]+)/i)
+    if (ctMatch && !res.headersSent) {
+      res.setHeader('Content-Type', ctMatch[1].trim())
+    }
+
+    if (!res.headersSent) res.status(200)
+
+    // Send audio data after headers
+    const audioStart = headerEnd + 4
+    if (audioStart < buffer.length) {
+      res.write(buffer.slice(audioStart))
+    }
   })
 
-  proxyReq.on('error', (err) => {
+  socket.on('error', (err) => {
+    socket.destroy()
     if (!res.headersSent) res.status(502).json({ error: 'Stream unavailable', detail: err.message })
+    else if (!res.writableEnded) res.end()
   })
 
-  proxyReq.setTimeout(10000, () => {
-    proxyReq.destroy()
+  socket.on('timeout', () => {
+    socket.destroy()
     if (!res.headersSent) res.status(504).json({ error: 'Stream timeout' })
+    else if (!res.writableEnded) res.end()
   })
 
-  // Stop proxy when client disconnects
-  req.on('close', () => proxyReq.destroy())
+  socket.on('end', () => {
+    if (!res.writableEnded) res.end()
+  })
 
-  proxyReq.end()
+  req.on('close', () => socket.destroy())
 })
 
 module.exports = router
