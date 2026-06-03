@@ -88,6 +88,13 @@ export default function DashboardPage() {
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
 
+  // Auto-sync to cloud when sources change (debounced 4s) — captures group assignments
+  useEffect(() => {
+    if (!syncReady || !accessToken) return
+    const t = setTimeout(() => { sync(accessToken) }, 4000)
+    return () => clearTimeout(t)
+  }, [sources]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Tab name/icon overrides for fixed tabs (news/hub) stored in localStorage
   const [tabOverrides, setTabOverrides] = useState(() => {
     try { return JSON.parse(localStorage.getItem('wsh_tab_overrides') || '{}') } catch { return {} }

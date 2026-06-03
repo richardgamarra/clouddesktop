@@ -15,6 +15,7 @@ export const SYNC_KEYS = [
   'wsh_bg_opacity',      // background overlay opacity (0.0 - 0.95)
   'wsh_news_groups',     // news group definitions
   'wsh_news_layout_news',// news groups panel layout
+  'wsh_news_view',       // news view mode (grid/compact/groups)
   // NOTE: wsh_active_tab is intentionally NOT here — it's a local UI preference,
   // not data, and should NOT be overwritten by cloud restore.
 ]
