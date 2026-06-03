@@ -1,5 +1,5 @@
 export default function JukeboxWidget() {
-  const HEIGHT = 410
+  const HEIGHT = 440
 
   return (
     <div style={{ overflow:'hidden', borderRadius:8, height: HEIGHT }}>
