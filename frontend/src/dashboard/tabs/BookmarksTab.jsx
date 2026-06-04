@@ -56,8 +56,21 @@ function EditBookmarkModal({ item, groups, onSave, onClose }) {
           <input style={iStyle} type="url" value={url} onChange={e => { setUrl(e.target.value); setIconError(false) }} placeholder="https://…" onKeyDown={e => e.key === 'Enter' && handleSave()} />
         </div>
         <div className="field">
-          <label>Custom Icon URL <span style={{ color:'var(--text3)', fontWeight:400 }}>(optional — paste image URL or leave blank for auto)</span></label>
-          <input style={iStyle} type="url" value={customIcon} onChange={e => { setCustomIcon(e.target.value); setIconError(false) }} placeholder="https://example.com/icon.png" />
+          <label>Custom Icon <span style={{ color:'var(--text3)', fontWeight:400 }}>(optional — paste URL, upload image, or leave blank for auto)</span></label>
+          <div style={{ display:'flex', gap:6 }}>
+            <input style={{ ...iStyle, flex:1 }} type="url" value={customIcon} onChange={e => { setCustomIcon(e.target.value); setIconError(false) }} placeholder="https://example.com/icon.png" />
+            <label title="Upload image" style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:8, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', flexShrink:0, fontSize:16 }}>
+              📁
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = ev => { setCustomIcon(ev.target.result); setIconError(false) }
+                reader.readAsDataURL(file)
+                e.target.value = ''
+              }} />
+            </label>
+          </div>
         </div>
         <div className="field">
           <label>Group <span style={{ color:'var(--text3)', fontWeight:400 }}>(optional)</span></label>
@@ -72,6 +85,57 @@ function EditBookmarkModal({ item, groups, onSave, onClose }) {
       </div>
     </div>
   )
+}
+
+// ── Extract URL from browser drag event ──────────────────────────────────────
+function transferTypes(dataTransfer) {
+  return Array.from(dataTransfer?.types || [])
+}
+
+function isExternalUrlDrag(e) {
+  const types = transferTypes(e.dataTransfer)
+  return ['text/uri-list', 'text/x-moz-url', 'text/plain', 'text/html'].some(t => types.includes(t))
+}
+
+function normalizeDroppedUrl(value) {
+  const raw = (value || '').trim()
+  if (!raw || raw.startsWith('#')) return null
+  if (/^https?:\/\//i.test(raw)) return raw
+  if (/^www\./i.test(raw)) return `https://${raw}`
+  return null
+}
+
+function extractDroppedUrl(e) {
+  const uri  = e.dataTransfer.getData('text/uri-list')
+  const moz  = e.dataTransfer.getData('text/x-moz-url')
+  const text = e.dataTransfer.getData('text/plain')
+  const html = e.dataTransfer.getData('text/html')
+  const candidates = []
+
+  if (uri) candidates.push(...uri.split(/\r?\n/))
+  if (moz) candidates.push(...moz.split(/\r?\n/))
+  if (text) candidates.push(...text.split(/\s+/))
+  if (html) {
+    const href = html.match(/href=["']([^"']+)["']/i)
+    if (href) candidates.push(href[1])
+  }
+
+  const url = candidates.map(normalizeDroppedUrl).find(Boolean)
+  if (!url) return null
+
+  let name = ''
+  if (html) {
+    const m = html.match(/title="([^"]+)"/) || html.match(/>([^<]{2,60})</)
+    if (m) name = m[1].trim()
+  }
+  if (!name && moz) {
+    const lines = moz.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
+    if (lines[1] && !normalizeDroppedUrl(lines[1])) name = lines[1]
+  }
+  if (!name) {
+    try { name = new URL(url).hostname.replace('www.', '') } catch { name = url.substring(0, 40) }
+  }
+  return { url, name: name.substring(0, 60) }
 }
 
 // ── Grid view card ────────────────────────────────────────────────────────────
@@ -106,11 +170,26 @@ function BookmarkCard({ item, groups, onEdit, onRemove }) {
 const RESIZE_HANDLES = ['n','s','e','w','nw','ne','sw','se']
 const MIN_W = 180, MIN_H = 140
 
-function FolderPanel({ title, items, groups, layout, onLayoutChange, onOpen, onEdit, onRemove, onReorder }) {
+function FolderPanel({ title, items, groups, layout, onLayoutChange, onOpen, onEdit, onRemove, onReorder, onExternalDrop }) {
   const { x=20, y=20, w=260, h=220 } = layout || {}
   const panelRef  = useRef(null)
-  const [confirmId, setConfirmId] = useState(null)
-  const [dragOver, setDragOver]   = useState(null)
+  const [confirmId, setConfirmId]       = useState(null)
+  const [dragOver, setDragOver]         = useState(null)
+  const [extDropOver, setExtDropOver]   = useState(false)  // browser URL dragged over panel
+
+  function handleExtDragOver(e) {
+    if (isExternalUrlDrag(e)) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+      setExtDropOver(true)
+    }
+  }
+  function handleExtDrop(e) {
+    e.preventDefault()
+    setExtDropOver(false)
+    const dropped = extractDroppedUrl(e)
+    if (dropped && onExternalDrop) onExternalDrop(dropped)
+  }
   const dragId = useRef(null)
 
   function onItemDragStart(e, id) { dragId.current = id; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation() }
@@ -172,7 +251,19 @@ function FolderPanel({ title, items, groups, layout, onLayoutChange, onOpen, onE
         <span style={{ fontSize:10, color:'var(--text3)', fontFamily:"'DM Mono',monospace" }}>{items.length}</span>
       </div>
 
-      <div style={{ flex:1, overflowY:'auto', padding:'10px 8px', display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(64px, 1fr))', gap:4, alignContent:'start' }}>
+      <div
+        onDragOver={handleExtDragOver}
+        onDragLeave={() => setExtDropOver(false)}
+        onDrop={handleExtDrop}
+        style={{ flex:1, overflowY:'auto', padding:'10px 8px', display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(64px, 1fr))', gap:4, alignContent:'start',
+          outline: extDropOver ? '2px dashed var(--accent)' : 'none',
+          background: extDropOver ? 'rgba(91,127,255,.07)' : 'transparent',
+          borderRadius: extDropOver ? 8 : 0, position:'relative' }}>
+        {extDropOver && (
+          <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', zIndex:5 }}>
+            <div style={{ background:'rgba(91,127,255,.9)', color:'#fff', borderRadius:8, padding:'8px 14px', fontSize:12, fontWeight:700 }}>🔗 Drop to add bookmark</div>
+          </div>
+        )}
         {items.map(item => (
           <div key={item.id} draggable
             onDragStart={e => onItemDragStart(e, item.id)}
@@ -216,11 +307,13 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
   const layout = tab.config.bmLayout || {}
   const bView  = tab.config.bView    || 'grid'
 
-  const [showAdd, setShowAdd]   = useState(false)
-  const [newName, setNewName]   = useState('')
-  const [newUrl, setNewUrl]     = useState('')
-  const [newGroup, setNewGroup] = useState('')
+  const [showAdd, setShowAdd]       = useState(false)
+  const [newName, setNewName]       = useState('')
+  const [newUrl, setNewUrl]         = useState('')
+  const [newGroup, setNewGroup]     = useState('')
+  const [newCustomIcon, setNewCustomIcon] = useState('')
   const [editingItem, setEditingItem] = useState(null)
+  const [dropTarget, setDropTarget] = useState(null)
 
   const groups    = [...new Set(items.map(i => i.group || '').filter(Boolean))]
   const ungrouped = items.filter(i => !i.group)
@@ -233,9 +326,9 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
 
   function addItem() {
     if (!newName.trim() || !newUrl.trim()) return
-    const updated = [...items, { id:'bm_'+Date.now(), name:newName.trim(), url:newUrl.trim(), group:newGroup.trim() || '', customIcon:'' }]
+    const updated = [...items, { id:'bm_'+Date.now(), name:newName.trim(), url:newUrl.trim(), group:newGroup.trim() || '', customIcon:newCustomIcon }]
     onUpdateTab(tab.id, { config: { ...tab.config, items: updated } })
-    setNewName(''); setNewUrl(''); setNewGroup(''); setShowAdd(false)
+    setNewName(''); setNewUrl(''); setNewGroup(''); setNewCustomIcon(''); setShowAdd(false)
   }
 
   function saveItem(updated) {
@@ -244,6 +337,39 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
 
   function removeItem(id) {
     onUpdateTab(tab.id, { config: { ...tab.config, items: items.filter(i => i.id !== id) } })
+  }
+
+  function addDroppedItem(group, dropped) {
+    if (!dropped?.url) return
+    const nextGroup = group === '__other__' ? '' : (group || '')
+    const exists = items.some(i => i.url === dropped.url && (i.group || '') === nextGroup)
+    if (exists) return
+    const updated = [
+      ...items,
+      {
+        id: 'bm_' + Date.now(),
+        name: dropped.name || tryHost(dropped.url),
+        url: dropped.url,
+        group: nextGroup,
+        customIcon: '',
+      },
+    ]
+    onUpdateTab(tab.id, { config: { ...tab.config, items: updated } })
+  }
+
+  function handleGridDragOver(e, group) {
+    if (!isExternalUrlDrag(e)) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setDropTarget(group || '__other__')
+  }
+
+  function handleGridDrop(e, group) {
+    if (!isExternalUrlDrag(e)) return
+    e.preventDefault()
+    const dropped = extractDroppedUrl(e)
+    addDroppedItem(group, dropped)
+    setDropTarget(null)
   }
 
   function updatePanelLayout(key, patch) {
@@ -292,8 +418,23 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
             <input style={{ ...iStyle, width:200 }} type="url" value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="https://…" onKeyDown={e => e.key==='Enter' && addItem()} />
             <input style={{ ...iStyle, width:120 }} type="text" value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="Group (opt.)" list="bm-groups-list" />
             <datalist id="bm-groups-list">{groups.map(g => <option key={g} value={g} />)}</datalist>
+            {/* Icon upload */}
+            <label title="Upload custom icon" style={{ display:'flex', alignItems:'center', gap:5, height:34, padding:'0 10px', borderRadius:7, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', fontSize:12, color:'var(--text2)', flexShrink:0 }}>
+              {newCustomIcon
+                ? <img src={newCustomIcon} alt="" width={20} height={20} style={{ borderRadius:4 }} />
+                : <span>🖼 Icon</span>}
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = ev => setNewCustomIcon(ev.target.result)
+                reader.readAsDataURL(file)
+                e.target.value = ''
+              }} />
+            </label>
+            {newCustomIcon && <button title="Remove icon" style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:14, padding:'0 2px' }} onClick={() => setNewCustomIcon('')}>×</button>}
             <button className="btn-primary" style={{ fontSize:12, padding:'6px 12px' }} onClick={addItem}>Add</button>
-            <button className="btn-cancel" style={{ fontSize:12, padding:'6px 10px' }} onClick={() => { setShowAdd(false); setNewName(''); setNewUrl(''); setNewGroup('') }}>Cancel</button>
+            <button className="btn-cancel" style={{ fontSize:12, padding:'6px 10px' }} onClick={() => { setShowAdd(false); setNewName(''); setNewUrl(''); setNewGroup(''); setNewCustomIcon('') }}>Cancel</button>
           </div>
         )}
       </div>
@@ -302,22 +443,32 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
       {bView === 'grid' && (
         <div style={{ flex:1, overflowY:'auto', padding:'20px 24px' }}>
           {groups.map(g => (
-            <div key={g} style={{ marginBottom:24 }}>
+            <div key={g}
+              onDragOver={e => handleGridDragOver(e, g)}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDropTarget(null) }}
+              onDrop={e => handleGridDrop(e, g)}
+              style={{ marginBottom:24, borderRadius:10, outline: dropTarget === g ? '2px dashed var(--accent)' : 'none', background: dropTarget === g ? 'rgba(91,127,255,.07)' : 'transparent', padding: dropTarget === g ? 10 : 0, transition:'background .12s, outline .12s, padding .12s' }}>
               <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--accent2)', textTransform:'uppercase', letterSpacing:'.1em', marginBottom:10, paddingBottom:6, borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:6 }}>📁 {g}</div>
+              {dropTarget === g && <div style={{ fontSize:12, color:'var(--accent2)', fontWeight:700, marginBottom:10 }}>🔗 Drop to add bookmark to {g}</div>}
               <div className="bookmarks-grid" style={{ padding:0 }}>
                 {items.filter(i => i.group===g).map(item => <BookmarkCard key={item.id} item={item} groups={groups} onEdit={setEditingItem} onRemove={removeItem} />)}
               </div>
             </div>
           ))}
-          {ungrouped.length > 0 && (
-            <div style={{ marginBottom:24 }}>
+          {(ungrouped.length > 0 || groups.length === 0) && (
+            <div
+              onDragOver={e => handleGridDragOver(e, '__other__')}
+              onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDropTarget(null) }}
+              onDrop={e => handleGridDrop(e, '__other__')}
+              style={{ marginBottom:24, minHeight: groups.length === 0 && items.length === 0 ? 120 : undefined, borderRadius:10, outline: dropTarget === '__other__' ? '2px dashed var(--accent)' : 'none', background: dropTarget === '__other__' ? 'rgba(91,127,255,.07)' : 'transparent', padding: dropTarget === '__other__' ? 10 : 0, transition:'background .12s, outline .12s, padding .12s' }}>
               {groups.length > 0 && <div style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.1em', marginBottom:10, paddingBottom:6, borderBottom:'1px solid var(--border)' }}>Other</div>}
+              {dropTarget === '__other__' && <div style={{ fontSize:12, color:'var(--accent2)', fontWeight:700, marginBottom:10 }}>🔗 Drop to add bookmark</div>}
               <div className="bookmarks-grid" style={{ padding:0 }}>
                 {ungrouped.map(item => <BookmarkCard key={item.id} item={item} groups={groups} onEdit={setEditingItem} onRemove={removeItem} />)}
               </div>
+              {items.length === 0 && <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>No bookmarks yet. Drop a website here or use + Add bookmark.</div>}
             </div>
           )}
-          {items.length === 0 && <div style={{ color:'var(--text3)', fontFamily:"'DM Mono',monospace", fontSize:12 }}>No bookmarks yet.</div>}
         </div>
       )}
 
@@ -336,7 +487,8 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
               onOpen={url => window.open(url, '_blank')}
               onEdit={setEditingItem}
               onRemove={removeItem}
-              onReorder={reordered => reorderPanel(panel.key, reordered)} />
+              onReorder={reordered => reorderPanel(panel.key, reordered)}
+              onExternalDrop={dropped => addDroppedItem(panel.key, dropped)} />
           ))}
         </div>
       )}

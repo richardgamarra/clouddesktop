@@ -203,7 +203,23 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
             <option value="">— No group —</option>
           </select>
         </div>
-        <div className="field"><label>Icon — emoji or image URL</label><input id="ae-icon-input" type="text" value={iconVal} onChange={e => setIconVal(e.target.value)} placeholder="🚀 or https://…" maxLength={200} /></div>
+        <div className="field">
+          <label>Icon — emoji, image URL, or upload</label>
+          <div style={{ display:'flex', gap:6 }}>
+            <input id="ae-icon-input" type="text" value={iconVal} onChange={e => setIconVal(e.target.value)} placeholder="🚀 or https://…" maxLength={200} style={{ flex:1 }} />
+            <label title="Upload image" style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:8, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', flexShrink:0, fontSize:16 }}>
+              📁
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = ev => setIconVal(ev.target.result)
+                reader.readAsDataURL(file)
+                e.target.value = ''
+              }} />
+            </label>
+          </div>
+        </div>
         {/* Popular app icons */}
         <div className="emoji-section-title" style={{ marginTop: 4 }}>Popular apps</div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(10,1fr)', gap:2, marginBottom:12, maxHeight:120, overflowY:'auto' }}>
