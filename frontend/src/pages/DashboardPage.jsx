@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import PasswordModal from '../components/PasswordModal'
 import ConfirmModal from '../components/ConfirmModal'
 import TabEditModal from '../dashboard/TabEditModal'
 import DesktopView from '../dashboard/DesktopView'
-import { deriveKey, encryptSettings, hydrateLocalStorage } from '../lib/crypto'
+import { hydrateLocalStorage } from '../lib/crypto'
 import { useHubState } from '../dashboard/hooks/useHubState'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
 import { useCustomTabs } from '../dashboard/hooks/useCustomTabs'
@@ -27,7 +26,7 @@ import WeatherTab from '../dashboard/tabs/WeatherTab'
 import WidgetsTab from '../dashboard/tabs/WidgetsTab'
 import AnnouncementBanner from '../components/AnnouncementBanner'
 import '../dashboard/dashboard.css'
-import { getSettingsJson, loadSettingsJson } from '../lib/crypto'
+import { getSettingsJson, loadSettingsJson, collectSettings } from '../lib/crypto'
 
 function loadNewsSources() {
   try { return JSON.parse(localStorage.getItem('wsh_news_sources')) || JSON.parse(JSON.stringify(DEFAULT_NEWS_SOURCES)) }
@@ -137,65 +136,24 @@ export default function DashboardPage() {
     setEditingTab(null)
   }
 
-  const [restorePrompt, setRestorePrompt] = useState(false)
-  const pendingRestore = useRef(null) // holds the decrypted settings object
-  const [showSaveModal, setShowSaveModal] = useState(false)
   const [saveStatus, setSaveStatus] = useState('')
 
-  async function handleQuickSave(pwd) {
-    setShowSaveModal(false)
-    if (!user?.id) return
-    try {
-      const key = await deriveKey(pwd, user.id)
-      const blob = await encryptSettings(key)
-      await fetch('/api/settings/sync', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify(blob),
-      })
-      setSaveStatus('☁ Saved!')
-    } catch {
-      setSaveStatus('✗ Failed')
-    }
-    setTimeout(() => setSaveStatus(''), 3000)
-  }
-
-  // ── Cloud sync init: runs once per browser session ───────────────────────────
+  // ── Cloud sync init: fetch + apply settings on every login/session start ─────
   useEffect(() => {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
     if (sessionStorage.getItem(SYNC_DONE)) return
-    // Store current user ID (used to detect user switches on logout)
     if (user?.id) localStorage.setItem('wsh_last_user_id', user.id)
     initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
       if (cloudSettings) {
-        // Got decrypted cloud settings — store them and ask user
-        pendingRestore.current = cloudSettings
-        setRestorePrompt(true)
+        // Settings already hydrated by initSync — just reload to pick them up
+        window.location.reload()
       }
-      // If no cloud settings → user gets fresh default workspace (localStorage was cleared above)
     }).catch(() => {
       sessionStorage.setItem(SYNC_DONE, '1')
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function handleRestoreYes() {
-    setRestorePrompt(false)
-    if (pendingRestore.current) {
-      // Apply cloud settings to localStorage, then reload
-      hydrateLocalStorage(pendingRestore.current)
-      pendingRestore.current = null
-    }
-    window.location.reload()
-  }
-
-  function handleRestoreNo() {
-    setRestorePrompt(false)
-    pendingRestore.current = null
-    // Upload current local settings to cloud instead
-    if (sync && accessToken) sync(accessToken)
-  }
 
   useEffect(() => {
     function handler(e) {
@@ -478,10 +436,7 @@ export default function DashboardPage() {
               ↑ Import
               <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
             </label>
-            {saveStatus
-              ? <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color: saveStatus.startsWith('☁') ? 'var(--green)' : 'var(--red)', marginRight:4 }}>{saveStatus}</span>
-              : <button className="tb-btn" onClick={() => setShowSaveModal(true)} title="Save settings to cloud" style={{ marginRight:0 }}>💾 Save</button>
-            }
+            {saveStatus && <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color: saveStatus.startsWith('☁') ? 'var(--green)' : 'var(--red)', marginRight:4 }}>{saveStatus}</span>}
             <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 4 }}>Log out</button>
           </div>
         </div>
@@ -584,36 +539,6 @@ export default function DashboardPage() {
         />
       )}
 
-      {showSaveModal && (
-        <PasswordModal
-          title="💾 Save to Cloud"
-          sub="Enter your password to encrypt and save your current workspace to the server."
-          onConfirm={handleQuickSave}
-          onCancel={() => setShowSaveModal(false)}
-        />
-      )}
-
-      {/* Restore from cloud prompt */}
-      {restorePrompt && (
-        <div className="modal-overlay open">
-          <div className="modal-box" style={{ width: 440, textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>☁️</div>
-            <div className="modal-title" style={{ textAlign: 'center' }}>☁ Your workspace is ready</div>
-            <div className="modal-sub" style={{ textAlign: 'center', marginBottom: 24 }}>
-              Your saved workspace was found — apps, groups, news sources, bookmarks, widgets, tabs and all your settings.<br/><br/>
-              Load it now?
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button className="btn-primary" onClick={handleRestoreYes}>
-                ↩ Yes, load my workspace
-              </button>
-              <button className="btn-cancel" onClick={handleRestoreNo} style={{ width: '100%' }}>
-                Start fresh (save my cloud workspace anyway)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

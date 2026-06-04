@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getSettingsJson, loadSettingsJson, decryptSettings, hydrateLocalStorage, encryptSettings, deriveKey } from '../lib/crypto'
+import { getSettingsJson, loadSettingsJson, collectSettings, hydrateLocalStorage } from '../lib/crypto'
 
 const DARK_PRESETS = [
   { label:'City Night',   url:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80' },
@@ -192,27 +192,24 @@ export default function SettingsPage() {
       .catch(() => setLoading(false))
   }, [accessToken])
 
-  // ── Save current settings to cloud (asks for password, derives key independently) ──
-  async function doSaveToCloud(pwd) {
+  // ── Save current settings to cloud ──────────────────────────────────────────
+  async function doSaveToCloud() {
     setPwdModal(null)
-    if (!user?.id) { setStatus('✗ Not logged in — please log in again'); return }
     setSaving(true); setStatus('')
     try {
-      const key = await deriveKey(pwd, user.id)
-      const blob = await encryptSettings(key)
+      const settings = collectSettings()
       const res = await fetch('/api/settings/sync', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify(blob),
+        body: JSON.stringify({ settings }),
       })
       if (!res.ok) { setStatus('✗ Failed to save — server error'); return }
-      // Refresh backup list
       const br = await fetch('/api/settings/backups', { headers: { Authorization: `Bearer ${accessToken}` } })
       const bd = await br.json()
       setBackups(bd.backups || [])
       setStatus('✓ Settings saved to cloud successfully')
     } catch {
-      setStatus('✗ Wrong password or connection error')
+      setStatus('✗ Connection error')
     } finally {
       setSaving(false)
       setTimeout(() => setStatus(''), 5000)
@@ -365,24 +362,23 @@ export default function SettingsPage() {
   }
 
   // ── Restore from server backup ────────────────────────────────────────────────
-  async function doRestore(backupId, pwd) {
+  async function doRestore(backupId) {
     setPwdModal(null)
-    if (!user?.id) { setStatus('✗ Not logged in — please log in again'); return }
     setRestoring(backupId); setStatus('')
     try {
       const res = await fetch(`/api/settings/backups/${backupId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
       if (!res.ok) { setStatus('✗ Could not fetch backup from server'); setRestoring(null); return }
-      const { encrypted_blob, iv } = await res.json()
-      const key = await deriveKey(pwd, user.id)
-      const settings = await decryptSettings(key, encrypted_blob, iv)
+      const data = await res.json()
+      const settings = data.settings_json || null
+      if (!settings) { setStatus('✗ Backup has no readable data'); setRestoring(null); return }
       hydrateLocalStorage(settings)
       setStatus('✓ Backup restored — reloading…')
       sessionStorage.removeItem('cw_synced')
       setTimeout(() => window.location.reload(), 900)
     } catch {
-      setStatus('✗ Wrong password or corrupted backup — try again')
+      setStatus('✗ Could not restore backup')
       setTimeout(() => setStatus(''), 5000)
     } finally {
       setRestoring(null)
@@ -408,7 +404,7 @@ export default function SettingsPage() {
             Manually save your current workspace (apps, groups, news sources, notes, tabs) to the server so you can restore it on any device.
           </div>
         </div>
-        <button onClick={() => setPwdModal({ action:'save' })} disabled={saving}
+        <button onClick={() => doSaveToCloud()} disabled={saving}
           style={{ background:'var(--accent)', border:'none', borderRadius:10, color:'#fff', fontSize:14, fontWeight:700, padding:'12px 24px', cursor:'pointer', opacity:saving?.6:1, whiteSpace:'nowrap', flexShrink:0 }}>
           {saving ? 'Saving…' : '💾 Save to Cloud Now'}
         </button>
@@ -441,7 +437,7 @@ export default function SettingsPage() {
           {!loading && backups.length > 0 && (
             <>
               {/* Quick restore latest */}
-              <button onClick={() => setPwdModal({ action:'restore', backupId: backups[0].id })} disabled={!!restoring}
+              <button onClick={() => doRestore(backups[0].id)} disabled={!!restoring}
                 style={{ background:'rgba(61,220,170,.13)', border:'1px solid rgba(61,220,170,.3)', borderRadius:10, color:'var(--green)', fontSize:14, fontWeight:700, padding:'12px 20px', cursor:'pointer', width:'100%', marginBottom:16, opacity: restoring ? .5 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
                 {restoring === backups[0].id ? 'Restoring…' : '↩ Restore Latest Backup'}
                 <span style={{ fontSize:11, fontWeight:400, fontFamily:"'DM Mono',monospace", opacity:.7 }}>{formatDate(backups[0].created_at)}</span>
@@ -469,7 +465,7 @@ export default function SettingsPage() {
                         {b.bytes && <span style={{ marginLeft:8, color:'var(--text3)' }}>· {Math.round(b.bytes/1024*10)/10}KB</span>}
                       </div>
                     </div>
-                    <button onClick={() => setPwdModal({ action:'restore', backupId: b.id })} disabled={!!restoring}
+                    <button onClick={() => doRestore(b.id)} disabled={!!restoring}
                       style={{ background:'var(--s3)', border:'1px solid var(--border2)', borderRadius:6, color:'var(--text2)', fontSize:11, fontFamily:"'DM Mono',monospace", padding:'5px 12px', cursor:'pointer', opacity: restoring ? .5 : 1, whiteSpace:'nowrap' }}>
                       {restoring === b.id ? '…' : '↩ Restore'}
                     </button>
@@ -535,20 +531,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Password modal */}
-      {pwdModal && (
-        <PasswordModal
-          title={pwdModal.action === 'save' ? '💾 Save to Cloud' : '↩ Restore Backup'}
-          sub={pwdModal.action === 'save'
-            ? 'Enter your password to encrypt and save your current settings to the server.'
-            : 'Enter your password to decrypt and restore this backup to your device.'}
-          onConfirm={pwd => {
-            if (pwdModal.action === 'save') doSaveToCloud(pwd)
-            else doRestore(pwdModal.backupId, pwd)
-          }}
-          onCancel={() => setPwdModal(null)}
-        />
-      )}
     </div>
   )
 }
