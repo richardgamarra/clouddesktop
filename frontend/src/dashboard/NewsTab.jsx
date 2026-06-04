@@ -163,7 +163,7 @@ const DEFAULT_NEWS_GROUPS = [
   { id: 'ng_soccer',  name: 'Soccer',  color: '#3ddcaa' },
 ]
 
-export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
+export default function NewsTab({ sources, onSourcesChange, newsGroups, onNewsGroupsChange, onAddSource }) {
   const [cache, setCache]       = useState({})
   const [filter, setFilter]     = useState('all')
   const [spinning, setSpinning] = useState(false)
@@ -172,10 +172,7 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [confirmRemove, setConfirmRemove] = useState(null) // source id to remove
   const [newsView, setNewsView] = useState(() => localStorage.getItem('wsh_news_view') || 'grid')
 
-  const [newsGroups, setNewsGroups] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wsh_news_groups') || 'null') || DEFAULT_NEWS_GROUPS }
-    catch { return DEFAULT_NEWS_GROUPS }
-  })
+  const setNewsGroups = onNewsGroupsChange
 
   const [groupLayout, setGroupLayout] = useState(() => {
     try { return JSON.parse(localStorage.getItem('wsh_news_layout_news') || '{}') }
@@ -188,10 +185,6 @@ export default function NewsTab({ sources, onSourcesChange, onAddSource }) {
   const [newGroupColor, setNewGroupColor] = useState(GROUP_COLORS[0])
   const [editGroupId, setEditGroupId]     = useState(null)
   const [editGroupName, setEditGroupName] = useState('')
-
-  useEffect(() => {
-    localStorage.setItem('wsh_news_groups', JSON.stringify(newsGroups))
-  }, [newsGroups])
 
   useEffect(() => {
     localStorage.setItem('wsh_news_layout_news', JSON.stringify(groupLayout))

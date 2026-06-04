@@ -34,6 +34,16 @@ function loadNewsSources() {
   catch { return JSON.parse(JSON.stringify(DEFAULT_NEWS_SOURCES)) }
 }
 
+const DEFAULT_NEWS_GROUPS = [
+  { id: 'ng_general', name: 'General', color: '#5b7fff' },
+  { id: 'ng_soccer',  name: 'Soccer',  color: '#3ddcaa' },
+]
+
+function loadNewsGroups() {
+  try { return JSON.parse(localStorage.getItem('wsh_news_groups') || 'null') || DEFAULT_NEWS_GROUPS }
+  catch { return DEFAULT_NEWS_GROUPS }
+}
+
 function CustomTabPanel({ tab, onUpdateTab }) {
   if (tab.type === 'webpage')    return <WebPageTab tab={tab} />
   if (tab.type === 'bookmarks')  return <BookmarksTab tab={tab} onUpdateTab={onUpdateTab} />
@@ -58,6 +68,7 @@ export default function DashboardPage() {
   function setActiveTab(id) { setActiveTabRaw(id); localStorage.setItem('wsh_active_tab', id) }
   const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
+  const [newsGroups, setNewsGroups] = useState(loadNewsGroups)
 
   // Background image — reads current theme to pick correct bg
   const getBg = () => {
@@ -87,8 +98,9 @@ export default function DashboardPage() {
   const dragTabId = useRef(null)
 
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
+  useEffect(() => { localStorage.setItem('wsh_news_groups', JSON.stringify(newsGroups)) }, [newsGroups])
 
-  // Auto-sync to cloud when sources change (debounced 4s) — captures group assignments
+  // Auto-sync to cloud when sources or newsGroups change (debounced 4s)
   useEffect(() => {
     if (!syncReady || !accessToken) return
     const t = setTimeout(() => { sync(accessToken) }, 4000)
@@ -267,7 +279,7 @@ export default function DashboardPage() {
     if (!syncReady) return
     const timer = setTimeout(() => sync(accessToken), 2000)
     return () => clearTimeout(timer)
-  }, [hub.groups, hub.apps, sources, customTabs.tabs, syncReady, sync, accessToken])
+  }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, syncReady, sync, accessToken])
 
   // ── Export settings as JSON file ──────────────────────────────────────────────
   function handleExport() {
@@ -477,7 +489,7 @@ export default function DashboardPage() {
         {/* TAB PANELS */}
         {activeTab === 'news' && (
           <div className="tab-panel">
-            <NewsTab sources={sources} onSourcesChange={setSources} onAddSource={() => setShowSourceModal(true)} />
+            <NewsTab sources={sources} onSourcesChange={setSources} newsGroups={newsGroups} onNewsGroupsChange={setNewsGroups} onAddSource={() => setShowSourceModal(true)} />
           </div>
         )}
         {activeTab === 'hub' && appsView === 'cards' && (
@@ -486,7 +498,6 @@ export default function DashboardPage() {
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
               onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
               onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
-              onReorder={hub.reorderApps}
               onNewGroup={() => setGroupModal({})}
             />
           </div>
