@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4010
 
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(cors({ origin: process.env.APP_URL, credentials: true }))
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use(cookieParser())
 
 // ── Public API routes ─────────────────────────────────────────────────────────
