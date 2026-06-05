@@ -18,7 +18,7 @@ export default function YouTubeWidget() {
     setLoading(true)
     setError('')
     try {
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=12&q=${encodeURIComponent(query)}&key=${YT_KEY}`
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&videoEmbeddable=true&maxResults=12&q=${encodeURIComponent(query)}&key=${YT_KEY}`
       const res = await fetch(url)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error?.message || 'Search failed')
