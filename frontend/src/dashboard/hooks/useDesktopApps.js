@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 export const DESKTOP_KEY = 'wsh_desktop_apps'
 
@@ -26,82 +26,87 @@ function load() {
   } catch { return DEFAULT_DATA }
 }
 
-// Write synchronously inside the setState updater — guarantees localStorage is
-// always written before any subsequent code (sync calls, re-renders, etc.)
-function makeUpdater(fn) {
-  return prev => {
-    const next = fn(prev)
-    try { localStorage.setItem(DESKTOP_KEY, JSON.stringify(next)) } catch {}
-    return next
-  }
-}
-
 export function useDesktopApps() {
-  const [data, setData] = useState(load)
+  const initial = load()
+  // ref always holds the current data — mutations read/write here directly
+  // so localStorage is always up-to-date before any sync() call
+  const ref = useRef(initial)
+  const [data, setData] = useState(initial)
 
-  const saveGroup = useCallback((groupData) => {
-    setData(makeUpdater(prev => {
-      const id = groupData.id || ('g_' + Date.now())
-      const exists = prev.groups.find(g => g.id === id)
-      const groups = exists
-        ? prev.groups.map(g => g.id === id ? { ...g, ...groupData, id } : g)
-        : [...prev.groups, { ...groupData, id }]
-      return { ...prev, groups }
-    }))
+  // Commit a new state: write to ref + localStorage synchronously, then trigger render
+  const commit = useCallback((next) => {
+    ref.current = next
+    try { localStorage.setItem(DESKTOP_KEY, JSON.stringify(next)) } catch {}
+    setData(next)
   }, [])
 
+  const saveGroup = useCallback((groupData) => {
+    const prev = ref.current
+    const id = groupData.id || ('g_' + Date.now())
+    const exists = prev.groups.find(g => g.id === id)
+    const groups = exists
+      ? prev.groups.map(g => g.id === id ? { ...g, ...groupData, id } : g)
+      : [...prev.groups, { ...groupData, id }]
+    commit({ ...prev, groups })
+  }, [commit])
+
   const deleteGroup = useCallback((id) => {
-    setData(makeUpdater(prev => ({
+    const prev = ref.current
+    commit({
       ...prev,
       groups: prev.groups.filter(g => g.id !== id),
       apps: prev.apps.map(a => a.groupId === id ? { ...a, groupId: null } : a),
-    })))
-  }, [])
+    })
+  }, [commit])
 
   const moveGroupUp = useCallback((id) => {
-    setData(makeUpdater(prev => {
-      const i = prev.groups.findIndex(g => g.id === id)
-      if (i <= 0) return prev
-      const groups = [...prev.groups];
-      [groups[i - 1], groups[i]] = [groups[i], groups[i - 1]]
-      return { ...prev, groups }
-    }))
-  }, [])
+    const prev = ref.current
+    const i = prev.groups.findIndex(g => g.id === id)
+    if (i <= 0) return
+    const groups = [...prev.groups];
+    [groups[i - 1], groups[i]] = [groups[i], groups[i - 1]]
+    commit({ ...prev, groups })
+  }, [commit])
 
   const moveGroupDown = useCallback((id) => {
-    setData(makeUpdater(prev => {
-      const i = prev.groups.findIndex(g => g.id === id)
-      if (i < 0 || i >= prev.groups.length - 1) return prev
-      const groups = [...prev.groups];
-      [groups[i], groups[i + 1]] = [groups[i + 1], groups[i]]
-      return { ...prev, groups }
-    }))
-  }, [])
+    const prev = ref.current
+    const i = prev.groups.findIndex(g => g.id === id)
+    if (i < 0 || i >= prev.groups.length - 1) return
+    const groups = [...prev.groups];
+    [groups[i], groups[i + 1]] = [groups[i + 1], groups[i]]
+    commit({ ...prev, groups })
+  }, [commit])
 
   const saveApp = useCallback((appData) => {
-    setData(makeUpdater(prev => {
-      if (!appData.id) return { ...prev, apps: [...prev.apps, { ...appData, id: 'app_' + Date.now() }] }
+    const prev = ref.current
+    let apps
+    if (!appData.id) {
+      apps = [...prev.apps, { ...appData, id: 'app_' + Date.now() }]
+    } else {
       const exists = prev.apps.find(a => a.id === appData.id)
-      if (exists) return { ...prev, apps: prev.apps.map(a => a.id === appData.id ? { ...a, ...appData } : a) }
-      return { ...prev, apps: [...prev.apps, { id: 'app_' + Date.now(), ...appData }] }
-    }))
-  }, [])
+      apps = exists
+        ? prev.apps.map(a => a.id === appData.id ? { ...a, ...appData } : a)
+        : [...prev.apps, { id: 'app_' + Date.now(), ...appData }]
+    }
+    commit({ ...prev, apps })
+  }, [commit])
 
   const deleteApp = useCallback((id) => {
-    setData(makeUpdater(prev => ({ ...prev, apps: prev.apps.filter(a => a.id !== id) })))
-  }, [])
+    const prev = ref.current
+    commit({ ...prev, apps: prev.apps.filter(a => a.id !== id) })
+  }, [commit])
 
   const moveApp = useCallback((appId, groupId) => {
-    setData(makeUpdater(prev => ({ ...prev, apps: prev.apps.map(a => a.id === appId ? { ...a, groupId } : a) })))
-  }, [])
+    const prev = ref.current
+    commit({ ...prev, apps: prev.apps.map(a => a.id === appId ? { ...a, groupId } : a) })
+  }, [commit])
 
   const reorderApps = useCallback((gid, newOrder) => {
-    setData(makeUpdater(prev => {
-      const others = prev.apps.filter(a => a.groupId !== gid)
-      const reordered = newOrder.map(id => prev.apps.find(a => a.id === id)).filter(Boolean).map(a => ({ ...a, groupId: gid }))
-      return { ...prev, apps: [...others.filter(a => !reordered.find(r => r.id === a.id)), ...reordered] }
-    }))
-  }, [])
+    const prev = ref.current
+    const others = prev.apps.filter(a => a.groupId !== gid)
+    const reordered = newOrder.map(id => prev.apps.find(a => a.id === id)).filter(Boolean).map(a => ({ ...a, groupId: gid }))
+    commit({ ...prev, apps: [...others.filter(a => !reordered.find(r => r.id === a.id)), ...reordered] })
+  }, [commit])
 
   return {
     groups: data.groups,
@@ -114,8 +119,8 @@ export function useDesktopApps() {
     deleteApp,
     moveApp,
     reorderApps,
-    getGroup: (id) => data.groups.find(g => g.id === id),
-    getApp:   (id) => data.apps.find(a => a.id === id),
-    appsInGroup: (gid) => data.apps.filter(a => a.groupId === gid),
+    getGroup: (id) => ref.current.groups.find(g => g.id === id),
+    getApp:   (id) => ref.current.apps.find(a => a.id === id),
+    appsInGroup: (gid) => ref.current.apps.filter(a => a.groupId === gid),
   }
 }
