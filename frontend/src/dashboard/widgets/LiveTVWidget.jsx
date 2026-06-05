@@ -70,15 +70,15 @@ const activeCh = CHANNELS.find(c => c.id === active)
             </div>
           </>
         ) : (
-          <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6 }}>
-            <span style={{ fontSize: 28 }}>📺</span>
+          <div style={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>📺</span>
             <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace" }}>Select a channel below</span>
           </div>
         )}
       </div>
 
       {/* Scrollable channel list */}
-      <div style={{ maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
         {groups.map(g => (
           <div key={g.label}>
             <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", padding: '5px 8px 3px', textTransform: 'uppercase', letterSpacing: '.08em' }}>
