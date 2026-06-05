@@ -310,8 +310,8 @@ export default function LandingPage() {
           <div style={{ background: 'var(--surface)', border: '1px solid var(--accent)', borderRadius: 16, padding: 28, position: 'relative', boxShadow: '0 0 0 1px var(--accent),0 8px 32px var(--aglow)' }}>
             <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, fontFamily: "'DM Mono',monospace", padding: '3px 14px', borderRadius: 20, whiteSpace: 'nowrap' }}>Most Popular</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text2)', marginBottom: 8 }}>Premium</div>
-            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-2px', marginBottom: 4 }}>$4.99 <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text2)' }}>/&nbsp;month</span></div>
-            <div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: 'var(--green)', marginBottom: 20 }}>or $39.99/year — save 33%</div>
+            <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-2px', marginBottom: 4 }}>$15 <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text2)' }}>/&nbsp;month</span></div>
+            <div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: 'var(--green)', marginBottom: 20 }}>or $160/year — save $20</div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>{PRO_FEATURES.map(f => <PlanFeature key={f.text} {...f} />)}</ul>
             <Link to="/signup"><button className="btn-primary" style={{ fontSize: 13 }}>Start free trial →</button></Link>
           </div>
