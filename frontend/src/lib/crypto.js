@@ -52,6 +52,28 @@ export function hydrateLocalStorage(settings) {
   }
 }
 
-// Legacy exports kept so SettingsPage import doesn't break
+// Legacy exports
 export function getSettingsJson() { return collectSettings() }
 export function loadSettingsJson(json) { hydrateLocalStorage(json) }
+
+// ── Legacy AES decrypt — used only to migrate old encrypted backups ───────────
+export async function deriveKey(password, userId) {
+  const enc = new TextEncoder()
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+  )
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(userId), iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  )
+}
+
+export async function decryptSettings(key, encryptedBlob, ivBase64) {
+  const encrypted = Uint8Array.from(atob(encryptedBlob), c => c.charCodeAt(0))
+  const iv        = Uint8Array.from(atob(ivBase64),      c => c.charCodeAt(0))
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted)
+  return JSON.parse(new TextDecoder().decode(decrypted))
+}

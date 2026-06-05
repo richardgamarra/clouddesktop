@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getSettingsJson, loadSettingsJson, collectSettings, hydrateLocalStorage } from '../lib/crypto'
+import { getSettingsJson, loadSettingsJson, collectSettings, hydrateLocalStorage, deriveKey, decryptSettings } from '../lib/crypto'
 
 const DARK_PRESETS = [
   { label:'City Night',   url:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80' },
@@ -180,7 +180,8 @@ export default function SettingsPage() {
   const [status, setStatus] = useState('')
   const [saving, setSaving] = useState(false)
   const [restoring, setRestoring] = useState(null)
-  const [pwdModal, setPwdModal] = useState(null) // {action, backupId}
+  const [pwdModal, setPwdModal] = useState(null)
+  const [migrateModal, setMigrateModal] = useState(false)
   const [baking, setBaking] = useState(false)
   const [bakeProgress, setBakeProgress] = useState('')
 
@@ -385,6 +386,36 @@ export default function SettingsPage() {
     }
   }
 
+  // ── Migrate old AES-encrypted backup to plain JSON ───────────────────────────
+  async function doMigrateEncrypted(pwd) {
+    setMigrateModal(false)
+    if (!user?.id) { setStatus('✗ Not logged in'); return }
+    setStatus('⏳ Decrypting old backup…')
+    try {
+      const res = await fetch('/api/settings/encrypted', { headers: { Authorization: `Bearer ${accessToken}` } })
+      if (!res.ok) { setStatus('✗ Could not fetch encrypted backup'); return }
+      const { encrypted_blob, iv } = await res.json()
+      if (!encrypted_blob || !iv) { setStatus('✗ No encrypted backup found on server'); return }
+      const key = await deriveKey(pwd, user.id)
+      const settings = await decryptSettings(key, encrypted_blob, iv)
+      // Save as plain JSON to server
+      const saveRes = await fetch('/api/settings/sync', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ settings }),
+      })
+      if (!saveRes.ok) { setStatus('✗ Failed to save migrated settings'); return }
+      // Hydrate local storage
+      hydrateLocalStorage(settings)
+      setStatus('✓ Workspace recovered! Reloading…')
+      sessionStorage.removeItem('cw_synced')
+      setTimeout(() => window.location.reload(), 1000)
+    } catch {
+      setStatus('✗ Wrong password — try again')
+      setTimeout(() => setStatus(''), 5000)
+    }
+  }
+
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg)', color:'var(--text)', fontFamily:"'Plus Jakarta Sans',sans-serif", padding:'40px 48px' }}>
       {/* Header */}
@@ -394,6 +425,20 @@ export default function SettingsPage() {
           ← Back
         </button>
         <h1 style={{ fontSize:22, fontWeight:800, letterSpacing:'-.5px' }}>🗄 Settings & Backups</h1>
+      </div>
+
+      {/* ── RECOVERY BANNER — migrate old encrypted backup ── */}
+      <div style={{ background:'rgba(255,180,0,.10)', border:'1px solid rgba(255,180,0,.35)', borderRadius:12, padding:'20px 24px', marginBottom:20, maxWidth:900, display:'flex', alignItems:'center', gap:20 }}>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>🔑 Recover Previous Workspace</div>
+          <div style={{ fontSize:12, color:'var(--text2)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
+            Your workspace was previously saved with password-based encryption. Enter your password to decrypt and restore it.
+          </div>
+        </div>
+        <button onClick={() => setMigrateModal(true)}
+          style={{ background:'#e6a800', border:'none', borderRadius:10, color:'#fff', fontSize:14, fontWeight:700, padding:'12px 24px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
+          🔑 Recover Now
+        </button>
       </div>
 
       {/* Primary action — save to cloud */}
@@ -526,10 +571,17 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div style={{ padding:14, background:'rgba(245,166,35,.08)', border:'1px solid rgba(245,166,35,.3)', borderRadius:10, fontSize:12, color:'var(--yellow)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
-          ⚠ Server backups are encrypted with your password. The server cannot read your data. Restoring requires you to enter your password to decrypt.
-        </div>
       </div>
+
+      {/* Migration password modal */}
+      {migrateModal && (
+        <PasswordModal
+          title="🔑 Recover Workspace"
+          sub="Enter your CloudDesktop password to decrypt your saved workspace and restore it."
+          onConfirm={pwd => doMigrateEncrypted(pwd)}
+          onCancel={() => setMigrateModal(false)}
+        />
+      )}
 
     </div>
   )
