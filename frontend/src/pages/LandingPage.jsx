@@ -7,6 +7,7 @@ const SLIDES = [
   { src: '/slides/news.png', label: 'Live News', desc: 'Curated feeds from top sources' },
   { src: '/slides/bookmarks.png', label: 'Bookmarks', desc: 'Organized folders, instant access' },
   { src: '/slides/widgets.png', label: 'Widgets', desc: 'Radio, notes, weather and more' },
+  { src: '/slides/widgets1.png', label: 'More Widgets', desc: 'Jukebox, clocks, and live streams' },
   { src: '/slides/widgetsliat.png', label: 'Widget Gallery', desc: 'Browse and add widgets to your dashboard' },
 ]
 
