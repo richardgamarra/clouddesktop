@@ -1,37 +1,45 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const YT_KEY = 'AIzaSyCmUR528jgG2q_NNyW0GdDcA9FuhDIOE68'
 
 export default function YouTubeWidget() {
-  const [query, setQuery]       = useState('')
-  const [results, setResults]   = useState([])
+  const [query, setQuery]         = useState('')
+  const [results, setResults]     = useState([])
   const [activeIdx, setActiveIdx] = useState(null)
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const iframeRef  = useRef(null)
-  const resultsRef = useRef([])
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
+  const [shuffle, setShuffle]     = useState(false)
+
+  const iframeRef    = useRef(null)
+  const resultsRef   = useRef([])
   const activeIdxRef = useRef(null)
+  const shuffleRef   = useRef(false)
 
   useEffect(() => { resultsRef.current = results }, [results])
   useEffect(() => { activeIdxRef.current = activeIdx }, [activeIdx])
+  useEffect(() => { shuffleRef.current = shuffle }, [shuffle])
 
-  // Listen for postMessage events from the YouTube iframe (enablejsapi=1)
+  // postMessage listener — auto-continue on end (state 0), skip on error
   useEffect(() => {
     function onMessage(e) {
       if (!e.data) return
       let data
       try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data } catch { return }
 
-      // YouTube sends errors as onError with info = error code
-      // Codes: 100=not found, 101/150/153=embedding disabled/referer error
-      const code = data.info ?? data.info?.error
-      if (data.event === 'onError' && [100, 101, 150, 153].includes(code)) {
-        skipNext()
+      // Video ended (state 0) → auto-advance
+      if (data.event === 'onStateChange' && data.info === 0) {
+        advance()
         return
       }
-      // Some YouTube builds wrap errors differently
+
+      // Embedding errors → skip to next
+      const code = data.info ?? data.info?.error
+      if (data.event === 'onError' && [100, 101, 150, 153].includes(code)) {
+        advance()
+        return
+      }
       if (data.event === 'infoDelivery' && data.info?.error) {
-        skipNext()
+        advance()
       }
     }
     window.addEventListener('message', onMessage)
@@ -40,33 +48,35 @@ export default function YouTubeWidget() {
 
   function buildSrc(videoId) {
     const origin = encodeURIComponent(location.origin)
-    // youtube-nocookie.com avoids some content restrictions; origin= fixes Error 153 (missing referer)
     return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1&origin=${origin}`
   }
 
   function loadVideo(idx) {
     const list = resultsRef.current
     if (!list[idx]) return
-    const videoId = list[idx].id.videoId
     setActiveIdx(idx)
-    if (iframeRef.current) {
-      iframeRef.current.src = buildSrc(videoId)
+    if (iframeRef.current) iframeRef.current.src = buildSrc(list[idx].id.videoId)
+  }
+
+  function advance() {
+    const list = resultsRef.current
+    if (!list.length) return
+    const cur = activeIdxRef.current ?? -1
+    let next
+    if (shuffleRef.current) {
+      // Pick a random index different from current
+      let r
+      do { r = Math.floor(Math.random() * list.length) } while (list.length > 1 && r === cur)
+      next = r
+    } else {
+      next = (cur + 1) % list.length
     }
+    loadVideo(next)
   }
 
   function openOnYouTube(idx) {
     const item = resultsRef.current[idx ?? activeIdxRef.current]
     if (item) window.open(`https://www.youtube.com/watch?v=${item.id.videoId}`, '_blank')
-  }
-
-  function skipNext() {
-    const idx = activeIdxRef.current ?? -1
-    const next = idx + 1
-    if (next < resultsRef.current.length) {
-      loadVideo(next)
-    } else {
-      openOnYouTube(activeIdxRef.current)
-    }
   }
 
   async function search(e) {
@@ -87,7 +97,6 @@ export default function YouTubeWidget() {
       if (!items.length) { setError('No results found.'); return }
       resultsRef.current = items
       setResults(items)
-      // Small delay to ensure iframe is in DOM before setting src
       setTimeout(() => loadVideo(0), 50)
     } catch (err) {
       setError(err.message)
@@ -96,17 +105,9 @@ export default function YouTubeWidget() {
     }
   }
 
-  function playPrev() {
-    const prev = Math.max(0, (activeIdxRef.current ?? 1) - 1)
-    loadVideo(prev)
-  }
-
-  function playNext() {
-    const next = ((activeIdxRef.current ?? -1) + 1) % (resultsRef.current.length || 1)
-    loadVideo(next)
-  }
-
   const activeTitle = results[activeIdx]?.snippet?.title || ''
+
+  const btnBase = { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -124,7 +125,7 @@ export default function YouTubeWidget() {
         </button>
       </form>
 
-      {/* Player — always in DOM so postMessage listener works */}
+      {/* Player */}
       <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border2)', background: '#000', display: results.length ? 'block' : 'none' }}>
         <iframe
           ref={iframeRef}
@@ -138,11 +139,18 @@ export default function YouTubeWidget() {
           style={{ display: 'block' }}
           title="YouTube Music"
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--s2)' }}>
-          <button onClick={playPrev} title="Previous" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏮</button>
-          <button onClick={playNext} title="Next" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏭</button>
-          <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeTitle}</span>
-          <button onClick={() => openOnYouTube(activeIdx)} title="Open on YouTube" style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 11, padding: '2px 6px', whiteSpace: 'nowrap', fontFamily: "'DM Mono',monospace" }}>▶ YT</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'var(--s2)' }}>
+          <button onClick={() => loadVideo(Math.max(0, (activeIdxRef.current ?? 1) - 1))} title="Previous" style={{ ...btnBase, color: 'var(--text2)' }}>⏮</button>
+          <button onClick={advance} title="Next" style={{ ...btnBase, color: 'var(--text2)' }}>⏭</button>
+          <button
+            onClick={() => setShuffle(s => !s)}
+            title={shuffle ? 'Shuffle on — click to turn off' : 'Shuffle off — click to turn on'}
+            style={{ ...btnBase, fontSize: 14, color: shuffle ? 'var(--accent)' : 'var(--text3)', fontWeight: shuffle ? 700 : 400 }}>
+            🔀
+          </button>
+          <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>{activeTitle}</span>
+          <button onClick={() => openOnYouTube(activeIdx)} title="Open on YouTube"
+            style={{ ...btnBase, fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap', fontFamily: "'DM Mono',monospace" }}>▶ YT</button>
         </div>
       </div>
 
@@ -158,7 +166,8 @@ export default function YouTubeWidget() {
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, background: isActive ? 'rgba(91,127,255,.15)' : 'var(--s3)', border: `1px solid ${isActive ? 'var(--accent)' : 'transparent'}`, transition: 'all .15s' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'var(--s3)' }}>
-                <img src={item.snippet.thumbnails?.default?.url} alt="" onClick={() => loadVideo(idx)} style={{ width: 48, height: 34, objectFit: 'cover', borderRadius: 4, flexShrink: 0, cursor: 'pointer' }} />
+                <img src={item.snippet.thumbnails?.default?.url} alt="" onClick={() => loadVideo(idx)}
+                  style={{ width: 48, height: 34, objectFit: 'cover', borderRadius: 4, flexShrink: 0, cursor: 'pointer' }} />
                 <div style={{ overflow: 'hidden', flex: 1, cursor: 'pointer' }} onClick={() => loadVideo(idx)}>
                   <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? 'var(--accent)' : 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {isActive && '▶ '}{item.snippet.title}
@@ -166,9 +175,8 @@ export default function YouTubeWidget() {
                   <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: "'DM Mono',monospace" }}>{item.snippet.channelTitle}</div>
                 </div>
                 <a href={`https://www.youtube.com/watch?v=${item.id.videoId}`} target="_blank" rel="noopener noreferrer"
-                  title="Open on YouTube"
-                  style={{ flexShrink: 0, fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", textDecoration: 'none', padding: '2px 6px' }}
-                  onClick={e => e.stopPropagation()}>▶YT</a>
+                  title="Open on YouTube" onClick={e => e.stopPropagation()}
+                  style={{ flexShrink: 0, fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", textDecoration: 'none', padding: '2px 6px' }}>▶YT</a>
               </div>
             )
           })}
