@@ -54,11 +54,18 @@ export default function YouTubeWidget() {
     }
   }
 
+  function openOnYouTube(idx) {
+    const item = resultsRef.current[idx ?? activeIdxRef.current]
+    if (item) window.open(`https://www.youtube.com/watch?v=${item.id.videoId}`, '_blank')
+  }
+
   function skipNext() {
     const idx = activeIdxRef.current ?? -1
     const next = idx + 1
     if (next < resultsRef.current.length) {
       loadVideo(next)
+    } else {
+      openOnYouTube(activeIdxRef.current)
     }
   }
 
@@ -135,6 +142,7 @@ export default function YouTubeWidget() {
           <button onClick={playPrev} title="Previous" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏮</button>
           <button onClick={playNext} title="Next" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏭</button>
           <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeTitle}</span>
+          <button onClick={() => openOnYouTube(activeIdx)} title="Open on YouTube" style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 11, padding: '2px 6px', whiteSpace: 'nowrap', fontFamily: "'DM Mono',monospace" }}>▶ YT</button>
         </div>
       </div>
 
@@ -146,17 +154,21 @@ export default function YouTubeWidget() {
           {results.map((item, idx) => {
             const isActive = idx === activeIdx
             return (
-              <div key={item.id.videoId} onClick={() => loadVideo(idx)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', background: isActive ? 'rgba(91,127,255,.15)' : 'var(--s3)', border: `1px solid ${isActive ? 'var(--accent)' : 'transparent'}`, transition: 'all .15s' }}
+              <div key={item.id.videoId}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, background: isActive ? 'rgba(91,127,255,.15)' : 'var(--s3)', border: `1px solid ${isActive ? 'var(--accent)' : 'transparent'}`, transition: 'all .15s' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'var(--s3)' }}>
-                <img src={item.snippet.thumbnails?.default?.url} alt="" style={{ width: 48, height: 34, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                <div style={{ overflow: 'hidden' }}>
+                <img src={item.snippet.thumbnails?.default?.url} alt="" onClick={() => loadVideo(idx)} style={{ width: 48, height: 34, objectFit: 'cover', borderRadius: 4, flexShrink: 0, cursor: 'pointer' }} />
+                <div style={{ overflow: 'hidden', flex: 1, cursor: 'pointer' }} onClick={() => loadVideo(idx)}>
                   <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? 'var(--accent)' : 'var(--text1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {isActive && '▶ '}{item.snippet.title}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: "'DM Mono',monospace" }}>{item.snippet.channelTitle}</div>
                 </div>
+                <a href={`https://www.youtube.com/watch?v=${item.id.videoId}`} target="_blank" rel="noopener noreferrer"
+                  title="Open on YouTube"
+                  style={{ flexShrink: 0, fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", textDecoration: 'none', padding: '2px 6px' }}
+                  onClick={e => e.stopPropagation()}>▶YT</a>
               </div>
             )
           })}
