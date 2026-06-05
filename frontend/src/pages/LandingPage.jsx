@@ -7,6 +7,7 @@ const SLIDES = [
   { src: '/slides/news.png', label: 'Live News', desc: 'Curated feeds from top sources' },
   { src: '/slides/bookmarks.png', label: 'Bookmarks', desc: 'Organized folders, instant access' },
   { src: '/slides/widgets.png', label: 'Widgets', desc: 'Radio, notes, weather and more' },
+  { src: '/slides/widgetsliat.png', label: 'Widget Gallery', desc: 'Browse and add widgets to your dashboard' },
 ]
 
 const FEATURES = [
@@ -247,24 +248,29 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section style={{ padding: '72px 48px 60px', maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--s2)', border: '1px solid var(--border2)', borderRadius: 20, padding: '4px 14px', fontSize: 11, fontFamily: "'DM Mono',monospace", color: 'var(--accent2)', marginBottom: 24 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
-          Your entire workspace, one tab
+      <section style={{ padding: '64px 48px 56px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 56, alignItems: 'center' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--s2)', border: '1px solid var(--border2)', borderRadius: 20, padding: '4px 14px', fontSize: 11, fontFamily: "'DM Mono',monospace", color: 'var(--accent2)', marginBottom: 22 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
+              Your entire workspace, one tab
+            </div>
+            <h1 style={{ fontSize: 50, fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', marginBottom: 18 }}>
+              Launch every app.<br />
+              <span style={{ background: 'linear-gradient(135deg,var(--accent),var(--purple))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Stay in the flow.</span>
+            </h1>
+            <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.75, maxWidth: 480, marginBottom: 28, fontFamily: "'DM Mono',monospace" }}>
+              CloudDesktop gives you a single hub for all your web apps, live news, bookmarks, notes, and widgets — synced across every device.
+            </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
+              <Link to="/signup"><button style={{ background: 'var(--accent)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, fontWeight: 700, padding: '12px 28px', cursor: 'pointer' }}>Start for free →</button></Link>
+              <a href="#features"><button className="btn-ghost" style={{ padding: '12px 22px' }}>See features</button></a>
+            </div>
+            <Slideshow />
+            <p style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", marginTop: 14 }}>No credit card required · Free forever plan available</p>
+          </div>
+          <LoginCard />
         </div>
-        <h1 style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.08, letterSpacing: '-2px', marginBottom: 18 }}>
-          Launch every app.<br />
-          <span style={{ background: 'linear-gradient(135deg,var(--accent),var(--purple))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Stay in the flow.</span>
-        </h1>
-        <p style={{ fontSize: 15, color: 'var(--text2)', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 36px', fontFamily: "'DM Mono',monospace" }}>
-          CloudDesktop gives you a single hub for all your web apps, live news, bookmarks, notes, and widgets — all synced across every device.
-        </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 48 }}>
-          <Link to="/signup"><button style={{ background: 'var(--accent)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, fontWeight: 700, padding: '13px 32px', cursor: 'pointer' }}>Start for free →</button></Link>
-          <a href="#features"><button className="btn-ghost" style={{ padding: '13px 24px' }}>See features</button></a>
-        </div>
-        <Slideshow />
-        <p style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace", marginTop: 16 }}>No credit card required · Free forever plan available</p>
       </section>
 
       {/* FEATURES */}
@@ -282,22 +288,6 @@ export default function LandingPage() {
               <div style={{ fontSize: 12, color: 'var(--text2)', fontFamily: "'DM Mono',monospace", lineHeight: 1.65 }}>{f.desc}</div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* LOGIN */}
-      <section style={{ padding: '60px 48px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ background: 'linear-gradient(135deg, var(--s2) 0%, var(--surface) 100%)', border: '1px solid var(--border2)', borderRadius: 20, padding: '52px 48px', display: 'flex', gap: 64, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: 'var(--accent2)', textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 12 }}>Already have an account?</div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1px', marginBottom: 12 }}>Sign in to your workspace</h2>
-            <p style={{ fontSize: 13, color: 'var(--text2)', fontFamily: "'DM Mono',monospace", lineHeight: 1.7, marginBottom: 0 }}>
-              Pick up right where you left off. All your apps, bookmarks, and settings are waiting for you — synced and ready.
-            </p>
-          </div>
-          <div style={{ flex: 1, minWidth: 300 }}>
-            <LoginCard />
-          </div>
         </div>
       </section>
 
