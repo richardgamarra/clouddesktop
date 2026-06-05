@@ -14,6 +14,7 @@ import RadioWidget        from '../widgets/RadioWidget'
 import MusicWidget        from '../widgets/MusicWidget'
 import JukeboxWidget      from '../widgets/JukeboxWidget'
 import YouTubeWidget      from '../widgets/YouTubeWidget'
+import LiveTVWidget       from '../widgets/LiveTVWidget'
 
 const WIDGET_TYPES = [
   { type:'clock',      icon:'🕐', name:'World Clock',  desc:'Multiple timezone clocks',   defaultConfig:{ cities:[] } },
@@ -31,6 +32,7 @@ const WIDGET_TYPES = [
   { type:'music',       icon:'🎵', name:'Music Player',   desc:'Spotify, SoundCloud, Mixcloud & Drive', defaultConfig:{ playlists:[], current:null, wide:true } },
   { type:'jukebox',     icon:'🎬', name:'Jukebox',        desc:'Your personal video/music playlist',    defaultConfig:{} },
   { type:'youtube',     icon:'▶️',  name:'YouTube Music',  desc:'Search any song or artist, play inline', defaultConfig:{} },
+  { type:'livetv',      icon:'📺',  name:'Live TV',        desc:'BBC, Sky, DW, Al Jazeera, NHK & more',  defaultConfig:{} },
 ]
 
 function WidgetComponent({ widget, onUpdate }) {
@@ -51,6 +53,7 @@ function WidgetComponent({ widget, onUpdate }) {
     case 'music':       return <MusicWidget {...props} />
     case 'jukebox':     return <JukeboxWidget />
     case 'youtube':     return <YouTubeWidget />
+    case 'livetv':      return <LiveTVWidget />
     default:            return null
   }
 }
