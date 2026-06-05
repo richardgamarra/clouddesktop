@@ -15,12 +15,13 @@ const PORT = process.env.PORT || 4010
 // One-time startup migration — drop NOT NULL on backup columns so plain-JSON
 // backups can be inserted without providing the legacy encrypted_blob/iv fields
 ;(async () => {
-  try {
-    await pool.query(`ALTER TABLE settings_backups ALTER COLUMN encrypted_blob DROP NOT NULL`)
-  } catch {}
-  try {
-    await pool.query(`ALTER TABLE settings_backups ALTER COLUMN iv DROP NOT NULL`)
-  } catch {}
+  const alters = [
+    `ALTER TABLE encrypted_settings ALTER COLUMN encrypted_blob DROP NOT NULL`,
+    `ALTER TABLE encrypted_settings ALTER COLUMN iv DROP NOT NULL`,
+    `ALTER TABLE settings_backups ALTER COLUMN encrypted_blob DROP NOT NULL`,
+    `ALTER TABLE settings_backups ALTER COLUMN iv DROP NOT NULL`,
+  ]
+  for (const sql of alters) { try { await pool.query(sql) } catch {} }
 })()
 
 app.use(helmet({ contentSecurityPolicy: false }))
