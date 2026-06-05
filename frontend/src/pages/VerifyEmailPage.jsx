@@ -27,7 +27,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="auth-page">
       <div className="auth-card" style={{ textAlign: 'center' }}>
-        <div className="auth-logo" style={{ margin: '0 auto 20px' }}>CW</div>
+        <div className="auth-logo" style={{ margin: '0 auto 20px' }}><img src="/logo.png" alt="CloudDesktop" style={{ height:80, width:'auto' }} /></div>
         <div className="auth-title">Email verification</div>
         {status === 'loading' && (
           <p style={{ color: 'var(--text3)', fontFamily: "'DM Mono', monospace", fontSize: 12, marginTop: 16 }}>

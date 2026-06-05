@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo">CW</div>
+        <div className="auth-logo"><img src="/logo.png" alt="CloudDesktop" style={{ height:80, width:'auto' }} /></div>
         <div className="auth-title">Sign in</div>
         <div className="auth-sub">Welcome back to CloudDesktop Workspace</div>
         {error && <div className="auth-error">{error}</div>}

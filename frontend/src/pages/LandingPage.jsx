@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 const S = {
   nav: { display:'flex', alignItems:'center', padding:'0 48px', height:64, background:'rgba(11,13,18,.9)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100, backdropFilter:'blur(12px)' },
   navLogo: { display:'flex', alignItems:'center', gap:10, fontSize:17, fontWeight:800, letterSpacing:'-.4px' },
-  navLogoIcon: { width:32, height:32, background:'linear-gradient(135deg,var(--accent),var(--purple))', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff' },
+  navLogoIcon: { height:48, width:'auto', display:'block' },
   navLinks: { display:'flex', gap:28, marginLeft:36 },
   navLink: { color:'var(--text2)', fontSize:13, fontWeight:600, textDecoration:'none' },
   navRight: { marginLeft:'auto', display:'flex', gap:10, alignItems:'center' },
@@ -142,7 +142,7 @@ export default function LandingPage() {
     <div>
       {/* NAV */}
       <nav style={S.nav}>
-        <div style={S.navLogo}><div style={S.navLogoIcon}>CW</div>CloudDesktop Workspace</div>
+        <div style={S.navLogo}><img src="/logo.png" alt="CloudDesktop" style={S.navLogoIcon} /></div>
         <div style={S.navLinks}>
           <a href="#features" style={S.navLink}>Features</a>
           <a href="#pricing" style={S.navLink}>Pricing</a>
