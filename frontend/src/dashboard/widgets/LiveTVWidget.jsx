@@ -1,23 +1,21 @@
 import { useState, useRef, useEffect } from 'react'
 
 const CHANNELS = [
-  // World News
-  { id: 'bbc',       name: 'BBC News',       flag: '🇬🇧', ytId: '92pumMK1iX8', cat: 'news' },
-  { id: 'sky',       name: 'Sky News',        flag: '🇬🇧', ytId: '9Auq9mYxFEE', cat: 'news' },
-  { id: 'al',        name: 'Al Jazeera',      flag: '🌍', ytId: 'aCdOzMh6MCA', cat: 'news' },
-  { id: 'france24',  name: 'France 24',       flag: '🇫🇷', ytId: 'l8PMydKin1Q', cat: 'news' },
-  { id: 'dw',        name: 'DW News',         flag: '🇩🇪', ytId: 'mGC_n1jFjpM', cat: 'news' },
-  { id: 'euronews',  name: 'Euronews',        flag: '🇪🇺', ytId: 'PnFOEBGWEQA', cat: 'news' },
-  { id: 'abc',       name: 'ABC News',        flag: '🇺🇸', ytId: 'w_Ma8oQLmSM', cat: 'news' },
-  { id: 'nbc',       name: 'NBC News',        flag: '🇺🇸', ytId: 'F5uNFTkFWg4', cat: 'news' },
+  // World News — IDs verified June 2026
+  { id: 'sky',       name: 'Sky News',    flag: '🇬🇧', ytId: 'YDvsBbKfLPA', cat: 'news' },
+  { id: 'al',        name: 'Al Jazeera', flag: '🌍',  ytId: 'gCNeDWCI0vo', cat: 'news' },
+  { id: 'france24',  name: 'France 24',  flag: '🇫🇷', ytId: 'HvZt-nh9sGg', cat: 'news' },
+  { id: 'dw',        name: 'DW News',    flag: '🇩🇪', ytId: 'LuKwFajn37U', cat: 'news' },
+  { id: 'euronews',  name: 'Euronews',   flag: '🇪🇺', ytId: 'zn58XQ1Bsco', cat: 'news' },
+  { id: 'trt',       name: 'TRT World',  flag: '🇹🇷', ytId: 'oNPnQCm7HBs', cat: 'news' },
+  { id: 'wion',      name: 'WION',       flag: '🌐',  ytId: 'FuHK15xggBU', cat: 'news' },
+  { id: 'france24fr',name: 'France 24 FR',flag: '🇫🇷', ytId: 'Y7iJcCyb6gE', cat: 'news' },
   // Business
-  { id: 'bloomberg', name: 'Bloomberg',       flag: '💹', ytId: 'dp8PhLsUcFE', cat: 'business' },
-  { id: 'cnbc',      name: 'CNBC',            flag: '📈', ytId: 'rMnCmhNHTPU', cat: 'business' },
-  { id: 'wion',      name: 'WION',            flag: '🌐', ytId: '8DHkVeHNQDM', cat: 'business' },
+  { id: 'bloomberg', name: 'Bloomberg',  flag: '💹',  ytId: 'dp8PhLsUcFE', cat: 'business' },
   // Asia & Pacific
-  { id: 'nhk',       name: 'NHK World',       flag: '🇯🇵', ytId: '8-sb6QL3lrs', cat: 'asia' },
-  { id: 'cgtn',      name: 'CGTN',            flag: '🇨🇳', ytId: '8B8F3JnCWqk', cat: 'asia' },
-  { id: 'arirang',   name: 'Arirang (Korea)', flag: '🇰🇷', ytId: 'GKoOPdBS2g0', cat: 'asia' },
+  { id: 'nhk',       name: 'NHK World',  flag: '🇯🇵', ytId: 'f0lYkdA-Gtw', cat: 'asia' },
+  { id: 'cgtn',      name: 'CGTN',       flag: '🇨🇳', ytId: 'QMFbKYdFKDQ', cat: 'asia' },
+  { id: 'arirang',   name: 'Arirang',    flag: '🇰🇷', ytId: 'GKoOPdBS2g0', cat: 'asia' },
 ]
 
 const CATS = [
