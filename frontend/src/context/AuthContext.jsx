@@ -14,11 +14,17 @@ export function AuthProvider({ children }) {
     setUser(userData)
   }, [])
 
-  // Fetch cloud settings and hydrate localStorage immediately — no prompt, no crypto
+  // Fetch cloud settings and hydrate localStorage immediately
   const initSync = useCallback(async (token) => {
     setSyncStatus('syncing')
+    const doFetch = async (t) => fetch('/api/settings', { headers: { Authorization: `Bearer ${t}` } })
     try {
-      const res = await fetch('/api/settings', { headers: { Authorization: `Bearer ${token}` } })
+      let res = await doFetch(token)
+      if (res.status === 401) {
+        const newToken = await refresh()
+        if (!newToken) { setSyncReady(true); setSyncStatus('error'); return null }
+        res = await doFetch(newToken)
+      }
       if (!res.ok) { setSyncReady(true); setSyncStatus('synced'); return null }
       const { settings } = await res.json()
       if (settings && typeof settings === 'object' && Object.keys(settings).length > 0) {
@@ -36,19 +42,28 @@ export function AuthProvider({ children }) {
       setSyncStatus('error')
       return null
     }
-  }, [])
+  }, [refresh])
 
   // Upload current localStorage to cloud as plain JSON
+  // Auto-refreshes the access token once if it has expired (401)
   const sync = useCallback(async (token) => {
     if (!token) return
     setSyncStatus('syncing')
-    try {
+    const doUpload = async (t) => {
       const settings = collectSettings()
-      const res = await fetch('/api/settings/sync', {
+      return fetch('/api/settings/sync', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
         body: JSON.stringify({ settings }),
       })
+    }
+    try {
+      let res = await doUpload(token)
+      if (res.status === 401) {
+        const newToken = await refresh()
+        if (!newToken) throw new Error('session expired — please log in again')
+        res = await doUpload(newToken)
+      }
       if (!res.ok) {
         const body = await res.text().catch(() => '')
         throw new Error(`sync failed ${res.status}: ${body}`)
@@ -57,20 +72,25 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error('sync error:', err.message)
       setSyncStatus('error')
-      throw err  // re-throw so callers (handleManualSave) can show error
+      throw err
     }
-  }, [])
+  }, [refresh])
 
   const logout = useCallback(async (token) => {
-    // Final sync before logout
+    // Final sync before logout — retry once with refreshed token if expired
     if (token) {
       try {
         const settings = collectSettings()
-        await fetch('/api/settings/sync', {
+        const upload = (t) => fetch('/api/settings/sync', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
           body: JSON.stringify({ settings }),
         })
+        let res = await upload(token)
+        if (res.status === 401) {
+          const newToken = await refresh()
+          if (newToken) await upload(newToken)
+        }
       } catch (err) {
         console.error('pre-logout sync failed:', err.message)
       }
@@ -89,22 +109,23 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  // Returns new access token string on success, null on failure
   const refresh = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
-      if (!res.ok) return false
+      if (!res.ok) return null
       const data = await res.json()
       const meRes = await fetch('/api/user/me', {
         headers: { Authorization: `Bearer ${data.accessToken}` },
         credentials: 'include',
       })
-      if (!meRes.ok) return false
+      if (!meRes.ok) return null
       const meData = await meRes.json()
       setAccessToken(data.accessToken)
       setUser(meData.user)
-      return true
+      return data.accessToken
     } catch {
-      return false
+      return null
     }
   }, [])
 

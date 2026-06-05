@@ -53,7 +53,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 }
 
 export default function DashboardPage() {
-  const { accessToken, user, logout, sync, initSync } = useAuth()
+  const { accessToken, user, logout, sync, initSync, syncStatus } = useAuth()
   const navigate = useNavigate()
   const hub = useDesktopApps()
   const { openApp, isOpen } = useOpenWindows()
@@ -445,8 +445,8 @@ export default function DashboardPage() {
               </>
             )}
             <button className="tb-btn" onClick={handleManualSave} disabled={!!saveStatus} title="Save workspace to cloud now"
-              style={{ color: saveStatus.startsWith('☁') ? 'var(--green)' : saveStatus.startsWith('✗') ? 'var(--red)' : undefined }}>
-              {saveStatus || '💾 Save'}
+              style={{ color: saveStatus.startsWith('☁') ? 'var(--green)' : (saveStatus.startsWith('✗') || syncStatus === 'error') ? 'var(--red)' : undefined }}>
+              {saveStatus || (syncStatus === 'error' ? '⚠ Sync error' : syncStatus === 'syncing' ? '⏳' : '💾 Save')}
             </button>
             <button className="tb-btn" onClick={handleExport} title="Export settings as JSON">↓ Export</button>
             <label className="tb-btn" style={{ cursor:'pointer', marginLeft:0 }} title="Import settings from JSON">

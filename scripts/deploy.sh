@@ -16,6 +16,12 @@ echo "--- Installing backend dependencies ---"
 cd "$DEPLOY_DIR/backend"
 npm install --production
 
+echo "--- Patching JWT expiry in .env ---"
+if [ -f "$DEPLOY_DIR/backend/.env" ]; then
+  sed -i 's/^JWT_EXPIRES_IN=.*/JWT_EXPIRES_IN=2h/' "$DEPLOY_DIR/backend/.env"
+  grep -q '^JWT_EXPIRES_IN=' "$DEPLOY_DIR/backend/.env" || echo 'JWT_EXPIRES_IN=2h' >> "$DEPLOY_DIR/backend/.env"
+fi
+
 echo "--- Installing frontend dependencies ---"
 cd "$DEPLOY_DIR/frontend"
 npm install
