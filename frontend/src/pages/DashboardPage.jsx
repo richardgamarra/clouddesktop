@@ -24,6 +24,8 @@ import WorldClockTab from '../dashboard/tabs/WorldClockTab'
 import WeatherTab from '../dashboard/tabs/WeatherTab'
 import WidgetsTab from '../dashboard/tabs/WidgetsTab'
 import AnnouncementBanner from '../components/AnnouncementBanner'
+import UpgradeModal from '../components/UpgradeModal'
+import { useSubscription } from '../hooks/useSubscription'
 import '../dashboard/dashboard.css'
 import { getSettingsJson, loadSettingsJson, collectSettings } from '../lib/crypto'
 
@@ -91,6 +93,22 @@ export default function DashboardPage() {
   const [confirmCloseTab, setConfirmCloseTab] = useState(null) // tab id to close
   const [confirmDeleteApp, setConfirmDeleteApp] = useState(null) // app id to delete (right-click path)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showUpgrade, setShowUpgrade] = useState(false)
+  const { isPro, openBillingPortal } = useSubscription()
+
+  // Show success toast when returning from Stripe checkout
+  const [upgradeSuccess, setUpgradeSuccess] = useState(() => {
+    const p = new URLSearchParams(window.location.search)
+    return p.get('upgrade') === 'success'
+  })
+  useEffect(() => {
+    if (upgradeSuccess) {
+      const url = new URL(window.location)
+      url.searchParams.delete('upgrade')
+      window.history.replaceState({}, '', url)
+      setTimeout(() => setUpgradeSuccess(false), 6000)
+    }
+  }, [])
 
   const dragTabId = useRef(null)
 
@@ -460,6 +478,14 @@ export default function DashboardPage() {
               ↑ Import
               <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
             </label>
+            {isPro ? (
+              <button className="tb-btn" onClick={openBillingPortal} title="Manage subscription" style={{ color: 'var(--accent)' }}>⚡ Pro</button>
+            ) : (
+              <button className="tb-btn" onClick={() => setShowUpgrade(true)}
+                style={{ background: 'var(--accent)', color: '#fff', fontWeight: 700, border: 'none', borderRadius: 6, padding: '4px 10px' }}>
+                ⚡ Upgrade
+              </button>
+            )}
             <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 4 }}>Log out</button>
           </div>
         </div>
@@ -541,6 +567,14 @@ export default function DashboardPage() {
           onConfirm={() => { handleDeleteApp(confirmDeleteApp); setConfirmDeleteApp(null) }}
           onCancel={() => setConfirmDeleteApp(null)}
         />
+      )}
+
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+
+      {upgradeSuccess && (
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: 'var(--green)', color: '#000', fontWeight: 700, fontSize: 13, padding: '12px 24px', borderRadius: 10, zIndex: 2000, fontFamily: "'DM Mono',monospace", boxShadow: '0 4px 20px rgba(0,0,0,.4)' }}>
+          ✓ Welcome to Pro! Your account has been upgraded.
+        </div>
       )}
 
       {editingTab && (
