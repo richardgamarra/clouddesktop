@@ -22,11 +22,17 @@ export default function YouTubeWidget() {
       let data
       try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data } catch { return }
 
-      // onError: codes 100=not found, 101/150/153=embedding disabled
-      if (data.event === 'onError' && [100, 101, 150, 153].includes(data.info)) {
+      // YouTube sends errors as onError with info = error code
+      // Codes: 100=not found, 101/150/153=embedding disabled/referer error
+      const code = data.info ?? data.info?.error
+      if (data.event === 'onError' && [100, 101, 150, 153].includes(code)) {
+        skipNext()
+        return
+      }
+      // Some YouTube builds wrap errors differently
+      if (data.event === 'infoDelivery' && data.info?.error) {
         skipNext()
       }
-      // onStateChange: state -1=unstarted sometimes fires after bad embed; state 5=video cued
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -34,7 +40,8 @@ export default function YouTubeWidget() {
 
   function buildSrc(videoId) {
     const origin = encodeURIComponent(location.origin)
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1&origin=${origin}`
+    // youtube-nocookie.com avoids some content restrictions; origin= fixes Error 153 (missing referer)
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1&origin=${origin}`
   }
 
   function loadVideo(idx) {
@@ -120,6 +127,7 @@ export default function YouTubeWidget() {
           frameBorder="0"
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
+          referrerPolicy="origin"
           style={{ display: 'block' }}
           title="YouTube Music"
         />
