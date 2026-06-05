@@ -6,10 +6,8 @@ const CHANNELS = [
   { id: 'al',       name: 'Al Jazeera',flag: '🌍',  ytId: 'gCNeDWCI0vo', cat: 'english' },
   { id: 'france24', name: 'France 24', flag: '🇫🇷', ytId: 'HvZt-nh9sGg', cat: 'english' },
   { id: 'dw',       name: 'DW News',   flag: '🇩🇪', ytId: 'LuKwFajn37U', cat: 'english' },
-  { id: 'euronews', name: 'Euronews',  flag: '🇪🇺', ytId: 'zn58XQ1Bsco', cat: 'english' },
   { id: 'nhk',      name: 'NHK World', flag: '🇯🇵', ytId: 'f0lYkdA-Gtw', cat: 'english' },
   // Spanish News — verified June 2026
-  { id: 'cnn_es',   name: 'CNN Español',  flag: '📡', ytId: 'jqa9yavRSCs', cat: 'spanish' },
   { id: 'dw_es',    name: 'DW Español',   flag: '🇩🇪', ytId: 'yZh3xsFqCt8', cat: 'spanish' },
   { id: 'rtve',     name: 'RTVE 24H',     flag: '🇪🇸', ytId: 'b4tE5aKhtlg', cat: 'spanish' },
 ]
