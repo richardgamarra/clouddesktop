@@ -18,12 +18,23 @@ export default function YouTubeWidget() {
     setLoading(true)
     setError('')
     try {
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&videoEmbeddable=true&maxResults=12&q=${encodeURIComponent(query)}&key=${YT_KEY}`
-      const res = await fetch(url)
+      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&videoEmbeddable=true&maxResults=20&q=${encodeURIComponent(query)}&key=${YT_KEY}`
+      const res = await fetch(searchUrl)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error?.message || 'Search failed')
-      setResults(data.items || [])
-      if (!data.items?.length) setError('No results found.')
+      const items = data.items || []
+      if (!items.length) { setError('No results found.'); setResults([]); return }
+
+      // Verify embeddability via videos endpoint (search filter is unreliable)
+      const ids = items.map(i => i.id.videoId).join(',')
+      const statusRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${ids}&key=${YT_KEY}`)
+      const statusData = await statusRes.json()
+      const embeddable = new Set(
+        (statusData.items || []).filter(v => v.status?.embeddable).map(v => v.id)
+      )
+      const filtered = items.filter(i => embeddable.has(i.id.videoId)).slice(0, 12)
+      setResults(filtered)
+      if (!filtered.length) setError('No embeddable results found. Try a different search.')
     } catch (err) {
       setError(err.message)
     } finally {
