@@ -54,7 +54,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 }
 
 export default function DashboardPage() {
-  const { accessToken, user, logout, sync, syncReady, initSync } = useAuth()
+  const { accessToken, user, logout, sync, initSync } = useAuth()
   const navigate = useNavigate()
   const hub = useHubState()
   const { openApp, isOpen } = useOpenWindows()
@@ -149,7 +149,7 @@ export default function DashboardPage() {
     setTimeout(() => setSaveStatus(''), 3000)
   }
 
-  // ── Cloud sync init: fetch + apply settings on every login/session start ─────
+  // ── Cloud sync init: fetch + apply settings once per session ────────────────
   useEffect(() => {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
@@ -158,7 +158,6 @@ export default function DashboardPage() {
     initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
       if (cloudSettings) {
-        // Settings already hydrated by initSync — just reload to pick them up
         window.location.reload()
       }
     }).catch(() => {
@@ -245,23 +244,20 @@ export default function DashboardPage() {
 
   // ── Cloud sync — debounced 2s after any settings change ──────────────────────
   useEffect(() => {
-    if (!syncReady) return
+    if (!accessToken) return
     const timer = setTimeout(() => sync(accessToken), 2000)
     return () => clearTimeout(timer)
-  }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, syncReady, sync, accessToken])
+  }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, accessToken, sync])
 
   // Also sync when hub_icon_overrides changes (written directly to localStorage by AppModal)
   useEffect(() => {
-    if (!syncReady) return
+    if (!accessToken) return
     const handler = (e) => {
-      if (e.key === 'hub_icon_overrides') {
-        const timer = setTimeout(() => sync(accessToken), 2000)
-        return () => clearTimeout(timer)
-      }
+      if (e.key === 'hub_icon_overrides') setTimeout(() => sync(accessToken), 2000)
     }
     window.addEventListener('storage', handler)
     return () => window.removeEventListener('storage', handler)
-  }, [syncReady, sync, accessToken])
+  }, [accessToken, sync])
 
   // ── Export settings as JSON file ──────────────────────────────────────────────
   function handleExport() {
