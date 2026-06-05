@@ -14,6 +14,26 @@ export function AuthProvider({ children }) {
     setUser(userData)
   }, [])
 
+  // Returns new access token string on success, null on failure
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
+      if (!res.ok) return null
+      const data = await res.json()
+      const meRes = await fetch('/api/user/me', {
+        headers: { Authorization: `Bearer ${data.accessToken}` },
+        credentials: 'include',
+      })
+      if (!meRes.ok) return null
+      const meData = await meRes.json()
+      setAccessToken(data.accessToken)
+      setUser(meData.user)
+      return data.accessToken
+    } catch {
+      return null
+    }
+  }, [])
+
   // Fetch cloud settings and hydrate localStorage immediately
   const initSync = useCallback(async (token) => {
     setSyncStatus('syncing')
@@ -99,7 +119,6 @@ export function AuthProvider({ children }) {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {}
     sessionStorage.removeItem('cw_synced')
-    // Clear workspace localStorage on logout
     SYNC_KEYS.forEach(k => localStorage.removeItem(k))
     Object.keys(localStorage).filter(k => k.startsWith('wsh_notes_')).forEach(k => localStorage.removeItem(k))
     Object.keys(localStorage).filter(k => k.startsWith('wsh_') && k !== 'wsh_last_user_id' && k !== 'wsh_theme').forEach(k => localStorage.removeItem(k))
@@ -107,27 +126,7 @@ export function AuthProvider({ children }) {
     setSyncStatus('idle')
     setAccessToken(null)
     setUser(null)
-  }, [])
-
-  // Returns new access token string on success, null on failure
-  const refresh = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
-      if (!res.ok) return null
-      const data = await res.json()
-      const meRes = await fetch('/api/user/me', {
-        headers: { Authorization: `Bearer ${data.accessToken}` },
-        credentials: 'include',
-      })
-      if (!meRes.ok) return null
-      const meData = await meRes.json()
-      setAccessToken(data.accessToken)
-      setUser(meData.user)
-      return data.accessToken
-    } catch {
-      return null
-    }
-  }, [])
+  }, [refresh])
 
   return (
     <AuthContext.Provider value={{
