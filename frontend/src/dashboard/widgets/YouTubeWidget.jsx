@@ -2,87 +2,58 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 
 const YT_KEY = 'AIzaSyCmUR528jgG2q_NNyW0GdDcA9FuhDIOE68'
 
-// Load YouTube IFrame API once globally
-function loadYTApi() {
-  if (window.YT && window.YT.Player) return Promise.resolve()
-  if (window._ytApiPromise) return window._ytApiPromise
-  window._ytApiPromise = new Promise(resolve => {
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    document.head.appendChild(tag)
-    window.onYouTubeIframeAPIReady = () => resolve()
-  })
-  return window._ytApiPromise
-}
-
-export default function YouTubeWidget({ config, onUpdate }) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
+export default function YouTubeWidget() {
+  const [query, setQuery]       = useState('')
+  const [results, setResults]   = useState([])
   const [activeIdx, setActiveIdx] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [playerReady, setPlayerReady] = useState(false)
-  const playerRef = useRef(null)
-  const playerDivId = useRef('yt-player-' + Math.random().toString(36).slice(2))
-  const activeIdxRef = useRef(null)
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
+  const iframeRef  = useRef(null)
   const resultsRef = useRef([])
+  const activeIdxRef = useRef(null)
 
-  // Keep refs in sync
-  useEffect(() => { activeIdxRef.current = activeIdx }, [activeIdx])
   useEffect(() => { resultsRef.current = results }, [results])
+  useEffect(() => { activeIdxRef.current = activeIdx }, [activeIdx])
 
-  const playIdx = useCallback((idx) => {
-    const list = resultsRef.current
-    if (!list.length || idx == null) return
-    const videoId = list[idx]?.id?.videoId
-    if (!videoId) return
-    setActiveIdx(idx)
-    if (playerRef.current && playerReady) {
-      playerRef.current.loadVideoById(videoId)
-    }
-  }, [playerReady])
-
-  // Init player once
+  // Listen for postMessage events from the YouTube iframe (enablejsapi=1)
   useEffect(() => {
-    let destroyed = false
-    loadYTApi().then(() => {
-      if (destroyed) return
-      playerRef.current = new window.YT.Player(playerDivId.current, {
-        height: '185',
-        width: '100%',
-        videoId: '',
-        playerVars: { autoplay: 1, rel: 0, modestbranding: 1 },
-        events: {
-          onReady: () => { if (!destroyed) setPlayerReady(true) },
-          onError: (e) => {
-            // 100=not found, 101/150/153=embedding disabled — auto skip
-            if ([100, 101, 150, 153].includes(e.data)) {
-              const next = (activeIdxRef.current ?? -1) + 1
-              if (next < resultsRef.current.length) {
-                setActiveIdx(next)
-                resultsRef.current[next] && playerRef.current?.loadVideoById(resultsRef.current[next].id.videoId)
-              }
-            }
-          },
-          onStateChange: (e) => {
-            // Auto-advance when video ends (state 0)
-            if (e.data === 0) {
-              const next = (activeIdxRef.current ?? -1) + 1
-              if (next < resultsRef.current.length) {
-                setActiveIdx(next)
-                playerRef.current?.loadVideoById(resultsRef.current[next].id.videoId)
-              }
-            }
-          },
-        },
-      })
-    })
-    return () => {
-      destroyed = true
-      try { playerRef.current?.destroy() } catch {}
-      playerRef.current = null
+    function onMessage(e) {
+      if (!e.data) return
+      let data
+      try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data } catch { return }
+
+      // onError: codes 100=not found, 101/150/153=embedding disabled
+      if (data.event === 'onError' && [100, 101, 150, 153].includes(data.info)) {
+        skipNext()
+      }
+      // onStateChange: state -1=unstarted sometimes fires after bad embed; state 5=video cued
     }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
   }, [])
+
+  function buildSrc(videoId) {
+    const origin = encodeURIComponent(location.origin)
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1&origin=${origin}`
+  }
+
+  function loadVideo(idx) {
+    const list = resultsRef.current
+    if (!list[idx]) return
+    const videoId = list[idx].id.videoId
+    setActiveIdx(idx)
+    if (iframeRef.current) {
+      iframeRef.current.src = buildSrc(videoId)
+    }
+  }
+
+  function skipNext() {
+    const idx = activeIdxRef.current ?? -1
+    const next = idx + 1
+    if (next < resultsRef.current.length) {
+      loadVideo(next)
+    }
+  }
 
   async function search(e) {
     e?.preventDefault()
@@ -91,19 +62,19 @@ export default function YouTubeWidget({ config, onUpdate }) {
     setError('')
     setResults([])
     setActiveIdx(null)
+    if (iframeRef.current) iframeRef.current.src = ''
     try {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${YT_KEY}`)
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${YT_KEY}`
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data.error?.message || 'Search failed')
       const items = data.items || []
       if (!items.length) { setError('No results found.'); return }
       resultsRef.current = items
       setResults(items)
-      // Auto-play first result
-      setActiveIdx(0)
-      if (playerRef.current && playerReady) {
-        playerRef.current.loadVideoById(items[0].id.videoId)
-      }
+      // Small delay to ensure iframe is in DOM before setting src
+      setTimeout(() => loadVideo(0), 50)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -111,21 +82,21 @@ export default function YouTubeWidget({ config, onUpdate }) {
     }
   }
 
-  function playNext() {
-    const next = ((activeIdxRef.current ?? -1) + 1) % resultsRef.current.length
-    playIdx(next)
+  function playPrev() {
+    const prev = Math.max(0, (activeIdxRef.current ?? 1) - 1)
+    loadVideo(prev)
   }
 
-  function playPrev() {
-    const prev = ((activeIdxRef.current ?? 0) - 1 + resultsRef.current.length) % resultsRef.current.length
-    playIdx(prev)
+  function playNext() {
+    const next = ((activeIdxRef.current ?? -1) + 1) % (resultsRef.current.length || 1)
+    loadVideo(next)
   }
 
   const activeTitle = results[activeIdx]?.snippet?.title || ''
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Search */}
+      {/* Search bar */}
       <form onSubmit={search} style={{ display: 'flex', gap: 8 }}>
         <input
           value={query}
@@ -139,9 +110,19 @@ export default function YouTubeWidget({ config, onUpdate }) {
         </button>
       </form>
 
-      {/* Player — always mounted, hidden until results */}
+      {/* Player — always in DOM so postMessage listener works */}
       <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border2)', background: '#000', display: results.length ? 'block' : 'none' }}>
-        <div id={playerDivId.current} style={{ width: '100%', height: 185 }} />
+        <iframe
+          ref={iframeRef}
+          src=""
+          width="100%"
+          height="185"
+          frameBorder="0"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+          style={{ display: 'block' }}
+          title="YouTube Music"
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--s2)' }}>
           <button onClick={playPrev} title="Previous" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏮</button>
           <button onClick={playNext} title="Next" style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 16, padding: '2px 6px' }}>⏭</button>
@@ -151,13 +132,13 @@ export default function YouTubeWidget({ config, onUpdate }) {
 
       {error && <div style={{ fontSize: 11, color: 'var(--red)', fontFamily: "'DM Mono',monospace" }}>{error}</div>}
 
-      {/* Results */}
+      {/* Results list */}
       {results.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 260, overflowY: 'auto' }}>
           {results.map((item, idx) => {
             const isActive = idx === activeIdx
             return (
-              <div key={item.id.videoId} onClick={() => playIdx(idx)}
+              <div key={item.id.videoId} onClick={() => loadVideo(idx)}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', background: isActive ? 'rgba(91,127,255,.15)' : 'var(--s3)', border: `1px solid ${isActive ? 'var(--accent)' : 'transparent'}`, transition: 'all .15s' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--s2)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'var(--s3)' }}>
