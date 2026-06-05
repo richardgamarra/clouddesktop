@@ -1,28 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 
 const CHANNELS = [
-  // World News — IDs verified June 2026
-  { id: 'sky',       name: 'Sky News',    flag: '🇬🇧', ytId: 'YDvsBbKfLPA', cat: 'news' },
-  { id: 'al',        name: 'Al Jazeera', flag: '🌍',  ytId: 'gCNeDWCI0vo', cat: 'news' },
-  { id: 'france24',  name: 'France 24',  flag: '🇫🇷', ytId: 'HvZt-nh9sGg', cat: 'news' },
-  { id: 'dw',        name: 'DW News',    flag: '🇩🇪', ytId: 'LuKwFajn37U', cat: 'news' },
-  { id: 'euronews',  name: 'Euronews',   flag: '🇪🇺', ytId: 'zn58XQ1Bsco', cat: 'news' },
-  { id: 'trt',       name: 'TRT World',  flag: '🇹🇷', ytId: 'oNPnQCm7HBs', cat: 'news' },
-  { id: 'wion',      name: 'WION',       flag: '🌐',  ytId: 'FuHK15xggBU', cat: 'news' },
-  { id: 'france24fr',name: 'France 24 FR',flag: '🇫🇷', ytId: 'Y7iJcCyb6gE', cat: 'news' },
-  // Business
-  { id: 'bloomberg', name: 'Bloomberg',  flag: '💹',  ytId: 'dp8PhLsUcFE', cat: 'business' },
-  // Asia & Pacific
-  { id: 'nhk',       name: 'NHK World',  flag: '🇯🇵', ytId: 'f0lYkdA-Gtw', cat: 'asia' },
-  { id: 'cgtn',      name: 'CGTN',       flag: '🇨🇳', ytId: 'QMFbKYdFKDQ', cat: 'asia' },
-  { id: 'arirang',   name: 'Arirang',    flag: '🇰🇷', ytId: 'GKoOPdBS2g0', cat: 'asia' },
+  // English News — verified June 2026
+  { id: 'sky',      name: 'Sky News',   flag: '🇬🇧', ytId: 'YDvsBbKfLPA', cat: 'english' },
+  { id: 'al',       name: 'Al Jazeera',flag: '🌍',  ytId: 'gCNeDWCI0vo', cat: 'english' },
+  { id: 'france24', name: 'France 24', flag: '🇫🇷', ytId: 'HvZt-nh9sGg', cat: 'english' },
+  { id: 'dw',       name: 'DW News',   flag: '🇩🇪', ytId: 'LuKwFajn37U', cat: 'english' },
+  { id: 'euronews', name: 'Euronews',  flag: '🇪🇺', ytId: 'zn58XQ1Bsco', cat: 'english' },
+  { id: 'nhk',      name: 'NHK World', flag: '🇯🇵', ytId: 'f0lYkdA-Gtw', cat: 'english' },
+  // Spanish News — verified June 2026
+  { id: 'cnn_es',   name: 'CNN Español',  flag: '📡', ytId: 'jqa9yavRSCs', cat: 'spanish' },
+  { id: 'dw_es',    name: 'DW Español',   flag: '🇩🇪', ytId: 'yZh3xsFqCt8', cat: 'spanish' },
+  { id: 'rtve',     name: 'RTVE 24H',     flag: '🇪🇸', ytId: 'b4tE5aKhtlg', cat: 'spanish' },
 ]
 
 const CATS = [
-  { key: 'all',      label: 'All' },
-  { key: 'news',     label: '🌍 World News' },
-  { key: 'business', label: '💹 Business' },
-  { key: 'asia',     label: '🌏 Asia & Pacific' },
+  { key: 'all',     label: 'All' },
+  { key: 'english', label: '🌍 English' },
+  { key: 'spanish', label: '🇪🇸 Español' },
 ]
 
 export default function LiveTVWidget() {
