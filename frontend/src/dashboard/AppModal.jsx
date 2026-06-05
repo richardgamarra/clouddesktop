@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { EMOJI_LIST } from './constants'
 import ConfirmModal from '../components/ConfirmModal'
+import { resizeImage } from '../lib/imageUtils'
 
 // 30+ popular app icons — name + Google favicon CDN URL
 const POPULAR_APPS = [
@@ -131,7 +132,9 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   const [name, setName]         = useState(app?.name || '')
   const [url, setUrl]           = useState(app?.url || '')
   const [groupId, setGroupId]   = useState(app?.groupId || groups[0]?.id || '')
-  const [iconVal, setIconVal]   = useState(app?.emoji || '')
+  // customIcon covers both uploaded data: URLs and external http: URLs
+  // favicon (http) and emoji keep their existing roles for typed/picker input
+  const [iconVal, setIconVal]   = useState(app?.customIcon || app?.favicon || app?.emoji || '')
   const [shortcut, setShortcut] = useState(app?.shortcut || '')
   const [showInSidebar, setShowInSidebar] = useState(app?.showInSidebar !== false) // default true
   const [listening, setListening] = useState(false)
@@ -162,7 +165,7 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   }, [listening])
 
   function previewIcon() {
-    if (iconVal.startsWith('http')) return <img src={iconVal} style={{ width: 28, height: 28, borderRadius: 6 }} alt="" onError={e => { e.target.outerHTML = '<span>🌐</span>' }} />
+    if (iconVal.startsWith('http') || iconVal.startsWith('data:')) return <img src={iconVal} style={{ width: 28, height: 28, borderRadius: 6 }} alt="" onError={e => { e.target.outerHTML = '<span>🌐</span>' }} />
     if (iconVal) return <span style={{ fontSize: 24 }}>{iconVal}</span>
     if (url) { try { return <img src={`https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(new URL(url).hostname)}`} style={{ width: 28, height: 28, borderRadius: 6 }} alt="" onError={e => { e.target.outerHTML = '<span>🌐</span>' }} /> } catch {} }
     return <span>🌐</span>
@@ -173,11 +176,17 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   function handleSave() {
     if (!name.trim()) { shake(document.getElementById('ae-name')); return }
     if (!url.trim() || !isValidUrl(url.trim())) { shake(document.getElementById('ae-url')); return }
-    let emoji = null, favicon = null
-    if (iconVal.startsWith('http')) favicon = iconVal
-    else if (iconVal) emoji = iconVal
-    else { try { favicon = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(new URL(url).hostname)}` } catch {} }
-    onSave({ id: app?.id || null, name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, shortcut, showInSidebar })
+    let emoji = null, favicon = null, customIcon = null
+    if (iconVal.startsWith('data:')) {
+      customIcon = iconVal  // uploaded image — stored in dedicated field
+    } else if (iconVal.startsWith('http')) {
+      favicon = iconVal
+    } else if (iconVal) {
+      emoji = iconVal
+    } else {
+      try { favicon = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(new URL(url).hostname)}` } catch {}
+    }
+    onSave({ id: app?.id || null, name: name.trim(), url: url.trim(), groupId: groupId || null, emoji, favicon, customIcon, shortcut, showInSidebar })
   }
 
   return (
@@ -209,13 +218,11 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
             <input id="ae-icon-input" type="text" value={iconVal} onChange={e => setIconVal(e.target.value)} placeholder="🚀 or https://…" maxLength={200} style={{ flex:1 }} />
             <label title="Upload image" style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:8, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', flexShrink:0, fontSize:16 }}>
               📁
-              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => setIconVal(ev.target.result)
-                reader.readAsDataURL(file)
                 e.target.value = ''
+                try { setIconVal(await resizeImage(file, 64)) } catch {}
               }} />
             </label>
           </div>

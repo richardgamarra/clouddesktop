@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import ConfirmModal from '../../components/ConfirmModal'
+import { resizeImage } from '../../lib/imageUtils'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 function iconSrc(item) {
@@ -61,13 +62,11 @@ function EditBookmarkModal({ item, groups, onSave, onClose }) {
             <input style={{ ...iStyle, flex:1 }} type="url" value={customIcon} onChange={e => { setCustomIcon(e.target.value); setIconError(false) }} placeholder="https://example.com/icon.png" />
             <label title="Upload image" style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:8, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', flexShrink:0, fontSize:16 }}>
               📁
-              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => { setCustomIcon(ev.target.result); setIconError(false) }
-                reader.readAsDataURL(file)
                 e.target.value = ''
+                try { const dataUrl = await resizeImage(file, 64); setCustomIcon(dataUrl); setIconError(false) } catch {}
               }} />
             </label>
           </div>
@@ -423,13 +422,11 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
               {newCustomIcon
                 ? <img src={newCustomIcon} alt="" width={20} height={20} style={{ borderRadius:4 }} />
                 : <span>🖼 Icon</span>}
-              <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => {
+              <input type="file" accept="image/*" style={{ display:'none' }} onChange={async e => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => setNewCustomIcon(ev.target.result)
-                reader.readAsDataURL(file)
                 e.target.value = ''
+                try { setNewCustomIcon(await resizeImage(file, 64)) } catch {}
               }} />
             </label>
             {newCustomIcon && <button title="Remove icon" style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:14, padding:'0 2px' }} onClick={() => setNewCustomIcon('')}>×</button>}

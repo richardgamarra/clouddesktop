@@ -9,6 +9,10 @@ function getIconOverrides() {
 function AppIcon({ app }) {
   const overrides = getIconOverrides()
   const override = overrides[app.id]
+  // customIcon: uploaded image (data: URL) — highest priority after manual override
+  if (!override && app.customIcon) {
+    return <img src={app.customIcon} alt="" style={{ width:26, height:26, borderRadius:5, display:'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:18px">🌐</span>' }} />
+  }
   const emojiValue = override || app.emoji
   if (emojiValue) {
     if (emojiValue.startsWith('http') || emojiValue.startsWith('data:')) {
