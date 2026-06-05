@@ -7,9 +7,9 @@
 }
 #sb-sidebar::-webkit-scrollbar { display: none; }
 .sb-logo {
-  width: 52px; height: 52px; background: transparent;
+  width: 62px; height: 62px; background: transparent;
   border-radius: 0; display: flex; align-items: center; justify-content: center;
-  margin-bottom: 8px; flex-shrink: 0; user-select: none; cursor: pointer;
+  margin-bottom: 6px; flex-shrink: 0; user-select: none; cursor: pointer;
 }
 .sb-sep { width: 28px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
 .sb-spacer { flex: 1; min-height: 6px; }

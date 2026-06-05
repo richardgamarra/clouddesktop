@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const S = {
-  nav: { display:'flex', alignItems:'center', padding:'0 48px', height:64, background:'rgba(11,13,18,.9)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100, backdropFilter:'blur(12px)' },
-  navLogo: { display:'flex', alignItems:'center', gap:10, fontSize:17, fontWeight:800, letterSpacing:'-.4px' },
-  navLogoIcon: { height:48, width:'auto', display:'block' },
+  nav: { display:'flex', alignItems:'center', padding:'0 48px', height:80, background:'rgba(11,13,18,.9)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100, backdropFilter:'blur(12px)' },
+  navLogo: { display:'flex', alignItems:'center', gap:10 },
+  navLogoIcon: { height:72, width:'auto', display:'block' },
   navLinks: { display:'flex', gap:28, marginLeft:36 },
   navLink: { color:'var(--text2)', fontSize:13, fontWeight:600, textDecoration:'none' },
   navRight: { marginLeft:'auto', display:'flex', gap:10, alignItems:'center' },

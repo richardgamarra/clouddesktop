@@ -50,7 +50,7 @@ export default function Sidebar({ groups, apps, openApp, isOpen, onAddApp, onCon
     <>
     <div className={`sb-drawer-backdrop${sidebarOpen ? ' open' : ''}`} onClick={onClose} />
     <nav id="sb-sidebar" className={sidebarOpen ? 'drawer-open' : ''}>
-      <div className="sb-logo" title="CloudDesktop Workspace"><img src="/logo.png" alt="CloudDesktop" style={{ width:44, height:44, objectFit:'contain', display:'block' }} /></div>
+      <div className="sb-logo" title="CloudDesktop Workspace"><img src="/logo.png" alt="CloudDesktop" style={{ width:58, height:58, objectFit:'contain', display:'block' }} /></div>
       <div className="sb-sep" />
       {groups.map(g => {
         const ga = appsInGroup(g.id)

@@ -41,7 +41,7 @@ export default function SignupPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo"><img src="/logo.png" alt="CloudDesktop" style={{ height:80, width:'auto' }} /></div>
+        <div className="auth-logo"><img src="/logo.png" alt="CloudDesktop" style={{ height:140, width:"auto" }} /></div>
         <div className="auth-title">Create account</div>
         <div className="auth-sub">Start your CloudDesktop Workspace — free forever</div>
         {error && <div className="auth-error">{error}</div>}
