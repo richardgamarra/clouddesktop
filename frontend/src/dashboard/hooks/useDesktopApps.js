@@ -1,6 +1,27 @@
 import { useState, useRef, useCallback } from 'react'
 
 export const DESKTOP_KEY = 'wsh_desktop_apps'
+export const ICONS_KEY   = 'wsh_app_icons'
+
+// Icons are stored in their own key — simple { appId: dataUrl } map.
+// Keeping them separate means the main apps blob stays small and
+// JSON.stringify/parse never touches a large base64 string.
+function loadIcons() {
+  try { return JSON.parse(localStorage.getItem(ICONS_KEY)) || {} } catch { return {} }
+}
+function saveIcons(icons) {
+  try { localStorage.setItem(ICONS_KEY, JSON.stringify(icons)) } catch {}
+}
+export function getAppIcon(appId) {
+  return loadIcons()[appId] || null
+}
+function setAppIcon(appId, dataUrl) {
+  const icons = loadIcons()
+  if (dataUrl) icons[appId] = dataUrl
+  else delete icons[appId]
+  saveIcons(icons)
+  return icons
+}
 
 const DEFAULT_DATA = {
   groups: [{ id: 'g_default', name: 'My Apps', color: '#5b7fff' }],
@@ -79,20 +100,27 @@ export function useDesktopApps() {
 
   const saveApp = useCallback((appData) => {
     const prev = ref.current
+    // Pull icon out — store it separately in wsh_app_icons so the main
+    // blob never contains large base64 strings
+    const { customIcon, ...rest } = appData
+    const appId = rest.id || ('app_' + Date.now())
+    setAppIcon(appId, customIcon || null)
+    const entry = { ...rest, id: appId }
     let apps
     if (!appData.id) {
-      apps = [...prev.apps, { ...appData, id: 'app_' + Date.now() }]
+      apps = [...prev.apps, entry]
     } else {
       const exists = prev.apps.find(a => a.id === appData.id)
       apps = exists
-        ? prev.apps.map(a => a.id === appData.id ? { ...a, ...appData } : a)
-        : [...prev.apps, { id: 'app_' + Date.now(), ...appData }]
+        ? prev.apps.map(a => a.id === appData.id ? { ...a, ...entry } : a)
+        : [...prev.apps, entry]
     }
     commit({ ...prev, apps })
   }, [commit])
 
   const deleteApp = useCallback((id) => {
     const prev = ref.current
+    setAppIcon(id, null)  // remove icon entry too
     commit({ ...prev, apps: prev.apps.filter(a => a.id !== id) })
   }, [commit])
 

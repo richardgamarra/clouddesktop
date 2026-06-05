@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { EMOJI_LIST } from './constants'
 import ConfirmModal from '../components/ConfirmModal'
 import { resizeImage } from '../lib/imageUtils'
+import { getAppIcon } from './hooks/useDesktopApps'
 
 // 30+ popular app icons — name + Google favicon CDN URL
 const POPULAR_APPS = [
@@ -132,9 +133,9 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   const [name, setName]         = useState(app?.name || '')
   const [url, setUrl]           = useState(app?.url || '')
   const [groupId, setGroupId]   = useState(app?.groupId || groups[0]?.id || '')
-  // customIcon covers both uploaded data: URLs and external http: URLs
-  // favicon (http) and emoji keep their existing roles for typed/picker input
-  const [iconVal, setIconVal]   = useState(app?.customIcon || app?.favicon || app?.emoji || '')
+  // Load icon from dedicated store (wsh_app_icons) when editing an existing app
+  const storedIcon = app?.id ? getAppIcon(app.id) : null
+  const [iconVal, setIconVal]   = useState(storedIcon || app?.customIcon || app?.favicon || app?.emoji || '')
   const [shortcut, setShortcut] = useState(app?.shortcut || '')
   const [showInSidebar, setShowInSidebar] = useState(app?.showInSidebar !== false) // default true
   const [listening, setListening] = useState(false)

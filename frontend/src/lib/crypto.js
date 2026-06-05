@@ -1,6 +1,7 @@
 // Keys synced to/from cloud
 export const SYNC_KEYS = [
   'wsh_desktop_apps',
+  'wsh_app_icons',
   'wsh_groups',
   'wsh_apps',
   'wsh_news_sources',
