@@ -206,8 +206,16 @@ export default function DashboardPage() {
     const app = hub.getApp(appId)
     if (app) setAppModal({ app: { ...app }, focusField })
   }
-  function handleSaveApp(data) { hub.saveApp(data); setAppModal(null) }
-  function handleDeleteApp(id) { hub.deleteApp(id); setAppModal(null) }
+  function handleSaveApp(data) {
+    hub.saveApp(data)
+    setAppModal(null)
+    if (accessToken) setTimeout(() => sync(accessToken), 300)
+  }
+  function handleDeleteApp(id) {
+    hub.deleteApp(id)
+    setAppModal(null)
+    if (accessToken) setTimeout(() => sync(accessToken), 300)
+  }
 
   function handleSaveGroup(data) {
     const pendingAppId = groupModal?._pendingAppId
@@ -215,8 +223,12 @@ export default function DashboardPage() {
     hub.saveGroup({ ...data, id: newId })
     if (pendingAppId && !data.id) hub.moveApp(pendingAppId, newId)
     setGroupModal(null); setShowManage(false)
+    if (accessToken) setTimeout(() => sync(accessToken), 300)
   }
-  function handleDeleteGroup(id) { hub.deleteGroup(id); setGroupModal(null); setShowManage(false) }
+  function handleDeleteGroup(id) {
+    hub.deleteGroup(id); setGroupModal(null); setShowManage(false)
+    if (accessToken) setTimeout(() => sync(accessToken), 300)
+  }
 
   function handleAddCustomTab(tabData) {
     const id = customTabs.addTab(tabData)
