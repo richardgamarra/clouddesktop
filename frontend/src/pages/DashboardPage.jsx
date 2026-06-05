@@ -5,12 +5,11 @@ import ConfirmModal from '../components/ConfirmModal'
 import TabEditModal from '../dashboard/TabEditModal'
 import DesktopView from '../dashboard/DesktopView'
 import { hydrateLocalStorage } from '../lib/crypto'
-import { useHubState } from '../dashboard/hooks/useHubState'
+import { useDesktopApps } from '../dashboard/hooks/useDesktopApps'
 import { useOpenWindows } from '../dashboard/hooks/useOpenWindows'
 import { useCustomTabs } from '../dashboard/hooks/useCustomTabs'
 import { DEFAULT_NEWS_SOURCES } from '../dashboard/constants'
 import Sidebar from '../dashboard/Sidebar'
-import AppsTab from '../dashboard/AppsTab'
 import NewsTab from '../dashboard/NewsTab'
 import ContextMenu from '../dashboard/ContextMenu'
 import AppModal from '../dashboard/AppModal'
@@ -56,7 +55,7 @@ function CustomTabPanel({ tab, onUpdateTab }) {
 export default function DashboardPage() {
   const { accessToken, user, logout, sync, initSync } = useAuth()
   const navigate = useNavigate()
-  const hub = useHubState()
+  const hub = useDesktopApps()
   const { openApp, isOpen } = useOpenWindows()
   const customTabs = useCustomTabs()
 
@@ -65,7 +64,6 @@ export default function DashboardPage() {
 
   const [activeTab, setActiveTabRaw] = useState(() => localStorage.getItem('wsh_active_tab') || localStorage.getItem('wsh_default_tab') || 'news')
   function setActiveTab(id) { setActiveTabRaw(id); localStorage.setItem('wsh_active_tab', id) }
-  const [appsView, setAppsView] = useState(() => localStorage.getItem('wsh_apps_view') || 'cards')
   const [sources, setSources] = useState(loadNewsSources)
   const [newsGroups, setNewsGroups] = useState(loadNewsGroups)
 
@@ -209,25 +207,25 @@ export default function DashboardPage() {
   function handleSaveApp(data) {
     hub.saveApp(data)
     setAppModal(null)
-    if (accessToken) setTimeout(() => sync(accessToken), 300)
+    // localStorage already written synchronously by hook; sync to cloud now
+    if (accessToken) sync(accessToken)
   }
   function handleDeleteApp(id) {
     hub.deleteApp(id)
     setAppModal(null)
-    if (accessToken) setTimeout(() => sync(accessToken), 300)
+    if (accessToken) sync(accessToken)
   }
 
   function handleSaveGroup(data) {
     const pendingAppId = groupModal?._pendingAppId
-    const newId = data.id || ('g_' + Date.now())
-    hub.saveGroup({ ...data, id: newId })
-    if (pendingAppId && !data.id) hub.moveApp(pendingAppId, newId)
+    hub.saveGroup(data)
+    if (pendingAppId && !data.id) hub.moveApp(pendingAppId, data.id || ('g_' + Date.now()))
     setGroupModal(null); setShowManage(false)
-    if (accessToken) setTimeout(() => sync(accessToken), 300)
+    if (accessToken) sync(accessToken)
   }
   function handleDeleteGroup(id) {
     hub.deleteGroup(id); setGroupModal(null); setShowManage(false)
-    if (accessToken) setTimeout(() => sync(accessToken), 300)
+    if (accessToken) sync(accessToken)
   }
 
   function handleAddCustomTab(tabData) {
@@ -262,22 +260,6 @@ export default function DashboardPage() {
     if (name && name.trim()) customTabs.updateTab(id, { name: name.trim() })
   }
 
-  // ── Cloud sync — debounced 2s after any settings change ──────────────────────
-  useEffect(() => {
-    if (!accessToken) return
-    const timer = setTimeout(() => sync(accessToken), 2000)
-    return () => clearTimeout(timer)
-  }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, accessToken, sync])
-
-  // Also sync when hub_icon_overrides changes (written directly to localStorage by AppModal)
-  useEffect(() => {
-    if (!accessToken) return
-    const handler = (e) => {
-      if (e.key === 'hub_icon_overrides') setTimeout(() => sync(accessToken), 2000)
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
-  }, [accessToken, sync])
 
   // ── Export settings as JSON file ──────────────────────────────────────────────
   function handleExport() {
@@ -298,7 +280,7 @@ export default function DashboardPage() {
       try {
         const json = JSON.parse(ev.target.result)
         loadSettingsJson(json)
-        if (syncReady) await sync(accessToken)
+        if (accessToken) await sync(accessToken)
         window.location.reload()
       } catch {
         alert('Invalid settings file.')
@@ -458,13 +440,8 @@ export default function DashboardPage() {
             )}
             {activeTab === 'hub' && (
               <>
-                <button className="tb-btn" onClick={() => { const v = appsView === 'cards' ? 'desktop' : 'cards'; setAppsView(v); localStorage.setItem('wsh_apps_view', v) }}
-                  title={appsView === 'cards' ? 'Switch to Desktop view' : 'Switch to Cards view'}
-                  style={{ fontFamily:"'DM Mono',monospace", letterSpacing:'.02em' }}>
-                  {appsView === 'cards' ? '🖥 Desktop' : '⊞ Cards'}
-                </button>
-                {appsView === 'cards' && <button className="tb-btn" onClick={() => setShowManage(true)}>⊞ Groups</button>}
-                <button className="tb-btn" onClick={() => openAddApp()}>+ Add App</button>
+                <button className="tb-btn" onClick={() => setGroupModal({})}>+ Group</button>
+                <button className="tb-btn" onClick={() => openAddApp()}>+ App</button>
                 <button className="open-all-btn" onClick={() => hub.apps.forEach((app, i) => setTimeout(() => openApp(app), i * 100))}>⚡ Open All</button>
               </>
             )}
@@ -487,21 +464,12 @@ export default function DashboardPage() {
             <NewsTab sources={sources} onSourcesChange={setSources} newsGroups={newsGroups} onNewsGroupsChange={setNewsGroups} onAddSource={() => setShowSourceModal(true)} />
           </div>
         )}
-        {activeTab === 'hub' && appsView === 'cards' && (
-          <div className="tab-panel">
-            <AppsTab
-              groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
-              onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
-              onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
-              onNewGroup={() => setGroupModal({})}
-            />
-          </div>
-        )}
-        {activeTab === 'hub' && appsView === 'desktop' && (
+        {activeTab === 'hub' && (
           <div className="tab-panel">
             <DesktopView
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
               onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
+              onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
             />
           </div>
         )}
