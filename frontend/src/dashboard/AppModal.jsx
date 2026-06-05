@@ -133,9 +133,9 @@ export default function AppModal({ app, groups, onSave, onDelete, onClose }) {
   const [name, setName]         = useState(app?.name || '')
   const [url, setUrl]           = useState(app?.url || '')
   const [groupId, setGroupId]   = useState(app?.groupId || groups[0]?.id || '')
-  // Load icon from dedicated store (wsh_app_icons) when editing an existing app
-  const storedIcon = app?.id ? getAppIcon(app.id) : null
-  const [iconVal, setIconVal]   = useState(storedIcon || app?.customIcon || app?.favicon || app?.emoji || '')
+  // Icon is now stored directly in the app entry; legacy fallback to separate store
+  const storedIcon = app?.id ? (app?.customIcon || getAppIcon(app.id)) : null
+  const [iconVal, setIconVal]   = useState(storedIcon || app?.favicon || app?.emoji || '')
   const [shortcut, setShortcut] = useState(app?.shortcut || '')
   const [showInSidebar, setShowInSidebar] = useState(app?.showInSidebar !== false) // default true
   const [listening, setListening] = useState(false)

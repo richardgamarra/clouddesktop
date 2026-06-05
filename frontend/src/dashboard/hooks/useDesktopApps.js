@@ -49,12 +49,9 @@ function load() {
 
 export function useDesktopApps() {
   const initial = load()
-  // ref always holds the current data — mutations read/write here directly
-  // so localStorage is always up-to-date before any sync() call
   const ref = useRef(initial)
   const [data, setData] = useState(initial)
 
-  // Commit a new state: write to ref + localStorage synchronously, then trigger render
   const commit = useCallback((next) => {
     ref.current = next
     try { localStorage.setItem(DESKTOP_KEY, JSON.stringify(next)) } catch {}
@@ -100,12 +97,11 @@ export function useDesktopApps() {
 
   const saveApp = useCallback((appData) => {
     const prev = ref.current
-    // Pull icon out — store it separately in wsh_app_icons so the main
-    // blob never contains large base64 strings
-    const { customIcon, ...rest } = appData
-    const appId = rest.id || ('app_' + Date.now())
-    setAppIcon(appId, customIcon || null)
-    const entry = { ...rest, id: appId }
+    const appId = appData.id || ('app_' + Date.now())
+    // Store customIcon directly in the app entry — same pattern as BookmarksTab.
+    // This ensures icon + data travel together as one blob in wsh_desktop_apps
+    // and can never get out of sync with a separate key.
+    const entry = { ...appData, id: appId }
     let apps
     if (!appData.id) {
       apps = [...prev.apps, entry]
@@ -120,7 +116,6 @@ export function useDesktopApps() {
 
   const deleteApp = useCallback((id) => {
     const prev = ref.current
-    setAppIcon(id, null)  // remove icon entry too
     commit({ ...prev, apps: prev.apps.filter(a => a.id !== id) })
   }, [commit])
 

@@ -10,9 +10,8 @@ function getIconOverrides() {
 function AppIcon({ app }) {
   const overrides = getIconOverrides()
   const override = overrides[app.id]
-  // Check dedicated icon store first (data: URLs stored separately from main blob)
-  const storedIcon = !override ? getAppIcon(app.id) : null
-  const iconSrc = storedIcon || app.customIcon || null
+  // Icon lives directly in app.customIcon; fall back to legacy separate store
+  const iconSrc = !override ? (app.customIcon || getAppIcon(app.id)) : null
   if (!override && iconSrc) {
     return <img src={iconSrc} alt={app.name} style={{ width:48, height:48, borderRadius:10, display:'block' }} onError={e => { e.target.outerHTML = '<span style="font-size:36px">🌐</span>' }} />
   }

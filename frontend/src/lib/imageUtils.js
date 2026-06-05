@@ -10,7 +10,7 @@ export function resizeImage(file, size = 64) {
         canvas.width  = Math.round(img.width  * scale)
         canvas.height = Math.round(img.height * scale)
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
-        resolve(canvas.toDataURL('image/png'))
+        resolve(canvas.toDataURL('image/jpeg', 0.85))
       }
       img.onerror = reject
       img.src = ev.target.result
