@@ -136,11 +136,18 @@ export default function DashboardPage() {
     try {
       await sync(accessToken)
       setSaveStatus('☁ Saved!')
-    } catch {
-      setSaveStatus('✗ Failed')
+    } catch (err) {
+      setSaveStatus('✗ ' + (err?.message?.slice(0, 40) || 'Failed'))
     }
-    setTimeout(() => setSaveStatus(''), 3000)
+    setTimeout(() => setSaveStatus(''), 4000)
   }
+
+  // Auto-retry sync 30s after an error (keeps retrying until it succeeds)
+  useEffect(() => {
+    if (syncStatus !== 'error' || !accessToken) return
+    const timer = setTimeout(() => sync(accessToken).catch(() => {}), 30000)
+    return () => clearTimeout(timer)
+  }, [syncStatus, accessToken, sync])
 
   // ── Cloud sync init: fetch + apply settings once per session ────────────────
   useEffect(() => {
@@ -444,9 +451,9 @@ export default function DashboardPage() {
                 <button className="open-all-btn" onClick={() => hub.apps.forEach((app, i) => setTimeout(() => openApp(app), i * 100))}>⚡ Open All</button>
               </>
             )}
-            <button className="tb-btn" onClick={handleManualSave} disabled={!!saveStatus} title="Save workspace to cloud now"
+            <button className="tb-btn" onClick={handleManualSave} disabled={!!saveStatus || syncStatus === 'syncing'} title={syncStatus === 'error' ? 'Sync failed — click to retry' : 'Save workspace to cloud now'}
               style={{ color: saveStatus.startsWith('☁') ? 'var(--green)' : (saveStatus.startsWith('✗') || syncStatus === 'error') ? 'var(--red)' : undefined }}>
-              {saveStatus || (syncStatus === 'error' ? '⚠ Sync error' : syncStatus === 'syncing' ? '⏳' : '💾 Save')}
+              {saveStatus || (syncStatus === 'error' ? '⚠ Retry sync' : syncStatus === 'syncing' ? '⏳ Syncing…' : '💾 Save')}
             </button>
             <button className="tb-btn" onClick={handleExport} title="Export settings as JSON">↓ Export</button>
             <label className="tb-btn" style={{ cursor:'pointer', marginLeft:0 }} title="Import settings from JSON">

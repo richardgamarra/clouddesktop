@@ -29,9 +29,11 @@ npm install
 echo "--- Building React frontend ---"
 npm run build
 
-echo "--- Restarting backend with PM2 ---"
+echo "--- Restarting backend with PM2 (full restart to reload .env) ---"
 cd "$DEPLOY_DIR/backend"
-pm2 restart clouddesktop-api --update-env || pm2 start server.js --name clouddesktop-api
+pm2 delete clouddesktop-api 2>/dev/null || true
+pm2 start server.js --name clouddesktop-api
+pm2 save
 
 echo "--- Deploy complete ---"
 pm2 status
