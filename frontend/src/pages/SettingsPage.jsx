@@ -396,23 +396,39 @@ export default function SettingsPage() {
       if (!res.ok) { setStatus('✗ Could not fetch encrypted backup'); return }
       const { encrypted_blob, iv } = await res.json()
       if (!encrypted_blob || !iv) { setStatus('✗ No encrypted backup found on server'); return }
-      const key = await deriveKey(pwd, user.id)
-      const settings = await decryptSettings(key, encrypted_blob, iv)
-      // Save as plain JSON to server
+
+      // Try multiple salts — old code may have used userId, email, or lowercase email
+      const salts = [user.id, user.email, user.email?.toLowerCase()].filter(Boolean)
+      let settings = null
+      for (const salt of salts) {
+        try {
+          const key = await deriveKey(pwd, salt)
+          settings = await decryptSettings(key, encrypted_blob, iv)
+          console.log('Decrypted with salt:', salt)
+          break
+        } catch { /* try next */ }
+      }
+
+      if (!settings) {
+        setStatus('✗ Wrong password — make sure you are entering the exact password used to register. Check using the Show button.')
+        setTimeout(() => setStatus(''), 8000)
+        return
+      }
+
       const saveRes = await fetch('/api/settings/sync', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ settings }),
       })
       if (!saveRes.ok) { setStatus('✗ Failed to save migrated settings'); return }
-      // Hydrate local storage
       hydrateLocalStorage(settings)
       setStatus('✓ Workspace recovered! Reloading…')
       sessionStorage.removeItem('cw_synced')
       setTimeout(() => window.location.reload(), 1000)
-    } catch {
-      setStatus('✗ Wrong password — try again')
-      setTimeout(() => setStatus(''), 5000)
+    } catch (err) {
+      console.error('migrate error:', err)
+      setStatus('✗ Error: ' + err.message)
+      setTimeout(() => setStatus(''), 8000)
     }
   }
 
