@@ -44,15 +44,20 @@ export function AuthProvider({ children }) {
     setSyncStatus('syncing')
     try {
       const settings = collectSettings()
-      await fetch('/api/settings/sync', {
+      const res = await fetch('/api/settings/sync', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ settings }),
       })
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        throw new Error(`sync failed ${res.status}: ${body}`)
+      }
       setSyncStatus('synced')
     } catch (err) {
       console.error('sync error:', err.message)
       setSyncStatus('error')
+      throw err  // re-throw so callers (handleManualSave) can show error
     }
   }, [])
 

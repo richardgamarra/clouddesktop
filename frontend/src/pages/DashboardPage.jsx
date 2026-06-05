@@ -207,13 +207,12 @@ export default function DashboardPage() {
   function handleSaveApp(data) {
     hub.saveApp(data)
     setAppModal(null)
-    // localStorage already written synchronously by hook; sync to cloud now
-    if (accessToken) sync(accessToken)
+    if (accessToken) sync(accessToken).catch(err => console.error('save app sync failed:', err.message))
   }
   function handleDeleteApp(id) {
     hub.deleteApp(id)
     setAppModal(null)
-    if (accessToken) sync(accessToken)
+    if (accessToken) sync(accessToken).catch(err => console.error('delete app sync failed:', err.message))
   }
 
   function handleSaveGroup(data) {
@@ -221,11 +220,11 @@ export default function DashboardPage() {
     hub.saveGroup(data)
     if (pendingAppId && !data.id) hub.moveApp(pendingAppId, data.id || ('g_' + Date.now()))
     setGroupModal(null); setShowManage(false)
-    if (accessToken) sync(accessToken)
+    if (accessToken) sync(accessToken).catch(err => console.error('save group sync failed:', err.message))
   }
   function handleDeleteGroup(id) {
     hub.deleteGroup(id); setGroupModal(null); setShowManage(false)
-    if (accessToken) sync(accessToken)
+    if (accessToken) sync(accessToken).catch(err => console.error('delete group sync failed:', err.message))
   }
 
   function handleAddCustomTab(tabData) {

@@ -8,8 +8,20 @@ const authRouter   = require('./routes/auth')
 const adminRouter  = require('./routes/admin')
 const requireAuth  = require('./middleware/auth')
 
+const pool = require('./db/pool')
 const app  = express()
 const PORT = process.env.PORT || 4010
+
+// One-time startup migration — drop NOT NULL on backup columns so plain-JSON
+// backups can be inserted without providing the legacy encrypted_blob/iv fields
+;(async () => {
+  try {
+    await pool.query(`ALTER TABLE settings_backups ALTER COLUMN encrypted_blob DROP NOT NULL`)
+  } catch {}
+  try {
+    await pool.query(`ALTER TABLE settings_backups ALTER COLUMN iv DROP NOT NULL`)
+  } catch {}
+})()
 
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(cors({ origin: process.env.APP_URL, credentials: true }))
