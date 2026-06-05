@@ -7,14 +7,10 @@ const CHANNELS = [
   { id: 'france24', name: 'France 24', flag: '🇫🇷', ytId: 'HvZt-nh9sGg', cat: 'english' },
   { id: 'dw',       name: 'DW News',   flag: '🇩🇪', ytId: 'LuKwFajn37U', cat: 'english' },
   { id: 'nhk',      name: 'NHK World', flag: '🇯🇵', ytId: 'f0lYkdA-Gtw', cat: 'english' },
-  { id: 'trt',      name: 'TRT World',  flag: '🇹🇷', ytId: 'oNPnQCm7HBs', cat: 'english' },
-  { id: 'timesnow', name: 'Times Now',  flag: '🇮🇳', ytId: 'rVPlcPSMgAA', cat: 'english' },
   // Spanish News — verified June 2026
   { id: 'dw_es',    name: 'DW Español',   flag: '🇩🇪', ytId: 'yZh3xsFqCt8', cat: 'spanish' },
   { id: 'rtve',     name: 'RTVE 24H',     flag: '🇪🇸', ytId: 'b4tE5aKhtlg', cat: 'spanish' },
   { id: 'milenio',  name: 'Milenio TV',   flag: '🇲🇽', ytId: 'tQ941SU5UR0', cat: 'spanish' },
-  { id: 'nmas',     name: 'N+ FORO',      flag: '🇲🇽', ytId: 'Ulwgdf5t46o', cat: 'spanish' },
-  { id: 'ntn24',    name: 'NTN24',        flag: '🇨🇴', ytId: 'sWnCiEXG0qk', cat: 'spanish' },
 ]
 
 export default function LiveTVWidget() {
