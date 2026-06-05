@@ -138,6 +138,17 @@ export default function DashboardPage() {
 
   const [saveStatus, setSaveStatus] = useState('')
 
+  async function handleManualSave() {
+    setSaveStatus('⏳ Saving…')
+    try {
+      await sync(accessToken)
+      setSaveStatus('☁ Saved!')
+    } catch {
+      setSaveStatus('✗ Failed')
+    }
+    setTimeout(() => setSaveStatus(''), 3000)
+  }
+
   // ── Cloud sync init: fetch + apply settings on every login/session start ─────
   useEffect(() => {
     if (!accessToken) return
@@ -238,6 +249,19 @@ export default function DashboardPage() {
     const timer = setTimeout(() => sync(accessToken), 2000)
     return () => clearTimeout(timer)
   }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, syncReady, sync, accessToken])
+
+  // Also sync when hub_icon_overrides changes (written directly to localStorage by AppModal)
+  useEffect(() => {
+    if (!syncReady) return
+    const handler = (e) => {
+      if (e.key === 'hub_icon_overrides') {
+        const timer = setTimeout(() => sync(accessToken), 2000)
+        return () => clearTimeout(timer)
+      }
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [syncReady, sync, accessToken])
 
   // ── Export settings as JSON file ──────────────────────────────────────────────
   function handleExport() {
@@ -428,15 +452,15 @@ export default function DashboardPage() {
                 <button className="open-all-btn" onClick={() => hub.apps.forEach((app, i) => setTimeout(() => openApp(app), i * 100))}>⚡ Open All</button>
               </>
             )}
-            {syncReady && (
-              <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:'var(--green)', marginRight:4 }} title="Settings synced to cloud">☁ synced</span>
-            )}
+            <button className="tb-btn" onClick={handleManualSave} disabled={!!saveStatus} title="Save workspace to cloud now"
+              style={{ color: saveStatus.startsWith('☁') ? 'var(--green)' : saveStatus.startsWith('✗') ? 'var(--red)' : undefined }}>
+              {saveStatus || '💾 Save'}
+            </button>
             <button className="tb-btn" onClick={handleExport} title="Export settings as JSON">↓ Export</button>
             <label className="tb-btn" style={{ cursor:'pointer', marginLeft:0 }} title="Import settings from JSON">
               ↑ Import
               <input type="file" accept=".json" style={{ display:'none' }} onChange={handleImport} />
             </label>
-            {saveStatus && <span style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color: saveStatus.startsWith('☁') ? 'var(--green)' : 'var(--red)', marginRight:4 }}>{saveStatus}</span>}
             <button className="tb-btn" onClick={handleLogout} style={{ marginLeft: 4 }}>Log out</button>
           </div>
         </div>
