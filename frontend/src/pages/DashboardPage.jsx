@@ -99,12 +99,7 @@ export default function DashboardPage() {
   useEffect(() => { localStorage.setItem('wsh_news_sources', JSON.stringify(sources)) }, [sources])
   useEffect(() => { localStorage.setItem('wsh_news_groups', JSON.stringify(newsGroups)) }, [newsGroups])
 
-  // Auto-sync to cloud when sources or newsGroups change (debounced 4s)
-  useEffect(() => {
-    if (!syncReady || !accessToken) return
-    const t = setTimeout(() => { sync(accessToken) }, 4000)
-    return () => clearTimeout(t)
-  }, [sources]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [syncEnabled, setSyncEnabled] = useState(false)
 
   // Tab name/icon overrides for fixed tabs (news/hub) stored in localStorage
   const [tabOverrides, setTabOverrides] = useState(() => {
@@ -153,17 +148,30 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!accessToken) return
     const SYNC_DONE = 'cw_synced'
-    if (sessionStorage.getItem(SYNC_DONE)) return
+    if (sessionStorage.getItem(SYNC_DONE)) {
+      setSyncEnabled(true)
+      return
+    }
     if (user?.id) localStorage.setItem('wsh_last_user_id', user.id)
     initSync(accessToken).then(cloudSettings => {
       sessionStorage.setItem(SYNC_DONE, '1')
       if (cloudSettings) {
         window.location.reload()
+      } else {
+        setSyncEnabled(true)
       }
     }).catch(() => {
       sessionStorage.setItem(SYNC_DONE, '1')
+      setSyncEnabled(true)
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-sync to cloud (debounced 2s) — only after initSync completes ───────
+  useEffect(() => {
+    if (!accessToken || !syncEnabled) return
+    const timer = setTimeout(() => sync(accessToken), 2000)
+    return () => clearTimeout(timer)
+  }, [hub.groups, hub.apps, sources, newsGroups, customTabs.tabs, syncEnabled, accessToken, sync])
 
   useEffect(() => {
     function handler(e) {
