@@ -13,8 +13,15 @@ const CHANNELS = [
   { id: 'milenio',  name: 'Milenio TV',   flag: '🇲🇽', ytId: 'tQ941SU5UR0', cat: 'spanish' },
 ]
 
+const CATS = [
+  { key: 'all', label: 'All' },
+  { key: 'english', label: '🌍 English' },
+  { key: 'spanish', label: '🇪🇸 Español' },
+]
+
 export default function LiveTVWidget() {
   const [active, setActive] = useState('')
+  const [cat, setCat]       = useState('all')
   const [error, setError]   = useState(false)
   const iframeRef = useRef(null)
 
@@ -31,10 +38,11 @@ export default function LiveTVWidget() {
 
 const activeCh = CHANNELS.find(c => c.id === active)
 
-  const groups = [
-    { label: '🌍 English', channels: CHANNELS.filter(c => c.cat === 'english') },
-    { label: '🇪🇸 Español', channels: CHANNELS.filter(c => c.cat === 'spanish') },
+  const allGroups = [
+    { key: 'english', label: '🌍 English', channels: CHANNELS.filter(c => c.cat === 'english') },
+    { key: 'spanish', label: '🇪🇸 Español', channels: CHANNELS.filter(c => c.cat === 'spanish') },
   ]
+  const groups = cat === 'all' ? allGroups : allGroups.filter(g => g.key === cat)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -75,6 +83,22 @@ const activeCh = CHANNELS.find(c => c.id === active)
             <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono',monospace" }}>Select a channel below</span>
           </div>
         )}
+      </div>
+
+      {/* Category tabs */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {CATS.map(c => (
+          <button key={c.key} onClick={() => setCat(c.key)}
+            style={{
+              padding: '4px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: "'DM Mono',monospace",
+              background: cat === c.key ? 'var(--accent)' : 'var(--s3)',
+              color: cat === c.key ? '#fff' : 'var(--text2)',
+              border: `1px solid ${cat === c.key ? 'var(--accent)' : 'var(--border)'}`,
+              fontWeight: cat === c.key ? 700 : 400,
+            }}>
+            {c.label}
+          </button>
+        ))}
       </div>
 
       {/* Scrollable channel list */}
