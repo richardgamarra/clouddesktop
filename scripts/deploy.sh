@@ -10,7 +10,7 @@ echo "--- Stashing any local server changes ---"
 git stash || true
 
 echo "--- Pulling latest code ---"
-git pull origin main
+git pull --no-edit origin main
 
 echo "--- Installing backend dependencies ---"
 cd "$DEPLOY_DIR/backend"
