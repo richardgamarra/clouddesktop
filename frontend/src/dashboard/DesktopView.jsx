@@ -3,6 +3,37 @@ import { getAppIcon } from './hooks/useDesktopApps'
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 
+function isExternalUrlDrag(e) {
+  const types = Array.from(e.dataTransfer?.types || [])
+  return ['text/uri-list', 'text/x-moz-url', 'text/plain', 'text/html'].some(t => types.includes(t))
+}
+
+function extractDroppedUrl(e) {
+  const uri  = e.dataTransfer.getData('text/uri-list')
+  const moz  = e.dataTransfer.getData('text/x-moz-url')
+  const text = e.dataTransfer.getData('text/plain')
+  const html = e.dataTransfer.getData('text/html')
+  const candidates = []
+  if (uri)  candidates.push(...uri.split(/\r?\n/))
+  if (moz)  candidates.push(...moz.split(/\r?\n/))
+  if (text) candidates.push(...text.split(/\s+/))
+  if (html) { const href = html.match(/href=["']([^"']+)["']/i); if (href) candidates.push(href[1]) }
+  function normalize(v) {
+    const raw = (v || '').trim()
+    if (!raw || raw.startsWith('#')) return null
+    if (/^https?:\/\//i.test(raw)) return raw
+    if (/^www\./i.test(raw)) return `https://${raw}`
+    return null
+  }
+  const url = candidates.map(normalize).find(Boolean)
+  if (!url) return null
+  let name = ''
+  if (html) { const m = html.match(/title="([^"]+)"/) || html.match(/>([^<]{2,60})</); if (m) name = m[1].trim() }
+  if (!name && moz) { const lines = moz.split(/\r?\n/).map(x => x.trim()).filter(Boolean); if (lines[1] && !normalize(lines[1])) name = lines[1] }
+  if (!name) { try { name = new URL(url).hostname.replace('www.', '') } catch { name = url.substring(0, 40) } }
+  return { url, name: name.substring(0, 60) }
+}
+
 function getIconOverrides() {
   try { return JSON.parse(localStorage.getItem('hub_icon_overrides') || '{}') } catch { return {} }
 }
@@ -31,17 +62,23 @@ const DEFAULT_PANEL_H = 200
 const MIN_W = 180
 const MIN_H = 120
 
-function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onContextMenu, onAddApp, onReorder }) {
+function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onContextMenu, onAddApp, onReorder, onExternalDrop }) {
   const panelRef   = useRef(null)
   const dragRef    = useRef(null) // panel move/resize
   const iconDragId = useRef(null) // icon reorder
   const [iconDragOver, setIconDragOver] = useState(null)
+  const [extDropOver, setExtDropOver]   = useState(false)
 
   const { x = 20, y = 20, width = DEFAULT_PANEL_W, height = DEFAULT_PANEL_H } = layout || {}
 
   function onIconDragStart(e, id) { iconDragId.current = id; e.dataTransfer.effectAllowed = 'move'; e.stopPropagation() }
-  function onIconDragOver(e, id)  { e.preventDefault(); e.stopPropagation(); if (id !== iconDragId.current) setIconDragOver(id) }
+  function onIconDragOver(e, id) {
+    if (isExternalUrlDrag(e)) return  // let bubble to panel for external URL handling
+    e.preventDefault(); e.stopPropagation()
+    if (id !== iconDragId.current) setIconDragOver(id)
+  }
   function onIconDrop(e, targetId) {
+    if (isExternalUrlDrag(e)) return  // let bubble to panel for external URL handling
     e.preventDefault(); e.stopPropagation()
     const srcId = iconDragId.current
     if (!srcId || srcId === targetId) { setIconDragOver(null); return }
@@ -53,6 +90,23 @@ function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onCo
     iconDragId.current = null; setIconDragOver(null)
   }
   function onIconDragEnd() { iconDragId.current = null; setIconDragOver(null) }
+
+  function handleExtDragOver(e) {
+    if (!isExternalUrlDrag(e)) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setExtDropOver(true)
+  }
+  function handleExtDragLeave(e) {
+    if (!panelRef.current?.contains(e.relatedTarget)) setExtDropOver(false)
+  }
+  function handleExtDrop(e) {
+    if (!isExternalUrlDrag(e)) return
+    e.preventDefault()
+    setExtDropOver(false)
+    const dropped = extractDroppedUrl(e)
+    if (dropped && onExternalDrop) onExternalDrop(group.id, dropped)
+  }
 
   // ── Drag title bar ────────────────────────────────────────────────────────────
   function onTitleMouseDown(e) {
@@ -110,13 +164,19 @@ function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onCo
   return (
     <div
       ref={panelRef}
+      onDragOver={handleExtDragOver}
+      onDragLeave={handleExtDragLeave}
+      onDrop={handleExtDrop}
       style={{
         position:'absolute', left:x, top:y, width, height,
-        background:'rgba(17,20,28,.88)', border:`1px solid ${group.color}44`,
+        background:'rgba(17,20,28,.88)',
+        border: extDropOver ? '2px solid var(--accent)' : `1px solid ${group.color}44`,
         borderRadius:12, backdropFilter:'blur(12px)',
-        boxShadow:`0 8px 32px rgba(0,0,0,.5), 0 0 0 1px ${group.color}22`,
+        boxShadow: extDropOver
+          ? `0 8px 32px rgba(0,0,0,.5), 0 0 0 2px var(--accent)`
+          : `0 8px 32px rgba(0,0,0,.5), 0 0 0 1px ${group.color}22`,
         display:'flex', flexDirection:'column', userSelect:'none',
-        zIndex:10,
+        zIndex:10, transition:'border .1s, box-shadow .1s',
       }}
     >
       {/* Resize handles */}
@@ -176,7 +236,7 @@ function GroupPanel({ group, apps, layout, onLayoutChange, openApp, isOpen, onCo
   )
 }
 
-export default function DesktopView({ groups, apps, isOpen, openApp, onContextMenu, onAddApp, onReorder }) {
+export default function DesktopView({ groups, apps, isOpen, openApp, onContextMenu, onAddApp, onReorder, onExternalDrop }) {
   const LAYOUT_KEY = 'wsh_desktop_layout'
 
   function loadLayout() {
@@ -255,6 +315,7 @@ export default function DesktopView({ groups, apps, isOpen, openApp, onContextMe
               onContextMenu={onContextMenu}
               onAddApp={onAddApp}
               onReorder={onReorder}
+              onExternalDrop={onExternalDrop}
             />
           )
         })}

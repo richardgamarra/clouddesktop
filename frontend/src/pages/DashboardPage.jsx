@@ -239,6 +239,10 @@ export default function DashboardPage() {
     setAppModal(null)
     if (accessToken) sync(accessToken).catch(err => console.error('delete app sync failed:', err.message))
   }
+  function handleExternalAppDrop(groupId, { url, name }) {
+    hub.saveApp({ id: null, name, url, groupId, emoji: null, favicon: '', shortcut: '' })
+    if (accessToken) sync(accessToken).catch(err => console.error('external drop sync failed:', err.message))
+  }
 
   function handleSaveGroup(data) {
     const pendingAppId = groupModal?._pendingAppId
@@ -501,6 +505,7 @@ export default function DashboardPage() {
             <DesktopView
               groups={hub.groups} apps={hub.apps} isOpen={isOpen} openApp={openApp}
               onContextMenu={handleContextMenu} onAddApp={openAddApp} onReorder={hub.reorderApps}
+              onExternalDrop={handleExternalAppDrop}
               onEditGroup={(id) => setGroupModal(hub.getGroup(id))}
             />
           </div>
