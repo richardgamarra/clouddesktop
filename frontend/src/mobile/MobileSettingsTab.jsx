@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import HelpModal from '../components/HelpModal'
 
 export default function MobileSettingsTab({ user, onLogout }) {
   const navigate = useNavigate()
+  const [showHelp, setShowHelp] = useState(false)
   const [theme, setTheme] = useState(
     () => localStorage.getItem('wsh_theme') || 'dark'
   )
@@ -57,6 +59,12 @@ export default function MobileSettingsTab({ user, onLogout }) {
       <button className="m-desktop-link" onClick={() => navigate('/dashboard')}>
         Switch to Desktop version →
       </button>
+
+      <button className="m-desktop-link" onClick={() => setShowHelp(true)} style={{ marginTop: 8 }}>
+        📖 Help &amp; Documentation
+      </button>
+
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
     </div>
   )

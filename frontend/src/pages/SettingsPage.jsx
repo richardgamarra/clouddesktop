@@ -171,6 +171,7 @@ function formatDate(iso) {
 }
 
 import PasswordModal from '../components/PasswordModal'
+import HelpModal from '../components/HelpModal'
 
 export default function SettingsPage() {
   const { accessToken, user } = useAuth()
@@ -184,6 +185,7 @@ export default function SettingsPage() {
   const [migrateModal, setMigrateModal] = useState(false)
   const [baking, setBaking] = useState(false)
   const [bakeProgress, setBakeProgress] = useState('')
+  const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
     if (!accessToken) return
@@ -441,6 +443,10 @@ export default function SettingsPage() {
           ← Back
         </button>
         <h1 style={{ fontSize:22, fontWeight:800, letterSpacing:'-.5px' }}>🗄 Settings & Backups</h1>
+        <button onClick={() => setShowHelp(true)}
+          style={{ marginLeft:'auto', background:'var(--s2)', border:'1px solid var(--border2)', borderRadius:8, color:'var(--text2)', fontSize:12, fontFamily:"'DM Mono',monospace", padding:'6px 14px', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+          📖 Help &amp; Documentation
+        </button>
       </div>
 
       {/* ── RECOVERY BANNER — migrate old encrypted backup ── */}
@@ -588,6 +594,9 @@ export default function SettingsPage() {
         </div>
 
       </div>
+
+      {/* Help modal */}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
       {/* Migration password modal */}
       {migrateModal && (
