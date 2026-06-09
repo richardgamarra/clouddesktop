@@ -601,24 +601,17 @@
   z-index: 1;
 }
 
-/* iOS won't scroll inside an iframe via touch.
-   Fix: make the iframe very tall and let the wrapper scroll it instead. */
-.m-notes-scroll-wrap {
-  flex: 1;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
-
 .m-notes-iframe {
   border: none;
   width: 100%;
-  /* Tall enough that the parent scroll-wrap handles scrolling, not the iframe */
-  height: 3000px;
+  /* height set inline via JS to exact shell height so NotesVault
+     renders a normal mobile layout and scrolls inside itself */
   display: block;
+  flex: 1;
   background: var(--bg);
   transition: opacity 0.25s;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .m-notes-loading {
