@@ -618,22 +618,18 @@
   left: 0;
   right: 0;
   bottom: calc(60px + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
   z-index: 1;
+  /* html + body inside the iframe must resolve 100% against this element */
+  display: block;
 }
 
 .m-notes-iframe {
   border: none;
   width: 100%;
-  /* height set inline via JS to exact shell height so NotesVault
-     renders a normal mobile layout and scrolls inside itself */
+  height: 100%;
   display: block;
-  flex: 1;
   background: var(--bg);
   transition: opacity 0.25s;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .m-notes-loading {

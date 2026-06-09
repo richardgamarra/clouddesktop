@@ -4,23 +4,8 @@ const NOTESVAULT_URL = 'https://notesvault.infoplay.com'
 
 export default function MobileNotesTab() {
   const [status, setStatus] = useState('loading') // 'loading' | 'loaded' | 'blocked'
-  const [shellH, setShellH] = useState(0)
   const iframeRef = useRef(null)
   const timeoutRef = useRef(null)
-
-  // Calculate the exact visible height so NotesVault renders a normal mobile layout
-  useEffect(() => {
-    function measure() {
-      const topbar  = 52
-      const tabbar  = 60
-      // env(safe-area-inset-bottom) isn't readable via JS directly; 34px covers iPhone notch
-      const safeBot = window.innerHeight > 800 ? 34 : 0
-      setShellH(window.innerHeight - topbar - tabbar - safeBot)
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [])
 
   useEffect(() => {
     timeoutRef.current = setTimeout(() => {
@@ -64,10 +49,7 @@ export default function MobileNotesTab() {
         src={NOTESVAULT_URL}
         title="NotesVault"
         className="m-notes-iframe"
-        style={{
-          opacity: status === 'loaded' ? 1 : 0,
-          height: shellH > 0 ? shellH : '100%',
-        }}
+        style={{ opacity: status === 'loaded' ? 1 : 0 }}
         onLoad={handleLoad}
         allow="clipboard-read; clipboard-write"
         scrolling="yes"
