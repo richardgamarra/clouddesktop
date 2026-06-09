@@ -207,8 +207,8 @@ export default function NewsGroupsView({ sources, cache, newsGroups, groupLayout
   const ungroupedSources = sources.filter(s => !s.group || !newsGroups.find(g => g.id === s.group || g.name === s.group))
 
   return (
-    <div style={{ flex:1, overflow:'auto', position:'relative', scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
-      <div style={{ position:'relative', minHeight: canvasH, minWidth:600 }}>
+    <div className="news-groups-view" style={{ flex:1, overflow:'auto', position:'relative', scrollbarWidth:'thin', scrollbarColor:'var(--border2) transparent' }}>
+      <div className="news-groups-canvas" style={{ position:'relative', minHeight: canvasH, minWidth:600 }}>
         {newsGroups.map((group, idx) => {
           const groupSources = sources.filter(s => s.group === group.id || s.group === group.name)
           const layout = groupLayout[group.id] || defaultPanelLayout(idx)

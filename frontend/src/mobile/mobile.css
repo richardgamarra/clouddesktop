@@ -537,3 +537,31 @@
 .m-content .news-compact-grid {
   padding: 0 12px 12px;
 }
+
+/* ── News groups: force vertical stack on mobile ───────────────────────────── */
+/* Override the absolute-positioned floating-panel canvas from NewsGroupsView */
+.m-content .news-groups-view {
+  overflow: visible !important;
+  position: static !important;
+  flex: none !important;
+}
+.m-content .news-groups-canvas {
+  position: static !important;
+  min-height: unset !important;
+  min-width: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 0 12px 16px !important;
+}
+/* Each panel (direct child div) — override absolute positioning */
+.m-content .news-groups-canvas > div {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 200px !important;
+  max-height: 360px !important;
+  box-sizing: border-box !important;
+}
