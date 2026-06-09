@@ -449,20 +449,6 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* ── RECOVERY BANNER — migrate old encrypted backup ── */}
-      <div style={{ background:'rgba(255,180,0,.10)', border:'1px solid rgba(255,180,0,.35)', borderRadius:12, padding:'20px 24px', marginBottom:20, maxWidth:900, display:'flex', alignItems:'center', gap:20 }}>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>🔑 Recover Previous Workspace</div>
-          <div style={{ fontSize:12, color:'var(--text2)', fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
-            Your workspace was previously saved with password-based encryption. Enter your password to decrypt and restore it.
-          </div>
-        </div>
-        <button onClick={() => setMigrateModal(true)}
-          style={{ background:'#e6a800', border:'none', borderRadius:10, color:'#fff', fontSize:14, fontWeight:700, padding:'12px 24px', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
-          🔑 Recover Now
-        </button>
-      </div>
-
       {/* Primary action — save to cloud */}
       <div style={{ background:'rgba(91,127,255,.08)', border:'1px solid rgba(91,127,255,.25)', borderRadius:12, padding:'20px 24px', marginBottom:24, maxWidth:900, display:'flex', alignItems:'center', gap:20 }}>
         <div style={{ flex:1 }}>
