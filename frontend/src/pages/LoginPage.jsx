@@ -28,7 +28,7 @@ export default function LoginPage() {
       }
       login(data.accessToken, data.user, password)
       const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-      navigate(isMobile ? '/mobile' : '/dashboard')
+      navigate(isMobile ? '/mobile' : '/dashboard', { replace: true })
     } catch {
       setError('Network error. Please try again.')
     } finally {

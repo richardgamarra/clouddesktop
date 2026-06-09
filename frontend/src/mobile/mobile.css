@@ -119,6 +119,13 @@
   color: var(--red);
 }
 
+.m-topbar-dd-hint {
+  color: var(--text3);
+  font-size: 11px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
 /* ── Content area ─────────────────────────────────────────────────────────── */
 .m-content {
   position: fixed;
