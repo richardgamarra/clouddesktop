@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useHubState } from '../dashboard/hooks/useHubState'
+import { useCustomTabs } from '../dashboard/hooks/useCustomTabs'
 import TopBar from './TopBar'
 import BottomTabBar from './BottomTabBar'
 import MobileAppsTab from './MobileAppsTab'
@@ -16,6 +17,11 @@ import './mobile.css'
 export default function MobileDashboard() {
   const { accessToken, user, logout, sync, initSync } = useAuth()
   const hub = useHubState()
+  const customTabs = useCustomTabs()
+
+  // Find the bookmarks tab (type='bookmarks') in the custom tabs system
+  const bookmarkTab = customTabs.tabs.find(t => t.type === 'bookmarks')
+  const bookmarkItems = bookmarkTab?.config?.items || []
 
   const [activeTab,   setActiveTab]   = useState('apps')
   const [appModal,    setAppModal]    = useState(null)   // { app } or null
@@ -79,31 +85,28 @@ export default function MobileDashboard() {
     if (accessToken) sync(accessToken).catch(() => {})
   }
 
-  // ── Bookmarks helpers (MobileBookmarksTab manages its own localStorage reads)
+  // ── Bookmarks helpers — data lives in customTabs (type='bookmarks').config.items
+  function saveBookmarkItems(updatedItems) {
+    if (!bookmarkTab) return
+    customTabs.updateTab(bookmarkTab.id, { config: { ...bookmarkTab.config, items: updatedItems } })
+    if (accessToken) sync(accessToken).catch(() => {})
+  }
   function handleAddBookmark() {
     const url = window.prompt('Bookmark URL:')
     if (!url) return
-    const name = window.prompt('Name:', (() => { try { return new URL(url).hostname.replace('www.','') } catch { return url } })())
+    const name = window.prompt('Name:', (() => { try { return new URL(url).hostname.replace('www.', '') } catch { return url } })())
     if (!name) return
-    const bookmarks = JSON.parse(localStorage.getItem('wsh_bookmarks') || '[]')
-    bookmarks.push({ id: 'bm_' + Date.now(), url, name, group: '' })
-    localStorage.setItem('wsh_bookmarks', JSON.stringify(bookmarks))
-    if (accessToken) sync(accessToken).catch(() => {})
+    saveBookmarkItems([...bookmarkItems, { id: 'bm_' + Date.now(), url, name, group: '', customIcon: '' }])
   }
   function handleEditBookmark(item) {
     const name = window.prompt('Name:', item.name)
     if (name === null) return
     const url = window.prompt('URL:', item.url)
     if (url === null) return
-    const bookmarks = JSON.parse(localStorage.getItem('wsh_bookmarks') || '[]')
-    const updated = bookmarks.map(b => b.id === item.id ? { ...b, name, url } : b)
-    localStorage.setItem('wsh_bookmarks', JSON.stringify(updated))
-    if (accessToken) sync(accessToken).catch(() => {})
+    saveBookmarkItems(bookmarkItems.map(b => b.id === item.id ? { ...b, name, url } : b))
   }
   function handleDeleteBookmark(id) {
-    const bookmarks = JSON.parse(localStorage.getItem('wsh_bookmarks') || '[]')
-    localStorage.setItem('wsh_bookmarks', JSON.stringify(bookmarks.filter(b => b.id !== id)))
-    if (accessToken) sync(accessToken).catch(() => {})
+    saveBookmarkItems(bookmarkItems.filter(b => b.id !== id))
   }
 
   // ── Notes stub tab (reuse NotesTab with a dummy tab object) ───────────────
@@ -125,6 +128,7 @@ export default function MobileDashboard() {
         )}
         {activeTab === 'bookmarks' && (
           <MobileBookmarksTab
+            items={bookmarkItems}
             onAddBookmark={handleAddBookmark}
             onEditBookmark={handleEditBookmark}
             onDeleteBookmark={handleDeleteBookmark}

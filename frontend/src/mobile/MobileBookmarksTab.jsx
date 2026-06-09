@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef } from 'react' // useState used by SwipeRow
 
 function tryHost(u) { try { return new URL(u).hostname } catch { return u } }
 
@@ -67,18 +67,9 @@ function SwipeRow({ item, onEdit, onDelete }) {
   )
 }
 
-export default function MobileBookmarksTab({ onAddBookmark, onEditBookmark, onDeleteBookmark }) {
-  // Read bookmarks from localStorage (same key BookmarksTab uses)
-  const [items, setItems] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wsh_bookmarks') || '[]') } catch { return [] }
-  })
-
-  // Keep in sync if the user edits via desktop in another tab (rare but possible)
-  function refresh() {
-    try { setItems(JSON.parse(localStorage.getItem('wsh_bookmarks') || '[]')) } catch { setItems([]) }
-  }
-
-  // Group by folder
+// items come from MobileDashboard via customTabs (type='bookmarks').config.items
+export default function MobileBookmarksTab({ items = [], onAddBookmark, onEditBookmark, onDeleteBookmark }) {
+  // Group by folder name
   const folders = {}
   items.forEach(item => {
     const key = item.group || '—'
@@ -88,7 +79,7 @@ export default function MobileBookmarksTab({ onAddBookmark, onEditBookmark, onDe
 
   return (
     <div>
-      <button className="m-bm-add-btn" onClick={() => { onAddBookmark(); refresh() }}>
+      <button className="m-bm-add-btn" onClick={onAddBookmark}>
         ＋ Add Bookmark
       </button>
 
@@ -96,18 +87,15 @@ export default function MobileBookmarksTab({ onAddBookmark, onEditBookmark, onDe
         <div key={folder}>
           <div className="m-group-header">
             <div className="m-group-dot" style={{ background: 'var(--accent2)' }} />
-            {folder}
+            {folder === '—' ? 'Ungrouped' : folder}
           </div>
           <div className="m-bm-list">
             {folderItems.map(item => (
               <SwipeRow
                 key={item.id}
                 item={item}
-                onEdit={(bm) => { onEditBookmark(bm); refresh() }}
-                onDelete={(id) => {
-                  onDeleteBookmark(id)
-                  setItems(prev => prev.filter(x => x.id !== id))
-                }}
+                onEdit={onEditBookmark}
+                onDelete={onDeleteBookmark}
               />
             ))}
           </div>
