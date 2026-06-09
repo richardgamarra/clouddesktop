@@ -10,7 +10,7 @@ import MobileSettingsTab from './MobileSettingsTab'
 import AppModal from '../dashboard/AppModal'
 import ConfirmModal from '../components/ConfirmModal'
 import NewsTab from '../dashboard/NewsTab'
-import NotesTab from '../dashboard/tabs/NotesTab'
+import MobileNotesTab from './MobileNotesTab'
 import { DEFAULT_NEWS_SOURCES } from '../dashboard/constants'
 import './mobile.css'
 
@@ -109,9 +109,6 @@ export default function MobileDashboard() {
     saveBookmarkItems(bookmarkItems.filter(b => b.id !== id))
   }
 
-  // ── Notes stub tab (reuse NotesTab with a dummy tab object) ───────────────
-  const mobileNotesTab = { id: 'mobile_notes', name: 'Notes', icon: '📝', type: 'notes' }
-
   return (
     <div className="mobile-shell">
       <TopBar user={user} onLogout={handleLogout} />
@@ -146,9 +143,7 @@ export default function MobileDashboard() {
           </div>
         )}
         {activeTab === 'notes' && (
-          <div className="m-tab-passthrough">
-            <NotesTab tab={mobileNotesTab} />
-          </div>
+          <MobileNotesTab />
         )}
         {activeTab === 'settings' && (
           <MobileSettingsTab user={user} onLogout={handleLogout} />
