@@ -42,11 +42,18 @@ export default function MobileDashboard() {
     return () => clearTimeout(timer)
   }, [hub.groups, hub.apps, syncEnabled, accessToken, sync])
 
-  // ── News sources (read from localStorage, same key as desktop) ────────────
+  // ── News sources + groups (same keys as desktop) ─────────────────────────
   const [sources, setSources] = useState(() => {
     try { return JSON.parse(localStorage.getItem('wsh_news_sources')) || DEFAULT_NEWS_SOURCES }
     catch { return DEFAULT_NEWS_SOURCES }
   })
+  const [newsGroups, setNewsGroups] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wsh_news_groups') || 'null') || [] }
+    catch { return [] }
+  })
+  useEffect(() => {
+    localStorage.setItem('wsh_news_groups', JSON.stringify(newsGroups))
+  }, [newsGroups])
 
   function handleLogout() {
     logout()
@@ -128,8 +135,8 @@ export default function MobileDashboard() {
             <NewsTab
               sources={sources}
               onSourcesChange={setSources}
-              newsGroups={[]}
-              onNewsGroupsChange={() => {}}
+              newsGroups={newsGroups}
+              onNewsGroupsChange={setNewsGroups}
               onAddSource={() => {}}
             />
           </div>
