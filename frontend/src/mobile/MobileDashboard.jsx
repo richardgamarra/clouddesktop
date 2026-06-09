@@ -142,13 +142,14 @@ export default function MobileDashboard() {
             />
           </div>
         )}
-        {activeTab === 'notes' && (
-          <MobileNotesTab />
-        )}
         {activeTab === 'settings' && (
           <MobileSettingsTab user={user} onLogout={handleLogout} />
         )}
       </div>
+
+      {/* Notes tab rendered OUTSIDE m-content so iOS doesn't intercept
+          iframe touch events via the parent overflow-y:auto container */}
+      {activeTab === 'notes' && <MobileNotesTab />}
 
       <BottomTabBar activeTab={activeTab} onChange={setActiveTab} />
 
