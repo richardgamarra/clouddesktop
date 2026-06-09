@@ -17,7 +17,6 @@ export default function MobileSettingsTab({ user, onLogout }) {
     }
   }
 
-  // Apply stored theme to DOM on mount (in case MobileDashboard loads without prior toggle)
   useEffect(() => {
     if (theme === 'light') {
       document.documentElement.setAttribute('data-theme', 'light')
@@ -27,48 +26,38 @@ export default function MobileSettingsTab({ user, onLogout }) {
   }, [theme])
 
   return (
-    <div>
-      {/* Account */}
-      <div className="m-settings-section">
-        <div className="m-settings-row">
-          <span className="m-settings-label">Account</span>
-          <span className="m-settings-value">{user?.email}</span>
+    <div className="m-settings-wrap">
+
+      {/* Account bar — email · role · sign out all in one row */}
+      <div className="m-settings-account-bar">
+        <div className="m-settings-account-info">
+          <span className="m-settings-account-email">{user?.email || '—'}</span>
+          <span className="m-settings-account-role">{user?.role || 'free'}</span>
         </div>
-        <div className="m-settings-row">
-          <span className="m-settings-label">Role</span>
-          <span className="m-settings-badge">{user?.role || 'free'}</span>
-        </div>
+        <button className="m-settings-signout-btn" onClick={onLogout}>
+          Sign out
+        </button>
       </div>
 
       {/* Theme */}
-      <div className="m-settings-section">
-        <div className="m-settings-row">
-          <span className="m-settings-label">Theme</span>
-          <div className="m-theme-toggle">
-            <button
-              className={`m-theme-btn${theme === 'dark' ? ' active' : ''}`}
-              onClick={() => toggleTheme('dark')}
-            >
-              🌙 Dark
-            </button>
-            <button
-              className={`m-theme-btn${theme === 'light' ? ' active' : ''}`}
-              onClick={() => toggleTheme('light')}
-            >
-              ☀️ Light
-            </button>
-          </div>
+      <div className="m-settings-row-compact">
+        <span className="m-settings-label-sm">Theme</span>
+        <div className="m-theme-toggle">
+          <button
+            className={`m-theme-btn${theme === 'dark'  ? ' active' : ''}`}
+            onClick={() => toggleTheme('dark')}
+          >🌙 Dark</button>
+          <button
+            className={`m-theme-btn${theme === 'light' ? ' active' : ''}`}
+            onClick={() => toggleTheme('light')}
+          >☀️ Light</button>
         </div>
       </div>
-
-      {/* Actions */}
-      <button className="m-logout-full-btn" onClick={onLogout}>
-        Log out
-      </button>
 
       <button className="m-desktop-link" onClick={() => navigate('/dashboard')}>
         Switch to Desktop version →
       </button>
+
     </div>
   )
 }
