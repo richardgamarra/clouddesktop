@@ -488,3 +488,52 @@
 .m-tab-passthrough {
   min-height: 100%;
 }
+
+/* ── News tab overrides — compact header + pills on mobile ────────────────── */
+.m-content #news-panel {
+  padding: 0;
+}
+.m-content .news-header {
+  padding: 12px 12px 0;
+  margin-bottom: 10px;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.m-content .news-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.m-content .news-header p {
+  font-size: 10px;
+}
+.m-content .news-header-right {
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: 0;
+}
+.m-content .news-header-right button {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+.m-content .source-pills {
+  padding: 0 12px;
+  margin-bottom: 12px;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.m-content .source-pills::-webkit-scrollbar {
+  display: none;
+}
+.m-content .source-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.m-content .news-grid,
+.m-content .news-compact-grid {
+  padding: 0 12px 12px;
+}
