@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 
 export default function TopBar({ user, onLogout }) {
-  const initial = (user?.email || '?')[0].toUpperCase()
+  const initial = (user?.email || user?.role || 'U')[0].toUpperCase()
   const [open, setOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState(null)
   const [isStandalone, setIsStandalone] = useState(false)

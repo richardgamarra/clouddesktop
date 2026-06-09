@@ -66,8 +66,14 @@ const uploadsDir = require('path').join(__dirname, '../uploads')
 app.use('/uploads', require('express').static(uploadsDir))
 
 // ── Protected API routes ──────────────────────────────────────────────────────
-app.get('/api/user/me', requireAuth, (req, res) => {
-  res.json({ user: req.user })
+app.get('/api/user/me', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, email, role FROM users WHERE id = $1', [req.user.id])
+    if (!result.rows[0]) return res.status(404).json({ error: 'User not found' })
+    res.json({ user: result.rows[0] })
+  } catch {
+    res.json({ user: req.user }) // fallback to JWT payload
+  }
 })
 
 // ── Serve React build ─────────────────────────────────────────────────────────
