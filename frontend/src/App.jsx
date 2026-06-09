@@ -9,6 +9,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
+import MobileDashboard from './mobile/MobileDashboard'
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './pages/admin/AdminLayout'
 import UsersPage from './pages/admin/UsersPage'
@@ -29,6 +30,9 @@ export default function App() {
           <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute><DashboardPage /></ProtectedRoute>
+          } />
+          <Route path="/mobile" element={
+            <ProtectedRoute><MobileDashboard /></ProtectedRoute>
           } />
           <Route path="/settings" element={
             <ProtectedRoute><SettingsPage /></ProtectedRoute>
