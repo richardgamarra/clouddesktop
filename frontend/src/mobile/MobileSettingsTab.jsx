@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function MobileSettingsTab({ user, onLogout }) {
@@ -16,6 +16,15 @@ export default function MobileSettingsTab({ user, onLogout }) {
       document.documentElement.removeAttribute('data-theme')
     }
   }
+
+  // Apply stored theme to DOM on mount (in case MobileDashboard loads without prior toggle)
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light')
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+    }
+  }, [theme])
 
   return (
     <div>

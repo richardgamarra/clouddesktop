@@ -328,6 +328,7 @@
   bottom: 0;
   display: flex;
   align-items: stretch;
+  z-index: 0;
 }
 
 .m-bm-action-btn {

@@ -9,6 +9,7 @@ function getIconOverrides() {
 function AppIcon({ app }) {
   const overrides = getIconOverrides()
   const override = overrides[app.id]
+  // override takes highest priority; if present, skip customIcon and use override value below
   const iconSrc = !override ? app.customIcon : null
 
   if (!override && iconSrc) {
