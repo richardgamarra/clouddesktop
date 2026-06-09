@@ -262,21 +262,25 @@
   max-width: 68px;
 }
 
-.m-add-app-row {
+.m-group-add-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 2px dashed var(--border2);
-  border-radius: 10px;
-  color: var(--text3);
-  font-size: 12px;
-  cursor: pointer;
-  margin-bottom: 4px;
+  justify-content: center;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.m-add-app-row:active {
+.m-group-add-btn:active {
   border-color: var(--accent);
   color: var(--accent);
 }

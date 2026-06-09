@@ -110,7 +110,8 @@ export default function MobileAppsTab({ groups, apps, onAddApp, onEditApp, onDel
           <div key={group.id}>
             <div className="m-group-header">
               <div className="m-group-dot" style={{ background: group.color }} />
-              {group.name}
+              <span style={{ flex: 1 }}>{group.name}</span>
+              <button className="m-group-add-btn" onClick={() => onAddApp(group.id)} title="Add app">＋</button>
             </div>
             <div className="m-app-grid">
               {groupApps.map(app => (
@@ -120,9 +121,6 @@ export default function MobileAppsTab({ groups, apps, onAddApp, onEditApp, onDel
                   onLongPress={setSheet}
                 />
               ))}
-            </div>
-            <div className="m-add-app-row" onClick={() => onAddApp(group.id)}>
-              <span>＋</span> Add App
             </div>
           </div>
         )
