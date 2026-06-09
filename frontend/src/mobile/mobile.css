@@ -22,7 +22,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  z-index: 100;
+  z-index: 400;
 }
 
 .m-topbar-logo {
@@ -143,7 +143,7 @@
   border-top: 1px solid var(--border);
   display: flex;
   align-items: stretch;
-  z-index: 100;
+  z-index: 400;
 }
 
 .m-tab-item {
@@ -598,6 +598,7 @@
   bottom: calc(60px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+  z-index: 1;
 }
 
 /* iOS won't scroll inside an iframe via touch.
