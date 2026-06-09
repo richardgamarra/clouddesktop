@@ -46,18 +46,23 @@ export default function MobileNotesTab() {
       {status === 'loading' && (
         <div className="m-notes-loading">
           <div className="m-notes-spinner" />
-          <span>Loading SnapVault…</span>
+          <span>Loading NotesVault…</span>
         </div>
       )}
-      <iframe
-        ref={iframeRef}
-        src={SNAPVAULT_URL}
-        title="SnapVault Notes"
-        className="m-notes-iframe"
-        style={{ opacity: status === 'loaded' ? 1 : 0 }}
-        onLoad={handleLoad}
-        allow="clipboard-read; clipboard-write"
-      />
+      {/* Scroll wrapper is required for iOS — iframes don't scroll
+          via touch events unless their parent has overflow+momentum scroll */}
+      <div className="m-notes-scroll-wrap">
+        <iframe
+          ref={iframeRef}
+          src={SNAPVAULT_URL}
+          title="NotesVault"
+          className="m-notes-iframe"
+          style={{ opacity: status === 'loaded' ? 1 : 0 }}
+          onLoad={handleLoad}
+          allow="clipboard-read; clipboard-write"
+          scrolling="yes"
+        />
+      </div>
       {status === 'loaded' && (
         <button className="m-notes-ext-btn" onClick={openExternal} title="Open in browser">
           ↗

@@ -549,11 +549,22 @@
   flex-direction: column;
 }
 
-.m-notes-iframe {
+/* iOS requires the scroll wrapper — touch events won't reach the iframe
+   content without overflow + -webkit-overflow-scrolling on a parent div */
+.m-notes-scroll-wrap {
   flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.m-notes-iframe {
   border: none;
   width: 100%;
+  /* Must be taller than the viewport so iOS registers it as scrollable */
   height: 100%;
+  min-height: 100%;
+  display: block;
   background: var(--bg);
   transition: opacity 0.25s;
 }
