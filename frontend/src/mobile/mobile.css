@@ -80,7 +80,7 @@
 }
 
 .m-topbar-email {
-  padding: 12px 16px 8px;
+  padding: 8px 14px 6px;
   font-size: 11px;
   color: var(--text3);
   font-family: 'DM Mono', monospace;
@@ -98,13 +98,13 @@
 .m-topbar-dd-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 9px 14px;
   background: none;
   border: none;
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   text-align: left;
@@ -446,7 +446,7 @@
 .m-settings-section {
   background: var(--surface);
   border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   overflow: hidden;
 }
 
@@ -454,9 +454,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .m-settings-row:last-child {
@@ -509,15 +509,15 @@
 
 .m-logout-full-btn {
   width: 100%;
-  padding: 14px;
+  padding: 11px;
   background: var(--reddim);
   color: var(--red);
   border: none;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   -webkit-tap-highlight-color: transparent;
 }
 
