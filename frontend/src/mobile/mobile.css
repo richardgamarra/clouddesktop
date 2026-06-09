@@ -126,6 +126,69 @@
   line-height: 1.4;
 }
 
+/* ── Install instructions overlay ─────────────────────────────────────────── */
+.m-install-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.m-install-card {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.22s ease-out;
+}
+
+.m-install-icon { font-size: 40px; line-height: 1; }
+
+.m-install-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.m-install-steps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.m-install-step {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  background: var(--s3);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.m-install-close {
+  margin-top: 4px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 32px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ── Content area ─────────────────────────────────────────────────────────── */
 .m-content {
   position: fixed;
