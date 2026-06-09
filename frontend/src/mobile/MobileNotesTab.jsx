@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-const SNAPVAULT_URL = 'https://snapvault.infoplay.com'
+const SNAPVAULT_URL = 'https://notesvault.infoplay.com'
 
 export default function MobileNotesTab() {
   const [status, setStatus] = useState('loading') // 'loading' | 'loaded' | 'blocked'
