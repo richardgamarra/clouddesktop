@@ -20,15 +20,29 @@ function EditBookmarkModal({ item, groups, onSave, onClose }) {
   const [name, setName]             = useState(item.name || '')
   const [url, setUrl]               = useState(item.url || '')
   const [group, setGroup]           = useState(item.group || '')
+  const [newGroup, setNewGroup]     = useState('')
   const [customIcon, setCustomIcon] = useState(item.customIcon || '')
   const [iconError, setIconError]   = useState(false)
+
+  const isNew = group === '__new__'
+  const effectiveGroup = isNew ? newGroup.trim() : group
 
   const preview = customIcon || (url ? (() => { try { return `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(new URL(url).hostname)}` } catch { return '' } })() : '')
 
   function handleSave() {
     if (!name.trim() || !url.trim()) return
-    onSave({ ...item, name: name.trim(), url: url.trim(), group: group.trim(), customIcon: customIcon.trim() })
+    onSave({ ...item, name: name.trim(), url: url.trim(), group: effectiveGroup, customIcon: customIcon.trim() })
     onClose()
+  }
+
+  const selectStyle = {
+    ...iStyle,
+    appearance: 'none', WebkitAppearance: 'none',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 10px center',
+    paddingRight: 30,
+    cursor: 'pointer',
   }
 
   return (
@@ -73,8 +87,22 @@ function EditBookmarkModal({ item, groups, onSave, onClose }) {
         </div>
         <div className="field">
           <label>Group <span style={{ color:'var(--text3)', fontWeight:400 }}>(optional)</span></label>
-          <input style={iStyle} type="text" value={group} onChange={e => setGroup(e.target.value)} placeholder="Work, Personal…" maxLength={40} list="bm-edit-groups" />
-          <datalist id="bm-edit-groups">{groups.map(g => <option key={g} value={g} />)}</datalist>
+          <select style={selectStyle} value={group} onChange={e => { setGroup(e.target.value); setNewGroup('') }}>
+            <option value="">— No group —</option>
+            {groups.map(g => <option key={g} value={g}>{g}</option>)}
+            <option value="__new__">＋ New group…</option>
+          </select>
+          {isNew && (
+            <input
+              autoFocus
+              style={{ ...iStyle, marginTop:6 }}
+              type="text"
+              value={newGroup}
+              onChange={e => setNewGroup(e.target.value)}
+              placeholder="Type new group name…"
+              maxLength={40}
+            />
+          )}
         </div>
 
         <div className="modal-actions">
@@ -415,8 +443,12 @@ export default function BookmarksTab({ tab, onUpdateTab }) {
           <div style={{ display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
             <input style={{ ...iStyle, width:140 }} type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Name" autoFocus />
             <input style={{ ...iStyle, width:200 }} type="url" value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="https://…" onKeyDown={e => e.key==='Enter' && addItem()} />
-            <input style={{ ...iStyle, width:120 }} type="text" value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="Group (opt.)" list="bm-groups-list" />
-            <datalist id="bm-groups-list">{groups.map(g => <option key={g} value={g} />)}</datalist>
+            <select style={{ ...iStyle, width:140, appearance:'none', WebkitAppearance:'none', backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat:'no-repeat', backgroundPosition:'right 8px center', paddingRight:24, cursor:'pointer' }}
+              value={newGroup} onChange={e => setNewGroup(e.target.value === '__new__' ? '' : e.target.value)}>
+              <option value="">— No group —</option>
+              {groups.map(g => <option key={g} value={g}>{g}</option>)}
+              <option value="__new__">＋ New group…</option>
+            </select>
             {/* Icon upload */}
             <label title="Upload custom icon" style={{ display:'flex', alignItems:'center', gap:5, height:34, padding:'0 10px', borderRadius:7, background:'var(--s3)', border:'1px solid var(--border2)', cursor:'pointer', fontSize:12, color:'var(--text2)', flexShrink:0 }}>
               {newCustomIcon
